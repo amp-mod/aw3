@@ -1,6 +1,5 @@
 <script lang="ts">
   import Header from '$lib/components/header/header.svelte';
-  import { UserRound } from '@lucide/svelte';
   import { page } from '$app/state';
 
   let { children } = $props();
@@ -14,6 +13,10 @@
     { label: 'Front page management', href: '/admin/frontpage' }
   ];
 </script>
+
+<svelte:head>
+  <title>Admin panel - AmpMod</title>
+</svelte:head>
 
 <div class="flex h-screen flex-col bg-white dark:bg-neutral-900">
   <!-- Header always on top -->

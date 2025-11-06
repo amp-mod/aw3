@@ -25,6 +25,10 @@
   }
 </script>
 
+<svelte:head>
+  <title>{page.status} - AmpMod</title>
+</svelte:head>
+
 <NewLayout>
   <main class="mx-auto my-20 max-w-4xl p-4 text-center">
     <h1 class="font-mono text-8xl font-bold tracking-widest text-red-500 dark:text-red-400">
