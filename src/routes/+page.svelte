@@ -6,7 +6,7 @@
 <div class="mx-auto mt-3 flex max-w-3xl flex-col gap-4 px-4 sm:px-0">
 	<p>
 		AmpMod is a block-based programming language built off <a
-			class="text-accent underline"
+			class="link"
 			href="https://turbowarp.org">TurboWarp</a
 		> that adds many small but meaningful features to Scratch to make it even better, such as first-class
 		lists, case sensitivity, custom extensions, and more! AmpMod is developed by a small but passionate
@@ -22,22 +22,19 @@
 	</p>
 	<ul class="list-disc pl-8">
 		<li>
-			You can use the core AmpMod editor <a
-				class="text-accent underline"
-				href="https://ampmod.codeberg.page/editor">here</a
+			You can use the core AmpMod editor <a class="link" href="https://ampmod.codeberg.page/editor"
+				>here</a
 			>. We're working on a desktop app that will be available to download on ampmod.org soon.
 		</li>
 		<li>
-			The <a class="text-accent underline" href="https://ampmod.flarum.cloud">AmpMod Forums</a> are the
-			main hub for community discussion, support, and feature suggestions. It is technically a primitive
-			"project sharing service" as .apz files can be uploaded - however, the ampmod.org service will
-			take this further and introduce the ability to remix, update projects easily, integrate with the
-			editor, and more.
+			The <a class="link" href="https://ampmod.flarum.cloud">AmpMod Forums</a> are the main hub for community
+			discussion, support, and feature suggestions. It is technically a primitive "project sharing service"
+			as .apz files can be uploaded - however, the ampmod.org service will take this further and introduce
+			the ability to remix, update projects easily, integrate with the editor, and more.
 		</li>
 		<li>
-			The <a class="text-accent underline" href="https://ampmod.miraheze.org">AmpMod Wiki</a> is the
-			official encyclopedia for AmpMod, where you can find info about blocks, extensions, and community
-			phenomena.
+			The <a class="link" href="https://ampmod.miraheze.org">AmpMod Wiki</a> is the official encyclopedia
+			for AmpMod, where you can find info about blocks, extensions, and community phenomena.
 		</li>
 	</ul>
 	<p class="text-xs">Not affiliated with Scratch or TurboWarp.</p>

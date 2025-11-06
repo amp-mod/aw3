@@ -9,3 +9,7 @@
 	--color-accent: #4fa55c;
 	--color-accent-secondary: #3e834a;
 }
+
+.link {
+	@apply text-accent-secondary underline dark:text-accent;
+}
