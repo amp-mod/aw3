@@ -40,7 +40,7 @@
     <!-- Hamburger for small screens -->
     <button
       class="block p-2 text-xl focus:outline-none md:hidden"
-      on:click={() => (menuOpen = !menuOpen)}
+      onclick={() => (menuOpen = !menuOpen)}
       aria-label="Toggle navigation"
     >
       {#if menuOpen}
@@ -95,7 +95,7 @@
       <div class="relative">
         <button
           class="header-link flex items-center gap-2"
-          on:click={() => (accountOpen = !accountOpen)}
+          onclick={() => (accountOpen = !accountOpen)}
           aria-haspopup="menu"
           aria-expanded={accountOpen}
         >
