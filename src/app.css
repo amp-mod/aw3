@@ -9,6 +9,9 @@
   --color-accent: #4fa55c;
   --color-accent-secondary: #3e834a;
   --color-accent-tertiary: #356b3c;
+  --color-accent-light: #77ce84;
+  /* For button hover */
+  --color-accent-almost-light: #6dba79;
 }
 
 @layer aw3 {
@@ -25,7 +28,7 @@
   }
 
   .btn {
-    @apply cursor-pointer rounded-lg bg-accent px-4 py-1 font-bold text-white hover:bg-accent-secondary;
+    @apply cursor-pointer rounded-lg bg-accent-light px-4 py-1 text-lg font-bold text-black hover:bg-accent-almost-light;
   }
 
   .input {

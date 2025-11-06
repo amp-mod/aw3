@@ -1,0 +1,1 @@
+tw-advanced.svelte is a slightly modified version of https://codeberg.org/ampmod/ampmod/src/branch/develop/packages/gui/src/components/menu-bar/tw-advanced.svg under CC-BY-SA-4.0. It is only modified to replace the hardcoded white with `currentColor`, which also requires making it a Svelte component instead of an image.

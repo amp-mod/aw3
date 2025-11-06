@@ -1,7 +1,7 @@
 <!-- TODO: Add stuff for the website. This file is modified from website-v2 in ampmod/extensions.
      Styling is inspired by the AmpMod static website UI. -->
 <script lang="ts">
-  import Logo from './logo.svg';
+  import Logo from './tw-advanced.svelte';
 </script>
 
 <header
@@ -9,13 +9,7 @@
 >
   <div class="flex w-full items-center justify-center gap-4">
     <a href="/" class="logo-link flex items-center">
-      <img
-        src={Logo}
-        draggable="false"
-        height="28"
-        alt="AmpMod"
-        class="h-[28px] transition-transform duration-100 hover:scale-105"
-      />
+      <Logo />
     </a>
 
     <div class="hidden items-center gap-2 md:flex">
