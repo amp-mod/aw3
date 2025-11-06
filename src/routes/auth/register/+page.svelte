@@ -16,25 +16,14 @@
         <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Username
         </label>
-        <input
-          id="username"
-          name="username"
-          required
-          class="mt-1 w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-accent focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-        />
+        <input id="username" name="username" required class="input" />
       </div>
 
       <div>
         <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Password
         </label>
-        <input
-          id="password"
-          type="password"
-          name="password"
-          required
-          class="mt-1 w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-accent focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-        />
+        <input id="password" type="password" name="password" required class="input" />
       </div>
 
       <div class="flex justify-between">
