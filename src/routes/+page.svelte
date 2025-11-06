@@ -3,7 +3,7 @@
 </svelte:head>
 
 <div
-  class="bg-neutral-100 p-8 text-center text-accent-secondary dark:bg-accent-tertiary dark:text-white"
+  class="bg-slate-100 p-8 text-center text-accent-secondary dark:bg-accent-tertiary dark:text-white"
 >
   <h1 class="text-3xl leading-tight font-bold">Block-based programming, amplified</h1>
 </div>
