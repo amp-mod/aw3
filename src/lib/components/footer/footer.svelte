@@ -1,34 +1,44 @@
-<footer class="mt-2.5 w-full border-t border-black/10 pt-2.5 dark:border-white/10">
-  <div class="mx-auto max-w-[1200px] py-4">
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
-      <!-- About section -->
-      <div class="flex flex-col">
-        <h3 class="mb-2.5 text-xl font-bold">About</h3>
-        <a href="/faq" class="link mb-2.5">AmpMod FAQ</a>
-        <a href="https://ampmod.flarum.cloud/blog" class="link mb-2.5">AmpMod Blog</a>
-      </div>
+<script>
+  import { SiScratch, SiCodeberg, SiMiraheze, SiYoutube } from '@icons-pack/svelte-simple-icons';
+</script>
 
-      <div class="flex flex-col">
-        <h3 class="mb-2.5 text-xl font-bold">Community</h3>
-        <a href="https://scratch.mit.edu/discuss/topic/806311/" class="link mb-2.5"
-          >AmpMod on Scratch</a
-        >
-        <a href="https://ampmod.flarum.cloud" class="link mb-2.5">AmpMod Forums</a>
-        <a href="https://ampmod.miraheze.org" class="link mb-2.5">AmpMod Wiki</a>
-        <a href="/credits" class="link mb-2.5">Credits</a>
-      </div>
-
-      <div class="flex flex-col">
-        <h3 class="mb-2.5 text-xl font-bold">Resources</h3>
-        <a href="https://ampmod.codeberg.page/extensions/" class="link mb-2.5">Extension Gallery</a>
-        <a href="https://ampmod.codeberg.page/manual/" class="link mb-2.5">Manual</a>
-        <a href="https://codeberg.org/ampmod" class="link mb-2.5">Source Code</a>
-      </div>
-
-      <div class="flex flex-col">
-        <h3 class="mb-2.5 text-xl font-bold">Legal</h3>
-        <a href="/privacy" class="link mb-2.5">Privacy</a>
-      </div>
-    </div>
+<div
+  class="dark:black/10 flex flex-col items-center justify-center space-y-2 border-t border-black/10 py-8 text-neutral-500 dark:border-white/10 dark:text-neutral-300"
+>
+  <div class="flex items-center justify-center space-x-6">
+    <a
+      href="https://scratch.mit.edu/discuss/topic/806311/"
+      class="hover:text-[#855CD6] focus:ring-2 focus:ring-[#855CD6] focus:ring-offset-2 focus:outline-none"
+      ><SiScratch size={32} title="Scratch" /></a
+    >
+    <a
+      href="https://codeberg.org/ampmod"
+      class="hover:text-[#2185D0] focus:ring-2 focus:ring-[#2185D0] focus:ring-offset-2 focus:outline-none"
+      ><SiCodeberg size={32} title="Codeberg" /></a
+    >
+    <a
+      href="https://ampmod.miraheze.org"
+      class="hover:text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:outline-none"
+      ><SiMiraheze size={32} title="Wiki (Miraheze)" /></a
+    >
+    <a
+      href="https://youtube.com/@Amp-Mod"
+      class="hover:text-[#FF0000] focus:ring-2 focus:ring-[#FF0000] focus:ring-offset-2 focus:outline-none"
+      ><SiYoutube size={32} title="YouTube" /></a
+    >
   </div>
-</footer>
+
+  <div class="mt-2 flex space-x-4 text-sm">
+    <a href="/credits" class="underline focus:ring-2 focus:ring-offset-2 focus:outline-none"
+      >Credits</a
+    >
+    <a href="/faq" class="underline focus:ring-2 focus:ring-offset-2 focus:outline-none">FAQ</a>
+    <a href="/tips" class="underline focus:ring-2 focus:ring-offset-2 focus:outline-none">Tips</a>
+    <a href="/terms" class="underline focus:ring-2 focus:ring-offset-2 focus:outline-none">Terms</a>
+    <a href="/privacy" class="underline focus:ring-2 focus:ring-offset-2 focus:outline-none"
+      >Privacy</a
+    >
+  </div>
+
+  <span class="mt-2 text-center text-sm">Not affiliated with Scratch or TurboWarp.</span>
+</div>
