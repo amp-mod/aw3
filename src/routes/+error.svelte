@@ -1,4 +1,5 @@
 <script>
+  import NewLayout from './(header-footer-layout)/+layout.svelte';
   import { page } from '$app/state';
 
   let friendlyMessage;
@@ -24,14 +25,16 @@
   }
 </script>
 
-<main class="mx-auto my-20 max-w-4xl p-4 text-center">
-  <h1 class="font-mono text-8xl font-bold tracking-widest text-red-500 dark:text-red-400">
-    {page.status}
-  </h1>
-  <p class="mt-4 text-2xl text-neutral-600 dark:text-white">
-    {friendlyMessage}
-  </p>
-  <div class="mt-4">
-    <a class="btn" href="/">Back to homepage</a>
-  </div>
-</main>
+<NewLayout>
+  <main class="mx-auto my-20 max-w-4xl p-4 text-center">
+    <h1 class="font-mono text-8xl font-bold tracking-widest text-red-500 dark:text-red-400">
+      {page.status}
+    </h1>
+    <p class="mt-4 text-2xl text-neutral-600 dark:text-white">
+      {friendlyMessage}
+    </p>
+    <div class="mt-4">
+      <a class="btn" href="/">Back to homepage</a>
+    </div>
+  </main>
+</NewLayout>
