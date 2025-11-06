@@ -35,12 +35,7 @@
         />
       </div>
 
-      <button
-        type="submit"
-        class="cursor-pointer rounded-lg bg-accent px-4 py-1 font-bold text-white hover:bg-accent-secondary"
-      >
-        Login
-      </button>
+      <button type="submit" class="btn"> Login </button>
     </form>
 
     {#if form?.message}

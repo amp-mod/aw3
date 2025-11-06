@@ -38,12 +38,7 @@
       </div>
 
       <div class="flex justify-between">
-        <button
-          type="submit"
-          class="cursor-pointer rounded-lg bg-accent px-4 py-1 font-bold text-white hover:bg-accent-secondary"
-        >
-          Register
-        </button>
+        <button type="submit" class="btn"> Register </button>
       </div>
     </form>
 
