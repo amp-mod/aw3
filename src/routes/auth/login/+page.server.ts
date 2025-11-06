@@ -7,100 +7,100 @@ import * as table from '$lib/server/db/schema';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
-	if (event.locals.user) {
-		return redirect(302, '/demo/lucia');
-	}
-	return {};
+  if (event.locals.user) {
+    return redirect(302, '/demo/lucia');
+  }
+  return {};
 };
 
 export const actions: Actions = {
-	login: async (event) => {
-		const formData = await event.request.formData();
-		const username = formData.get('username');
-		const password = formData.get('password');
+  login: async (event) => {
+    const formData = await event.request.formData();
+    const username = formData.get('username');
+    const password = formData.get('password');
 
-		if (!validateUsername(username)) {
-			return fail(400, {
-				message: 'Invalid username (min 3, max 20 characters, alphanumeric only)'
-			});
-		}
-		if (!validatePassword(password)) {
-			return fail(400, { message: 'Invalid password (min 6, max 255 characters)' });
-		}
+    if (!validateUsername(username)) {
+      return fail(400, {
+        message: 'Invalid username (min 3, max 20 characters, alphanumeric only)'
+      });
+    }
+    if (!validatePassword(password)) {
+      return fail(400, { message: 'Invalid password (min 6, max 255 characters)' });
+    }
 
-		const [existingUser] = await db
-			.select()
-			.from(table.user)
-			.where(eq(table.user.username, username));
+    const [existingUser] = await db
+      .select()
+      .from(table.user)
+      .where(eq(table.user.username, username));
 
-		if (!existingUser) {
-			return fail(400, { message: 'Incorrect username or password' });
-		}
+    if (!existingUser) {
+      return fail(400, { message: 'Incorrect username or password' });
+    }
 
-		const validPassword = await verify(existingUser.passwordHash, password, {
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1
-		});
-		if (!validPassword) {
-			return fail(400, { message: 'Incorrect username or password' });
-		}
+    const validPassword = await verify(existingUser.passwordHash, password, {
+      memoryCost: 19456,
+      timeCost: 2,
+      outputLen: 32,
+      parallelism: 1
+    });
+    if (!validPassword) {
+      return fail(400, { message: 'Incorrect username or password' });
+    }
 
-		const sessionToken = auth.generateSessionToken();
-		const session = await auth.createSession(sessionToken, existingUser.id);
-		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+    const sessionToken = auth.generateSessionToken();
+    const session = await auth.createSession(sessionToken, existingUser.id);
+    auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
-		return redirect(302, '/demo/lucia');
-	},
+    return redirect(302, '/demo/lucia');
+  },
 
-	register: async (event) => {
-		const formData = await event.request.formData();
-		const username = formData.get('username');
-		const password = formData.get('password');
+  register: async (event) => {
+    const formData = await event.request.formData();
+    const username = formData.get('username');
+    const password = formData.get('password');
 
-		if (!validateUsername(username)) {
-			return fail(400, { message: 'Invalid username' });
-		}
-		if (!validatePassword(password)) {
-			return fail(400, { message: 'Invalid password' });
-		}
+    if (!validateUsername(username)) {
+      return fail(400, { message: 'Invalid username' });
+    }
+    if (!validatePassword(password)) {
+      return fail(400, { message: 'Invalid password' });
+    }
 
-		const passwordHash = await hash(password, {
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1
-		});
+    const passwordHash = await hash(password, {
+      memoryCost: 19456,
+      timeCost: 2,
+      outputLen: 32,
+      parallelism: 1
+    });
 
-		const userId = crypto.randomUUID();
+    const userId = crypto.randomUUID();
 
-		try {
-			const [newUser] = await db
-				.insert(table.user)
-				.values({ id: userId, username, passwordHash })
-				.returning({ id: table.user.id });
+    try {
+      const [newUser] = await db
+        .insert(table.user)
+        .values({ id: userId, username, passwordHash })
+        .returning({ id: table.user.id });
 
-			const sessionToken = auth.generateSessionToken();
-			const session = await auth.createSession(sessionToken, newUser.id);
-			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-		} catch {
-			return fail(500, { message: 'An error has occurred' });
-		}
+      const sessionToken = auth.generateSessionToken();
+      const session = await auth.createSession(sessionToken, newUser.id);
+      auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+    } catch {
+      return fail(500, { message: 'An error has occurred' });
+    }
 
-		return redirect(302, '/demo/lucia');
-	}
+    return redirect(302, '/demo/lucia');
+  }
 };
 
 function validateUsername(username: unknown): username is string {
-	return (
-		typeof username === 'string' &&
-		username.length >= 3 &&
-		username.length <= 20 &&
-		/^[a-zA-Z0-9_-]+$/.test(username)
-	);
+  return (
+    typeof username === 'string' &&
+    username.length >= 3 &&
+    username.length <= 20 &&
+    /^[a-zA-Z0-9_-]+$/.test(username)
+  );
 }
 
 function validatePassword(password: unknown): password is string {
-	return typeof password === 'string' && password.length >= 6 && password.length <= 255;
+  return typeof password === 'string' && password.length >= 6 && password.length <= 255;
 }
