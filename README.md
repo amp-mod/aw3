@@ -1,38 +1,22 @@
-# sv
+# aw3
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+## Setup
 
-## Creating a project
+To setup aw3 you will need to install Bun: https://bun.com/docs/installation
 
-If you're seeing this, you've probably already done this step. Congrats!
+To setup the dev environment:
 
-```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+```
+bun install
+bun dev
 ```
 
-## Developing
+## Licensing
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+aw3 is licenced under the AGPLv3 or at your option, any later version. See `COPYING` for more information.
 
-```sh
-npm run dev
+Some files are taken from ampmod-web-front under the MIT licence, and the ampmod gui package under the GPLv3.
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+aw3 is also planned to be able to load the AmpMod editor from a bundle. aw3 does not come with the AmpMod
+source code, which must be cloned and built separately. Even then, the GPLv3 and MPLv2 used by AmpMod explicitly
+permits usage of the code inside an AGPL program. Talk to a lawyer for more information, as we aren't one.
