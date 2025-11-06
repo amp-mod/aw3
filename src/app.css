@@ -28,12 +28,3 @@
   --color-border: #d1d5db;
   --color-border-dark: #4b5563;
 }
-
-#cc-main {
-    --cc-font-family:'Inter Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    --cc-modal-border-radius: .5rem;
-    --cc-btn-border-radius: .4rem;
-    --cc-modal-transition-duration: .25s;
-    --cc-modal-margin: 1rem;
-    --cc-z-index: 2147483647;
-}
