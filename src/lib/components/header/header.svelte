@@ -17,7 +17,7 @@
 </a>
 
 <header
-  class="flex h-14 w-full items-center border-b border-black/10 bg-white px-3 font-sans text-sm text-black md:px-6 dark:text-white"
+  class="flex h-14 w-full items-center border-b border-black/10 bg-white px-3 font-sans text-sm text-black md:px-6 dark:bg-accent-secondary dark:text-white"
 >
   <div class="flex w-full items-center justify-between">
     <!-- Logo -->
