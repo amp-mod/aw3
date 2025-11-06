@@ -17,7 +17,7 @@
 
 <div class="flex h-screen flex-col bg-white dark:bg-neutral-900">
   <!-- Header always on top -->
-  <Header />
+  <Header admin={true} />
 
   <!-- Wrap sidebar + main in a horizontal flex container -->
   <div class="flex flex-1 overflow-hidden">

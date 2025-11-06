@@ -2,9 +2,11 @@
      Styling is inspired by the AmpMod static website UI. -->
 <script lang="ts">
   import Logo from './tw-advanced.svelte';
-  import { MenuIcon, X, Search, UserRound } from '@lucide/svelte';
-  let menuOpen = false;
-  let accountOpen = false;
+  import { MenuIcon, X, Search, UserRound, TriangleAlert } from '@lucide/svelte';
+  let { admin = false } = $props<{ admin?: boolean }>();
+
+  let menuOpen = $state(false);
+  let accountOpen = $state(false);
 </script>
 
 <a
@@ -15,13 +17,24 @@
 </a>
 
 <header
-  class="flex h-14 w-full items-center border-b border-black/10 bg-white px-3 font-sans text-sm text-black md:px-6 dark:bg-accent-secondary dark:text-white"
+  class="flex h-14 w-full items-center border-b border-black/10 bg-white px-3 font-sans text-sm text-black md:px-6 dark:text-white"
 >
   <div class="flex w-full items-center justify-between">
     <!-- Logo -->
-    <a href="/" aria-label="AmpMod homepage" class="header-link flex items-center text-xl">
-      <Logo />
-      <span class="ml-2 font-semibold">AmpMod</span>
+    <a
+      href={admin ? '/admin' : '/'}
+      aria-label="AmpMod homepage"
+      class="header-link flex items-center text-xl"
+    >
+      <span class="flex items-center gap-1 font-semibold">
+        {#if admin}
+          <TriangleAlert />
+          <span>Admin panel</span>
+        {:else}
+          <Logo />
+          AmpMod
+        {/if}
+      </span>
     </a>
 
     <!-- Hamburger for small screens -->
@@ -43,20 +56,22 @@
       class="absolute top-14 left-0 z-40 hidden w-full flex-col items-start gap-2 border-t border-black/10 bg-white p-4 shadow-lg md:static md:flex md:w-auto md:flex-row md:items-center md:gap-2 md:border-0 md:bg-transparent md:p-0 md:shadow-none dark:border-white/20 dark:bg-accent-secondary"
       class:!flex={menuOpen}
     >
-      <a href="https://ampmod.codeberg.page/editor.html" class="header-link w-full md:w-auto"
-        >Create</a
-      >
-      <a href="/projects/explore" class="header-link w-full md:w-auto">Explore</a>
-      <a href="/about" class="header-link w-full md:w-auto">About</a>
+      {#if admin}
+        <a href="/" class="header-link w-full md:w-auto">Back to home</a>
+      {:else}
+        <a href="https://ampmod.codeberg.page/editor.html" class="header-link w-full md:w-auto"
+          >Create</a
+        >
+        <a href="/projects/explore" class="header-link w-full md:w-auto">Explore</a>
+        <a href="/about" class="header-link w-full md:w-auto">About</a>
+      {/if}
 
-      <!-- Search bar (slightly smaller) -->
+      <!-- Search bar -->
       <form
         role="search"
         aria-label="Site search"
         class="relative flex items-center md:ml-2"
-        on:submit|preventDefault={() => {
-          /* hook up search here */
-        }}
+        on:submit|preventDefault={() => {}}
       >
         <input
           type="search"
@@ -91,15 +106,27 @@
           <div
             class="absolute right-0 mt-3 flex w-40 flex-col rounded-md border border-neutral-300 bg-white shadow-lg dark:border-white/20 dark:bg-accent-secondary"
           >
-            <a
-              href="/auth/register"
-              class="block px-3 py-2 text-sm hover:bg-accent/10 dark:hover:bg-white/10"
-              >Join AmpMod</a
-            >
-            <a
-              href="/auth/login"
-              class="block px-3 py-2 text-sm hover:bg-accent/10 dark:hover:bg-white/10">Log in</a
-            >
+            {#if admin}
+              <a
+                href="/admin/profile"
+                class="block px-3 py-2 text-sm hover:bg-accent/10 dark:hover:bg-white/10"
+                >Admin Profile</a
+              >
+              <a
+                href="/logout"
+                class="block px-3 py-2 text-sm hover:bg-accent/10 dark:hover:bg-white/10">Log out</a
+              >
+            {:else}
+              <a
+                href="/auth/register"
+                class="block px-3 py-2 text-sm hover:bg-accent/10 dark:hover:bg-white/10"
+                >Join AmpMod</a
+              >
+              <a
+                href="/auth/login"
+                class="block px-3 py-2 text-sm hover:bg-accent/10 dark:hover:bg-white/10">Log in</a
+              >
+            {/if}
           </div>
         {/if}
       </div>
