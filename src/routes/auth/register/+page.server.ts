@@ -5,7 +5,6 @@ import * as auth from '$lib/server/auth';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import type { Actions, PageServerLoad } from './$types';
-import { randomUUID } from 'crypto';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -74,7 +73,7 @@ export const actions: Actions = {
 			parallelism: 1
 		});
 
-		const userId = randomUUID();
+		const userId = crypto.randomUUID();
 
 		try {
 			const [newUser] = await db
