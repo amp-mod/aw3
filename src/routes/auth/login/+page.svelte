@@ -7,9 +7,7 @@
 
 <div class="flex min-h-96 justify-center">
 	<div class="w-full max-w-md">
-		<h1 class="mt-6 text-center text-2xl font-semibold text-gray-800 dark:text-gray-100">
-			Login
-		</h1>
+		<h1 class="mt-6 text-center text-2xl font-semibold text-gray-800 dark:text-gray-100">Login</h1>
 
 		<form method="post" action="?/login" use:enhance class="space-y-5">
 			<div>
@@ -39,7 +37,7 @@
 
 			<button
 				type="submit"
-				class="rounded-lg bg-accent px-4 py-1 text-white hover:bg-accent-secondary cursor-pointer font-bold"
+				class="cursor-pointer rounded-lg bg-accent px-4 py-1 font-bold text-white hover:bg-accent-secondary"
 			>
 				Login
 			</button>

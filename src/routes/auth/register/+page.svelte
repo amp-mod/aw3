@@ -40,7 +40,7 @@
 			<div class="flex justify-between">
 				<button
 					type="submit"
-					class="rounded-lg bg-accent px-4 py-1 text-white hover:bg-accent-secondary cursor-pointer font-bold"
+					class="cursor-pointer rounded-lg bg-accent px-4 py-1 font-bold text-white hover:bg-accent-secondary"
 				>
 					Register
 				</button>
