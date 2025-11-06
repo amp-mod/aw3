@@ -1,4 +1,4 @@
-@layer theme, base, components, utilities, aw3-shortcuts;
+@layer theme, base, components, utilities, aw3;
 
 @import 'tailwindcss';
 @import '@fontsource-variable/inter';
@@ -10,7 +10,11 @@
 	--color-accent-secondary: #3e834a;
 }
 
-@layer aw3-shortcuts {
+@layer aw3 {
+	html {
+		@apply bg-white text-gray-800 dark:bg-neutral-900 dark:text-gray-100;
+	}
+
 	.link {
 		@apply text-accent-secondary underline dark:text-accent;
 	}
