@@ -6,25 +6,6 @@
 
 @theme {
   --font-sans: 'Inter Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --color-background: white;
-  --color-background-dark: #121216;
-
-  --color-text: #121216;
-  --color-text-dark: white;
-
   --color-accent: #4fa55c;
   --color-accent-secondary: #3e834a;
-
-  /* Forks: Do not change the following colors.
-     This color is used as green in toggle switches and other things
-     that would make more sense to be green than another accent color. */
-  --color-original-accent: #3e834a;
-  --color-original-accent-secondary: #3e834a;
-  /* End Forks */
-
-  --color-footer: #f0f0f0;
-  --color-footer-dark: #1c1c24;
-
-  --color-border: #d1d5db;
-  --color-border-dark: #4b5563;
 }
