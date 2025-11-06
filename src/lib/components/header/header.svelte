@@ -1,6 +1,7 @@
 <!-- TODO: Add stuff for the website. This file is modified from website-v2 in ampmod/extensions.
      Styling is inspired by the AmpMod static website UI. -->
 <script lang="ts">
+  import { preventDefault } from 'svelte/legacy';
   import Logo from './tw-advanced.svelte';
   import { MenuIcon, X, Search, UserRound, TriangleAlert } from '@lucide/svelte';
   let { admin = false } = $props<{ admin?: boolean }>();
@@ -71,7 +72,9 @@
         role="search"
         aria-label="Site search"
         class="relative flex items-center md:ml-2"
-        on:submit|preventDefault={() => {}}
+        onsubmit={(event) => {
+          event?.preventDefault();
+        }}
       >
         <input
           type="search"
