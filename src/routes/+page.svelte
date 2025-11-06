@@ -1,3 +1,7 @@
+<svelte:head>
+  <title>AmpMod</title>
+</svelte:head>
+
 <div
   class="bg-neutral-100 p-8 text-center text-accent-secondary dark:bg-accent-tertiary dark:text-white"
 >
