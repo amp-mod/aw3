@@ -20,7 +20,7 @@
   }
 
   .link {
-    @apply text-accent-secondary underline dark:text-accent;
+    @apply font-bold text-accent-secondary underline hover:text-accent-tertiary dark:text-accent-light dark:hover:text-accent-almost-light;
   }
 
   .header-link {
