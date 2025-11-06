@@ -5,7 +5,7 @@
 </script>
 
 <header
-  class="flex h-12 w-full items-center border-b border-black/30 bg-accent px-2 font-sans text-sm text-white md:px-4"
+  class="flex h-12 w-full items-center border-b border-black/10 bg-white px-2 font-sans text-sm text-black md:px-4 dark:bg-accent-secondary dark:text-white"
 >
   <div class="flex w-full items-center justify-center gap-4">
     <a href="/" class="logo-link flex items-center">

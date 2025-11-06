@@ -1,5 +1,7 @@
-<div class="bg-accent-secondary p-8 text-center">
-  <h1 class="text-3xl leading-tight font-bold text-white">Block-based programming, amplified</h1>
+<div
+  class="bg-neutral-100 p-8 text-center text-accent-secondary dark:bg-accent-tertiary dark:text-white"
+>
+  <h1 class="text-3xl leading-tight font-bold">Block-based programming, amplified</h1>
 </div>
 
 <div class="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-3">

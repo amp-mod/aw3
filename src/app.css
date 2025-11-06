@@ -8,6 +8,7 @@
   --font-sans: 'Inter Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --color-accent: #4fa55c;
   --color-accent-secondary: #3e834a;
+  --color-accent-tertiary: #356b3c;
 }
 
 @layer aw3 {
