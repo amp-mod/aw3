@@ -2,7 +2,7 @@
      Styling is inspired by the AmpMod static website UI. -->
 <script lang="ts">
   import Logo from './tw-advanced.svelte';
-  import { Menu, X, Search, User } from '@lucide/svelte';
+  import { MenuIcon, X, Search, UserRound } from '@lucide/svelte';
   let menuOpen = false;
   let accountOpen = false;
 </script>
@@ -19,12 +19,9 @@
 >
   <div class="flex w-full items-center justify-between">
     <!-- Logo -->
-    <a
-      href="/"
-      aria-label="AmpMod homepage"
-      class="flex items-center transition duration-200 ease-in-out hover:scale-120 not-dark:hover:text-accent"
-    >
+    <a href="/" aria-label="AmpMod homepage" class="header-link flex items-center text-xl">
       <Logo />
+      <span class="ml-2 font-semibold">AmpMod</span>
     </a>
 
     <!-- Hamburger for small screens -->
@@ -36,7 +33,7 @@
       {#if menuOpen}
         <X class="h-5 w-5" />
       {:else}
-        <Menu class="h-5 w-5" />
+        <MenuIcon class="h-5 w-5" />
       {/if}
     </button>
 
@@ -49,11 +46,8 @@
       <a href="https://ampmod.codeberg.page/editor.html" class="header-link w-full md:w-auto"
         >Create</a
       >
-      <a href="https://ampmod.codeberg.page/credits.html" class="header-link w-full md:w-auto"
-        >Credits</a
-      >
-      <a href="https://ampmod.flarum.cloud" class="header-link w-full md:w-auto">Discuss</a>
-      <a href="https://codeberg.org/AmpMod" class="header-link w-full md:w-auto">Contribute</a>
+      <a href="/projects/explore" class="header-link w-full md:w-auto">Explore</a>
+      <a href="/about" class="header-link w-full md:w-auto">About</a>
 
       <!-- Search bar (slightly smaller) -->
       <form
@@ -90,7 +84,7 @@
           aria-haspopup="menu"
           aria-expanded={accountOpen}
         >
-          <User />
+          <UserRound />
         </button>
 
         {#if accountOpen}
