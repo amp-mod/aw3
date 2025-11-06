@@ -12,7 +12,7 @@
 
 <div class="flex h-screen flex-col">
   <Header />
-  <main class="flex-1 overflow-auto">
+  <main class="flex-1 overflow-auto" id="main">
     {@render children?.()}
   </main>
 </div>
