@@ -72,6 +72,7 @@
     "@icons-pack/svelte-simple-icons": "^6.5.0",
     "@lucide/svelte": "^0.552.0",
     "@node-rs/argon2": "^2.0.2",
+    "bits-ui": "^2.14.2",
     "i": "^0.3.7",
     "postgres": "^3.4.7"
   }

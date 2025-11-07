@@ -1,13 +1,13 @@
 <!-- TODO: Add stuff for the website. This file is modified from website-v2 in ampmod/extensions.
-     Styling is inspired by the AmpMod static website UI. -->
+     Styling is inspired by the AmpMod static website UI. -->
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
+  import { Menubar } from 'bits-ui';
   import Logo from './tw-advanced.svelte';
+
   import { MenuIcon, X, Search, UserRound, TriangleAlert } from '@lucide/svelte';
   let { admin = false } = $props<{ admin?: boolean }>();
 
   let menuOpen = $state(false);
-  let accountOpen = $state(false);
 </script>
 
 <a
@@ -29,8 +29,7 @@
     >
       <span class="flex items-center gap-1 font-semibold">
         {#if admin}
-          <TriangleAlert />
-          <span>Admin panel</span>
+          <TriangleAlert /> <span>Admin panel</span>
         {:else}
           <Logo />
           AmpMod
@@ -62,8 +61,7 @@
       {:else}
         <a href="https://ampmod.codeberg.page/editor.html" class="header-link w-full md:w-auto"
           >Create</a
-        >
-        <a href="/projects/explore" class="header-link w-full md:w-auto">Explore</a>
+        > <a href="/projects/explore" class="header-link w-full md:w-auto">Explore</a>
         <a href="/about" class="header-link w-full md:w-auto">About</a>
       {/if}
 
@@ -89,50 +87,37 @@
           <Search class="h-4 w-4" />
         </button>
       </form>
-
       <div
         class="hidden h-5 self-center border-l border-neutral-300 md:block dark:border-white/20"
       ></div>
 
-      <!-- Account dropdown -->
-      <div class="relative">
-        <button
-          class="header-link flex items-center gap-2"
-          onclick={() => (accountOpen = !accountOpen)}
-          aria-haspopup="menu"
-          aria-expanded={accountOpen}
-        >
-          <UserRound />
-        </button>
-
-        {#if accountOpen}
-          <div
-            class="absolute right-0 mt-3 flex w-40 flex-col rounded-md border border-neutral-300 bg-white shadow-lg dark:border-white/20 dark:bg-accent-secondary"
-          >
-            {#if admin}
-              <a
-                href="/admin/profile"
-                class="block px-3 py-2 text-sm hover:bg-accent/10 dark:hover:bg-white/10"
-                >Admin Profile</a
-              >
-              <a
-                href="/logout"
-                class="block px-3 py-2 text-sm hover:bg-accent/10 dark:hover:bg-white/10">Log out</a
-              >
-            {:else}
-              <a
-                href="/auth/register"
-                class="block px-3 py-2 text-sm hover:bg-accent/10 dark:hover:bg-white/10"
-                >Join AmpMod</a
-              >
-              <a
-                href="/auth/login"
-                class="block px-3 py-2 text-sm hover:bg-accent/10 dark:hover:bg-white/10">Log in</a
-              >
-            {/if}
-          </div>
-        {/if}
-      </div>
+      <Menubar.Root class="relative">
+        <Menubar.Menu>
+          <Menubar.Trigger class="header-link flex items-center gap-2">
+            <UserRound />
+          </Menubar.Trigger>
+          <Menubar.Portal>
+            <Menubar.Content
+              class="absolute right-0 mt-3 flex w-40 flex-col rounded-md border border-neutral-300 bg-white shadow-lg dark:border-white/20 dark:bg-accent-secondary"
+            >
+              <Menubar.Item>
+                <a
+                  href="/auth/register"
+                  class="block px-3 py-2 text-sm hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
+                  >Join AmpMod</a
+                >
+              </Menubar.Item>
+              <Menubar.Item>
+                <a
+                  href="/auth/login"
+                  class="block px-3 py-2 text-sm hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
+                  >Log in</a
+                >
+              </Menubar.Item>
+            </Menubar.Content>
+          </Menubar.Portal>
+        </Menubar.Menu>
+      </Menubar.Root>
     </nav>
   </div>
 </header>
