@@ -1,3 +1,5 @@
-# allow crawling everything by default
 User-agent: *
-Disallow:
+Crawl-delay: 10
+Disallow: /admin
+Disallow: /demo
+Disallow: /teapot
