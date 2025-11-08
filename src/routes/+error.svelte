@@ -6,22 +6,39 @@
 
   switch (page.status) {
     case 404:
-    case 410:
       friendlyMessage =
         "The page or file you're looking for doesn't exist. If you followed a link to this on a website, please inform the owner that the link is broken.";
       break;
+    case 410:
+      friendlyMessage =
+        "The page or file you're looking for has been permanently removed. If you followed a link to this on a website, please inform the owner that the link is broken.";
+      break;
+    case 401:
+      friendlyMessage = 'You must be logged in to access this page.';
+      break;
     case 403:
-      friendlyMessage = "You don't have permission to access this resource. Try logging in.";
+      friendlyMessage = 'You are not allowed to access this page.';
       break;
     case 500:
-    case 503:
-      friendlyMessage = 'An error occured. Please try again later.';
+      friendlyMessage =
+        'An unknown error occured on the server. Please try reloading in a few minutes.';
       break;
+    case 503:
+      friendlyMessage =
+        "AmpMod is currently down, most likely for maintenance. We'll keep you posted.";
+      break;
+    case 507:
+      friendlyMessage = 'This server is currently out of storage and down for maintenance.';
+      break;
+    case 429:
+      friendlyMessage = 'You are making too many requests to our website.';
+      break;
+    // Why not?
     case 418:
-      friendlyMessage = 'This site is a teapot and cannot brew coffee.';
+      friendlyMessage = 'This site is a teapot and cannot brew coffee or TurboWarp projects.';
       break;
     default:
-      friendlyMessage = page.error?.message ?? 'Something went wrong.';
+      friendlyMessage = page.error?.message ?? 'An unknown error occured. Please try again.';
   }
 </script>
 
