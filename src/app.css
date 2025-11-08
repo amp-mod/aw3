@@ -24,7 +24,7 @@
   }
 
   .header-link {
-    @apply flex h-9 cursor-pointer items-center rounded-lg px-3 font-bold whitespace-nowrap transition hover:bg-accent/20 not-dark:hover:text-accent-secondary dark:hover:bg-white/20;
+    @apply flex h-9 cursor-pointer items-center rounded-lg px-3 font-bold whitespace-nowrap transition hover:bg-accent-light/20 not-dark:hover:text-accent-secondary dark:hover:bg-white/20;
   }
 
   .btn {
