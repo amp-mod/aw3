@@ -2,7 +2,8 @@
 
 ## Setup
 
-To setup aw3 you will need to install Bun: https://bun.com/docs/installation
+To setup aw3 you will need to install Bun: https://bun.com/docs/installation. aw3 uses Bun as the package
+manager and as the server.
 
 To setup the dev environment:
 
