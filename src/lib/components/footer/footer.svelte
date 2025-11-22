@@ -6,11 +6,11 @@
   class="dark:black/10 flex flex-col items-center justify-center space-y-2 border-t border-black/10 py-8 text-neutral-500 dark:border-white/10 dark:text-neutral-300"
 >
   <div class="flex items-center justify-center space-x-6">
-    <a
+    <!-- <a
       href="https://scratch.mit.edu/discuss/topic/806311/"
       class="hover:text-[#855CD6] focus:ring-2 focus:ring-[#855CD6] focus:ring-offset-2 focus:outline-none"
       ><SiScratch size={32} title="Scratch" /></a
-    >
+    > *-->
     <a
       href="https://codeberg.org/ampmod"
       class="hover:text-[#2185D0] focus:ring-2 focus:ring-[#2185D0] focus:ring-offset-2 focus:outline-none"
