@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
-import type { RequestHandler } from '../../../ampmod/$types';
+import type { RequestHandler } from '../../../../ampmod/$types';
 
 const PAGES_DIR = path.resolve('.ampmod');
 const PAGES_REPO = 'https://codeberg.org/ampmod/pages';
