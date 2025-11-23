@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
-import type { RequestHandler } from './$types';
+import type { RequestHandler } from '../../../ampmod/$types';
 
 const PAGES_DIR = path.resolve('.ampmod');
 const PAGES_REPO = 'https://codeberg.org/ampmod/pages';
@@ -14,28 +14,13 @@ function cloneIfNeeded() {
 }
 
 export const GET: RequestHandler = async () => {
-  // Ensure repo exists
   cloneIfNeeded();
-
-  // Map path from URL to file in pages repo
   const filePath = path.join(PAGES_DIR, '/editor.html');
 
-  if (!fs.existsSync(filePath)) {
-    return new Response('File not found', { status: 404 });
-  }
-
   const fileBuffer = fs.readFileSync(filePath);
-  const contentType = filePath.endsWith('.html')
-    ? 'text/html'
-    : filePath.endsWith('.js')
-      ? 'application/javascript'
-      : filePath.endsWith('.css')
-        ? 'text/css'
-        : 'application/octet-stream';
-
   return new Response(fileBuffer, {
     headers: {
-      'Content-Type': contentType
+      'Content-Type': 'text/html'
     }
   });
 };

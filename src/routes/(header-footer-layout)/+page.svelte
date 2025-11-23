@@ -38,9 +38,7 @@
       Build games, animations, stories and more
     </h3>
     <div class="mt-4 flex gap-4">
-      <a href="https://ampmod.codeberg.page/editor.html" class={styles.button_normal}
-        ><Clapperboard /> Try it out</a
-      >
+      <a href="/projects/editor" class={styles.button_normal}><Clapperboard /> Try it out</a>
       <a href="/join" class={styles.button_normal}><UserRound /> Join</a>
     </div>
   </div>
