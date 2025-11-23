@@ -49,6 +49,24 @@ of Vite.
 
 Then, to serve the frontend, run `bun run ./build/index.js`. To set up the database, run the command above.
 
+## How projects are stored
+
+```mermaid
+flowchart TB
+    n2[".svg, .png, .wav, .mp3, .ttf, .otf, .woff, .woff2"] --> n5["Compress if possible"]
+    n1["project.json"] --> n6["Is &gt;10MB?"]
+    n5 --> n7["S3 storage"]
+    n6 -- yes --> n8["no lol"]
+    n6 -- no --> n10["Is &gt;5MB?"]
+    n10 -- yes --> n11["S3 storage"]
+    n10 -- no --> n12["SQL storage"]
+
+    n2@{ shape: docs}
+    n1@{ shape: braces}
+    n6@{ shape: diam}
+    n10@{ shape: diam}
+```
+
 ## Licensing
 
 aw3 is licenced under the AGPLv3 or at your option, any later version. See `COPYING` for more information.
