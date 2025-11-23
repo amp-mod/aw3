@@ -38,6 +38,9 @@
     <a href="/privacy" class="underline focus:ring-2 focus:ring-offset-2 focus:outline-none"
       >Privacy</a
     >
+    <a href="/source-code" class="underline focus:ring-2 focus:ring-offset-2 focus:outline-none"
+      >Source code</a
+    >
   </div>
 
   <span class="mt-2 text-center text-sm">Not affiliated with Scratch or TurboWarp.</span>
