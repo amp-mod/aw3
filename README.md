@@ -16,12 +16,15 @@ Stack:
 - Provide APIs for the above
 - Administrating the aw3 instance
 
-## What aw3 doesn't do
+### What aw3 won't do in the near future
 
 - Commenting on projects (it most likely never will - it's a nightmare to moderate for a small community with
   only a few admins)
-- Studios (yet)
 - Forums, wiki, manual, extension gallery (hosted separately)
+
+### What we plan for aw3 to do
+
+- Studios
 
 ## Setup
 
