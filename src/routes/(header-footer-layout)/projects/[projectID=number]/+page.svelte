@@ -8,3 +8,4 @@
 </svelte:head>
 
 <h1>{projectID}</h1>
+<p><a href={`/projects/${projectID}/editor`}>Edit</a></p>
