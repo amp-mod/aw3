@@ -4,13 +4,18 @@
 
   const { children } = $props();
 
+  type Tab =
+    | { label: string; id?: undefined; href?: undefined; externalIcon?: undefined }
+    | { id: string; label: string; href: string; externalIcon?: undefined }
+    | { id: string; label: string; href: string; externalIcon: boolean };
+
   const tabs = [
     { label: 'Website' },
     { id: 'profile', label: 'Profile', href: '/settings/profile' },
     { id: 'account', label: 'Account', href: '/settings/account' },
-    { id: 'danger', label: 'Danger zone', href: '/settings/danger' },
+    { id: 'danger', label: 'Dangerous', href: '/settings/danger' },
     { label: 'Editor' },
-    { id: 'theme', label: 'Themes', href: '/settings/theme' },
+    { id: 'theme', label: 'Theme', href: '/settings/theme' },
     {
       id: 'addons',
       label: 'Addons',
@@ -18,7 +23,17 @@
       externalIcon: true
     }
   ];
+  const activeTabLabel = $derived.by(() => {
+    const currentTab: Tab = tabs.find((tab) => tab.href === page.url.pathname) || {
+      label: 'Settings'
+    };
+    return currentTab.label;
+  });
 </script>
+
+<svelte:head>
+  <title>{activeTabLabel} Settings - AmpMod</title>
+</svelte:head>
 
 <h1 class="mx-auto mt-8 mb-4 max-w-5xl text-3xl font-bold text-black dark:text-white">Settings</h1>
 <div
