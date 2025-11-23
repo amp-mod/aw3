@@ -59,9 +59,8 @@
       {#if admin}
         <a href="/" class="header-link w-full md:w-auto">Back to home</a>
       {:else}
-        <a href="https://ampmod.codeberg.page/editor.html" class="header-link w-full md:w-auto"
-          >Create</a
-        > <a href="/projects/explore" class="header-link w-full md:w-auto">Explore</a>
+        <a href="/projects/editor" class="header-link w-full md:w-auto">Create</a>
+        <a href="/projects/explore" class="header-link w-full md:w-auto">Explore</a>
         <a href="/about" class="header-link w-full md:w-auto">About</a>
       {/if}
 
