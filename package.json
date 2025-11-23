@@ -67,8 +67,6 @@
     "@lucide/svelte": "^0.552.0",
     "@node-rs/argon2": "^2.0.2",
     "@tensorflow-models/toxicity": "^1.2.2",
-    "@tensorflow/tfjs-backend-wasm": "^4.22.0",
-    "@tensorflow/tfjs-node": "^4.22.0",
     "bad-words": "^4.0.0",
     "bits-ui": "^2.14.2",
     "postgres": "^3.4.7"
