@@ -54,10 +54,10 @@ Then, to serve the frontend, run `bun run ./build/index.js`. To set up the datab
 ```mermaid
 flowchart TB
     n2[".svg, .png, .wav, .mp3, .ttf, .otf, .woff, .woff2"] --> n5["Compress if possible"]
-    n1["project.json"] --> n6["Is &gt;10MB?"]
+    n1["project.json"] --> n6["Is &gt;20MB?"]
     n5 --> n7["S3 storage"]
     n6 -- yes --> n8["no lol"]
-    n6 -- no --> n10["Is &gt;5MB?"]
+    n6 -- no --> n10["Is &gt;10MB?"]
     n10 -- yes --> n11["S3 storage"]
     n10 -- no --> n12["SQL storage"]
 
