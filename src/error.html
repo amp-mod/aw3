@@ -34,14 +34,38 @@
     </style>
   </head>
   <body>
-    <img src="UBWeb_Guidelines_Compatibility.svg" height="180" />
-    <h1>Service is down</h1>
-    <p>
-      Please check the blog at
-      <a href="https://ampmod.flarum.cloud/blog">ampmod.flarum.cloud/blog</a> for updates.
-    </p>
-    <p>
-      <small>Information for developers: <code>%sveltekit.error.message%</code></small>
-    </p>
+    <div id="message">
+      <img src="UBWeb_Guidelines_Compatibility.svg" height="180" />
+      <h1>Service is down</h1>
+      <p>
+        Please check the blog at
+        <a href="https://ampmod.flarum.cloud/blog">ampmod.flarum.cloud/blog</a> for updates.
+      </p>
+      <p>
+        <small>Information for developers: <code>%sveltekit.error.message%</code></small>
+      </p>
+    </div>
+
+    <script>
+      if (location.pathname.startsWith('/ampmod/')) {
+        document.getElementById('message').innerHTML = `
+          <img
+            src="/UBWeb_Guidelines_Compatibility.svg"
+            height="180"
+            alt="Apple Cat with warped eyes, overlaid on top of a window with a red header bar."
+          />
+          <h1>Error</h1>
+          <p>
+            Either you did something that breaks the laws of physics (usually when you try to access a
+            folder from this website's build of AmpMod), or it's a problem with our servers. Please check
+            the blog at
+            <a href="https://ampmod.flarum.cloud/blog">ampmod.flarum.cloud/blog</a> for updates.
+          </p>
+          <p>
+            <small>Information for developers: <code>%sveltekit.error.message%</code></small>
+          </p>
+        `;
+      }
+    </script>
   </body>
 </html>
