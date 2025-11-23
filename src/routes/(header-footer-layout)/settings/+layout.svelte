@@ -27,7 +27,7 @@
   <nav class="flex w-64 flex-col gap-2 bg-neutral-200 p-4 dark:bg-neutral-700">
     {#each tabs as tab}
       {#if !tab.id}
-        <div class="gao-3 flex w-full items-center select-none">
+        <div class="gao-3 flex w-full items-center">
           <div class="font-bold">{tab.label}</div>
           <div class="ml-4 w-full border-t border-t-neutral-500/30"></div>
         </div>
