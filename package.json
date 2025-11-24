@@ -40,6 +40,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.1.17",
     "@types/node": "^22.19.0",
+    "@types/yauzl": "^2.10.3",
     "@vitest/browser": "^3.2.4",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
@@ -69,6 +70,9 @@
     "@tensorflow-models/toxicity": "^1.2.2",
     "bad-words": "^4.0.0",
     "bits-ui": "^2.14.2",
-    "postgres": "^3.4.7"
+    "postgres": "^3.4.7",
+    "smile-js": "^0.10.1",
+    "yauzl": "^3.2.0",
+    "yazl": "^3.3.1"
   }
 }
