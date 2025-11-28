@@ -2,7 +2,7 @@
   import { ExternalLink } from '@lucide/svelte';
   import { page } from '$app/state';
 
-  const { children } = $props();
+  const { data, children } = $props();
 
   type Tab =
     | { label: string; id?: undefined; href?: undefined; externalIcon?: undefined }
@@ -10,10 +10,14 @@
     | { id: string; label: string; href: string; externalIcon: boolean };
 
   const tabs = [
-    { label: 'Website' },
-    { id: 'profile', label: 'Profile', href: '/settings/profile' },
-    { id: 'account', label: 'Account', href: '/settings/account' },
-    { id: 'danger', label: 'Dangerous', href: '/settings/danger' },
+    ...(data.user
+      ? [
+          { label: 'Website' },
+          { id: 'profile', label: 'Profile', href: '/settings/profile' },
+          { id: 'account', label: 'Account', href: '/settings/account' },
+          { id: 'danger', label: 'Dangerous', href: '/settings/danger' }
+        ]
+      : []),
     { label: 'Editor' },
     { id: 'theme', label: 'Theme', href: '/settings/theme' },
     {

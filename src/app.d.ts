@@ -7,9 +7,9 @@ declare global {
       session: import('$lib/server/auth').SessionValidationResult['session'];
     }
   } // interface Error {}
-  // interface Locals {}
-} // interface PageData {}
-// interface PageState {}
+} // interface Locals {}
+// interface PageData {}
 
+// interface PageState {}
 // interface Platform {}
 export {};

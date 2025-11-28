@@ -2,11 +2,11 @@
   import Header from '$lib/components/header/header.svelte';
   import Footer from '$lib/components/footer/footer.svelte';
 
-  let { children } = $props();
+  let { children, data } = $props();
 </script>
 
 <div class="flex h-screen flex-col">
-  <Header />
+  <Header {data} />
   <div class="flex-1 overflow-auto" id="main">
     <main>
       {@render children?.()}

@@ -18,7 +18,11 @@
     "test:e2e": "playwright test",
     "db:start": "docker compose up",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^4.1.2",
@@ -39,9 +43,11 @@
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.1.17",
-    "@types/node": "^22.19.0",
+    "@types/node": "^22",
     "@types/yauzl": "^2.10.3",
     "@vitest/browser": "^3.2.4",
+    "drizzle-kit": "^0.31.7",
+    "drizzle-orm": "^0.44.7",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-storybook": "^9.1.16",

@@ -1,5 +1,6 @@
 <script>
   import { Clapperboard, UserRound } from '@lucide/svelte';
+  let { data } = $props();
   const styles = {
     button_normal: [
       'inline-flex',
@@ -26,28 +27,35 @@
   <title>AmpMod - Block-based programming, amplified</title>
 </svelte:head>
 
-<div class="bg-slate-100 p-8 text-accent-secondary dark:bg-accent-tertiary dark:text-white">
-  <div class="m-auto max-w-6xl">
-    <h1 class="text-4xl leading-tight font-bold">
-      Block-based programming, <span
-        class="text-yellow-700 drop-shadow-[0_0_10px_#facc15] dark:text-yellow-200 dark:drop-shadow-[0_0_10px_#fef3c7]"
-        >amplified</span
-      >
-    </h1>
-    <h3 class="mt-1 text-2xl leading-tight font-bold opacity-60">
-      Build games, animations, stories and more
-    </h3>
-    <div class="mt-4 flex gap-4">
-      <a href="/projects/editor" class={styles.button_normal}><Clapperboard /> Try it out</a>
-      <a href="/join" class={styles.button_normal}><UserRound /> Join</a>
+{#if data.user}
+  <div class="m-auto max-w-3xl p-8">
+    <h2 class="text-2xl">Hello, {data.user.username}</h2>
+    <p>You are logged in, but aw3 is work in progress.</p>
+  </div>
+{:else}
+  <div class="bg-slate-100 p-8 text-accent-secondary dark:bg-accent-tertiary dark:text-white">
+    <div class="m-auto max-w-6xl">
+      <h1 class="text-4xl leading-tight font-bold">
+        Block-based programming, <span
+          class="text-yellow-700 drop-shadow-[0_0_10px_#facc15] dark:text-yellow-200 dark:drop-shadow-[0_0_10px_#fef3c7]"
+          >amplified</span
+        >
+      </h1>
+      <h3 class="mt-1 text-2xl leading-tight font-bold opacity-60">
+        Build games, animations, stories and more
+      </h3>
+      <div class="mt-4 flex gap-4">
+        <a href="/projects/editor" class={styles.button_normal}><Clapperboard /> Try it out</a>
+        <a href="/join" class={styles.button_normal}><UserRound /> Join</a>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="bg-slate-200 p-4 text-accent-secondary dark:bg-accent-tertiary/80 dark:text-white">
-  <div class="flex justify-center gap-4">
-    <a href="https://ampmod.codeberg.org/manual" class={styles.button_small}>Manual</a>
-    <a href="https://ampmod.miraheze.org" class={styles.button_small}>AmpMod Wiki</a>
-    <a href="https://codeberg.org/ampmod" class={styles.button_small}>Source Code</a>
+  <div class="bg-slate-200 p-4 text-accent-secondary dark:bg-accent-tertiary/80 dark:text-white">
+    <div class="flex justify-center gap-4">
+      <a href="https://ampmod.codeberg.org/manual" class={styles.button_small}>Manual</a>
+      <a href="https://ampmod.miraheze.org" class={styles.button_small}>AmpMod Wiki</a>
+      <a href="https://codeberg.org/ampmod" class={styles.button_small}>Source Code</a>
+    </div>
   </div>
-</div>
+{/if}

@@ -5,30 +5,30 @@
   let { form }: { form: ActionData } = $props();
 </script>
 
-<div class="flex min-h-96 justify-center">
-  <div class="w-full max-w-md">
-    <h1 class="mt-6 text-center text-2xl font-semibold text-gray-800 dark:text-gray-100">Login</h1>
-
-    <form method="post" action="?/login" use:enhance class="space-y-5">
-      <div>
-        <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Username
-        </label>
-        <input id="username" name="username" required class="input" />
-      </div>
-
-      <div>
-        <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Password
-        </label>
-        <input id="password" type="password" name="password" required class="input" />
-      </div>
-
-      <button type="submit" class="btn"> Login </button>
-    </form>
-
-    {#if form?.message}
-      <p class="mt-4 text-center text-sm text-red-500">{form.message}</p>
-    {/if}
-  </div>
-</div>
+<h1>Login/Register</h1>
+<form method="post" action="?/login" use:enhance>
+  <label>
+    Username
+    <input
+      name="username"
+      class="mt-1 rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+    />
+  </label>
+  <label>
+    Password
+    <input
+      type="password"
+      name="password"
+      class="mt-1 rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+    />
+  </label>
+  <button class="rounded-md bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+    >Login</button
+  >
+  <button
+    formaction="?/register"
+    class="rounded-md bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+    >Register</button
+  >
+</form>
+<p style="color: red">{form?.message ?? ''}</p>

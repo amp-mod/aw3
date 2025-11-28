@@ -1,4 +1,5 @@
 import type { LayoutServerLoad } from './$types';
+import { getRequestEvent } from '$app/server';
 
 // from https://github.com/ai-robots-txt/ai.robots.txt/releases/tag/v1.44 (MIT)
 const aiAgents = `AddSearchBot
@@ -227,11 +228,14 @@ export const load: LayoutServerLoad = ({ request }) => {
     };
   }
 
+  const user = getRequestEvent().locals.user;
+
   return {
     heading: sentence(),
     paragraphs: Array.from({ length: 3 }, () =>
       Array.from({ length: 6 }, () => sentence()).join(' ')
     ),
-    botDetected: false
+    botDetected: false,
+    user
   };
 };

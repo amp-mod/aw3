@@ -4,8 +4,17 @@
   import { Menubar } from 'bits-ui';
   import Logo from './tw-advanced.svelte';
 
-  import { MenuIcon, X, Search, UserRound, TriangleAlert } from '@lucide/svelte';
-  let { admin = false } = $props<{ admin?: boolean }>();
+  import {
+    MenuIcon,
+    X,
+    Search,
+    UserRound,
+    TriangleAlert,
+    EyeOff,
+    ChevronDown,
+    HatGlasses
+  } from '@lucide/svelte';
+  let { admin = false, data } = $props();
 
   let menuOpen = $state(false);
 </script>
@@ -93,26 +102,59 @@
       <Menubar.Root class="relative">
         <Menubar.Menu>
           <Menubar.Trigger class="header-link flex items-center gap-2">
-            <UserRound />
+            {#if data.user}<UserRound />{:else}<HatGlasses />{/if}
+            {data?.user?.username || 'Not logged in'}
+            <ChevronDown />
           </Menubar.Trigger>
           <Menubar.Portal>
             <Menubar.Content
               class="absolute right-0 mt-3 flex w-40 flex-col rounded-md border border-neutral-300 bg-white shadow-lg dark:border-white/20 dark:bg-accent-secondary"
             >
-              <Menubar.Item>
-                <a
-                  href="/auth/register"
-                  class="block px-3 py-2 text-sm hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
-                  >Join AmpMod</a
-                >
-              </Menubar.Item>
-              <Menubar.Item>
-                <a
-                  href="/auth/login"
-                  class="block px-3 py-2 text-sm hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
-                  >Log in</a
-                >
-              </Menubar.Item>
+              {#if data.user}
+                <Menubar.Item>
+                  <a
+                    href={`/users/${data.user.username}`}
+                    class="block px-3 py-2 text-sm hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
+                    >Profile</a
+                  >
+                </Menubar.Item>
+                <Menubar.Item>
+                  <a
+                    href="/settings"
+                    class="block px-3 py-2 text-sm hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
+                    >Settings</a
+                  >
+                </Menubar.Item>
+                <Menubar.Item>
+                  <button
+                    onclick={alert('Planned')}
+                    class="block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
+                    >Log out</button
+                  >
+                </Menubar.Item>
+              {:else}
+                <Menubar.Item>
+                  <a
+                    href="/auth/register"
+                    class="block px-3 py-2 text-sm hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
+                    >Join AmpMod</a
+                  >
+                </Menubar.Item>
+                <Menubar.Item>
+                  <a
+                    href="/auth/login"
+                    class="block px-3 py-2 text-sm hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
+                    >Log in</a
+                  >
+                </Menubar.Item>
+                <Menubar.Item>
+                  <a
+                    href="/settings"
+                    class="block px-3 py-2 text-sm hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
+                    >Settings</a
+                  >
+                </Menubar.Item>
+              {/if}
             </Menubar.Content>
           </Menubar.Portal>
         </Menubar.Menu>
