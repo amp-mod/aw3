@@ -23,7 +23,7 @@
     >
     <a
       href="https://youtube.com/@Amp-Mod"
-      class="hover:text-[#FF0000] focus:ring-2 focus:ring-[#FF0000] focus:ring-offset-2 focus:outline-none"
+      class="hover:text-[#FF0033] focus:ring-2 focus:ring-[#FF0033] focus:ring-offset-2 focus:outline-none"
       ><SiYoutube size={32} title="YouTube" /></a
     >
   </div>
