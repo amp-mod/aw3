@@ -1,34 +1,24 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
   import type { ActionData } from './$types';
-
   let { form }: { form: ActionData } = $props();
 </script>
 
-<h1>Login/Register</h1>
-<form method="post" action="?/login" use:enhance>
+<form
+  method="post"
+  action="?/login"
+  use:enhance
+  class="m-auto flex max-w-2xl flex-col gap-3 px-2 py-8"
+>
+  <h1 class="text-2xl">Login</h1>
   <label>
     Username
-    <input
-      name="username"
-      class="mt-1 rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-    />
+    <input name="username" class="input" />
   </label>
   <label>
     Password
-    <input
-      type="password"
-      name="password"
-      class="mt-1 rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-    />
+    <input type="password" name="password" class="input" />
   </label>
-  <button class="rounded-md bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
-    >Login</button
-  >
-  <button
-    formaction="?/register"
-    class="rounded-md bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
-    >Register</button
-  >
+  <button type="submit" class="btn">Login</button>
+  <p class="text-red-500">{form?.message ?? ''}</p>
 </form>
-<p style="color: red">{form?.message ?? ''}</p>

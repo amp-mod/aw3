@@ -17,6 +17,19 @@
   let { admin = false, data } = $props();
 
   let menuOpen = $state(false);
+
+  async function logout() {
+    try {
+      const res = await fetch('/auth/logout', { method: 'POST' });
+      if (res.ok) {
+        location.reload();
+      } else {
+        console.error('Logout failed');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
 </script>
 
 <a
@@ -127,10 +140,11 @@
                 </Menubar.Item>
                 <Menubar.Item>
                   <button
-                    onclick={alert('Planned')}
+                    onclick={logout}
                     class="block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
-                    >Log out</button
                   >
+                    Log out
+                  </button>
                 </Menubar.Item>
               {:else}
                 <Menubar.Item>

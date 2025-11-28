@@ -28,7 +28,7 @@
   }
 
   .btn {
-    @apply cursor-pointer rounded-lg bg-accent-light px-4 py-2 text-lg font-bold text-black hover:bg-accent-almost-light;
+    @apply cursor-pointer rounded-lg bg-accent-light px-4 py-2 text-center text-lg font-bold text-black hover:bg-accent-almost-light;
   }
 
   .input {
