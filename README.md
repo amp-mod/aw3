@@ -61,7 +61,7 @@ flowchart TB
     n5 --> n7["S3 storage"]
     n6 -- yes --> n8["no lol"]
     n6 -- no --> n10["Is &gt;10MB?"]
-    n10 -- yes --> n11["S3 storage"]
+    n10 -- yes --> n11["S3 compatible storage"]
     n10 -- no --> n12["SQL storage"]
 
     n2@{ shape: docs}
