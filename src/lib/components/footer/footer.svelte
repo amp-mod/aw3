@@ -2,7 +2,7 @@
   import { SiScratch, SiCodeberg, SiMiraheze, SiYoutube } from '@icons-pack/svelte-simple-icons';
 </script>
 
-<div
+<footer
   class="dark:black/10 flex flex-col items-center justify-center space-y-2 border-t border-black/10 py-8 text-neutral-500 dark:border-white/10 dark:text-neutral-300"
 >
   <div class="flex items-center justify-center space-x-6">
@@ -44,4 +44,4 @@
   </div>
 
   <span class="mt-2 text-center text-sm">Not affiliated with Scratch or TurboWarp.</span>
-</div>
+</footer>
