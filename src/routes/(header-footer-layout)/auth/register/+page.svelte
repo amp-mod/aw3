@@ -30,7 +30,11 @@
     Confirm password
     <input type="password" name="password2" class="input" required />
   </label>
-  {#if !loading}<altcha-widget auto="onfocus" challengeurl="/auth/_altcha" hidden
+  {#if !loading}<altcha-widget
+      auto="onsubmit"
+      challengeurl="/auth/_altcha"
+      floating
+      class="text-black"
     ></altcha-widget>{/if}
   <button class="btn" disabled={loading}>Register</button>
   <p class="text-red-500">{form?.message ?? ''}</p>
