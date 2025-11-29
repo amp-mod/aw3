@@ -231,11 +231,6 @@ export const load: LayoutServerLoad = ({ request }) => {
   const user = getRequestEvent().locals.user;
 
   return {
-    heading: sentence(),
-    paragraphs: Array.from({ length: 3 }, () =>
-      Array.from({ length: 6 }, () => sentence()).join(' ')
-    ),
-    botDetected: false,
     user
   };
 };
