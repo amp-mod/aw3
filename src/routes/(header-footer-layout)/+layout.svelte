@@ -7,7 +7,7 @@
 
 <div class="flex h-screen flex-col">
   <Header {data} />
-  <div class="flex-1 overflow-auto" id="main">
+  <div class="flex-1 overflow-auto shadow-inner" id="main">
     <main>
       {@render children?.()}
     </main>
