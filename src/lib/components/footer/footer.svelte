@@ -1,5 +1,8 @@
 <script>
-  import { SiScratch, SiCodeberg, SiMiraheze, SiYoutube } from '@icons-pack/svelte-simple-icons';
+  import SiScratch from '~icons/simple-icons/scratch';
+  import SiCodeberg from '~icons/simple-icons/codeberg';
+  import SiMiraheze from '~icons/simple-icons/miraheze';
+  import SiYoutube from '~icons/simple-icons/youtube';
 </script>
 
 <footer
@@ -13,17 +16,17 @@
     > *-->
     <a
       href="https://codeberg.org/ampmod"
-      class="hover:text-[#2185D0] focus:ring-2 focus:ring-[#2185D0] focus:ring-offset-2 focus:outline-none"
+      class="text-2xl hover:text-[#2185D0] focus:ring-2 focus:ring-[#2185D0] focus:ring-offset-2 focus:outline-none"
       ><SiCodeberg size={32} title="Codeberg" /></a
     >
     <a
       href="https://ampmod.miraheze.org"
-      class="hover:text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:outline-none"
+      class="text-2xl hover:text-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:outline-none"
       ><SiMiraheze size={32} title="Wiki (Miraheze)" /></a
     >
     <a
       href="https://youtube.com/@Amp-Mod"
-      class="hover:text-[#FF0033] focus:ring-2 focus:ring-[#FF0033] focus:ring-offset-2 focus:outline-none"
+      class="text-2xl hover:text-[#FF0033] focus:ring-2 focus:ring-[#FF0033] focus:ring-offset-2 focus:outline-none"
       ><SiYoutube size={32} title="YouTube" /></a
     >
   </div>
