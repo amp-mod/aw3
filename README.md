@@ -9,7 +9,6 @@ Stack:
 
 - SvelteKit
 - TypeScript
-- Bun
 
 ## What aw3 does
 
@@ -31,13 +30,9 @@ Stack:
 
 ## Setup
 
-> [!IMPORTANT]
-> To setup aw3 you will need to install Bun: https://bun.com/docs/installation. aw3 uses Bun as the package
-> manager and as the server. Using Node to run the server will not work.
-
 ```
-bun install
-bun dev
+pnpm install
+pnpm dev
 ```
 
 ### Database additional step
@@ -47,10 +42,10 @@ of aw3.
 
 ## Running in production
 
-First, you will want to run `bun run build`. Do not omit the `run` else Bun's own builder will be used instead
+First, you will want to run `pnpm run build`. Do not omit the `run` else Bun's own builder will be used instead
 of Vite.
 
-Then, to serve the frontend, run `bun run ./build/index.js`. To set up the database, run the command above.
+Then, to serve the frontend, run `node ./build`. To set up the database, run the command above.
 
 ## How projects are stored
 
