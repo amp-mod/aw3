@@ -47,6 +47,11 @@ of Vite.
 
 Then, to serve the frontend, run `node ./build`. To set up the database, run the command above.
 
+## Setting up editor links
+
+To set up links to AmpMod itself, such as `/projects/editor`, you need to use a reverse proxy to route those
+paths to AmpMod.
+
 ## How projects are stored
 
 ```mermaid
