@@ -1,6 +1,8 @@
 <script>
+  import { Tabs } from 'bits-ui';
   import { Clapperboard, UserRound } from '@lucide/svelte';
   let { data } = $props();
+
   const styles = {
     button_normal: [
       'inline-flex',
@@ -19,18 +21,47 @@
       'px-4 py-2',
       'items-center justify-center gap-2',
       'font-bold text-white'
-    ].join(' ')
+    ].join(' '),
+    tab: 'cursor-pointer rounded-full border border-accent bg-white px-3 py-1 font-bold data-[state=active]:bg-accent data-[state=active]:text-white dark:bg-green-900 outline-none'
   };
 </script>
 
-<svelte:head>
-  <title>AmpMod - Block-based programming, amplified</title>
-</svelte:head>
-
 {#if data.user}
-  <div class="m-auto max-w-3xl p-8">
-    <h2 class="text-2xl">Hello, {data.user.username}</h2>
-    <p>You are logged in, but aw3 is work in progress.</p>
+  <div class="m-auto flex h-96 max-w-6xl gap-3 p-8">
+    <div class="flex grow basis-0 items-center justify-center">
+      <h1 class="text-2xl font-bold">Hello, {data.user.username}!</h1>
+    </div>
+
+    <div class="flex grow basis-0 flex-col gap-3">
+      <Tabs.Root class="flex grow flex-col" value="news">
+        <Tabs.List class="mb-2 flex gap-2">
+          <Tabs.Trigger value="news" class={styles.tab}>AmpMod News</Tabs.Trigger>
+          <Tabs.Trigger value="changelog" class={styles.tab}>Changelog</Tabs.Trigger>
+          <Tabs.Trigger value="feed" class={styles.tab}>What's happening?</Tabs.Trigger>
+        </Tabs.List>
+
+        <Tabs.Content
+          value="news"
+          class="grow rounded-lg border border-neutral-300 bg-neutral-100 p-4 dark:border-neutral-500 dark:bg-neutral-800"
+        >
+          <p>new update just dropped yay</p>
+        </Tabs.Content>
+
+        <Tabs.Content
+          value="changelog"
+          class="grow rounded-lg border border-neutral-300 bg-neutral-100 p-4 dark:border-neutral-500 dark:bg-neutral-800"
+        >
+          <p>ampmod 0.5</p>
+        </Tabs.Content>
+
+        <Tabs.Content
+          value="feed"
+          class="grow rounded-lg border border-neutral-300 bg-neutral-100 p-4 dark:border-neutral-500 dark:bg-neutral-800"
+        >
+          <p>skibidi toilet just subscribed to you yay</p>
+        </Tabs.Content>
+      </Tabs.Root>
+    </div>
   </div>
 {:else}
   <div class="bg-slate-100 p-8 text-accent-secondary dark:bg-accent-tertiary dark:text-white">
