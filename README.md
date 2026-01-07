@@ -1,6 +1,6 @@
 # aw3
 
-aw3 is the software behind (almost) everything on the main AmpMod website. We gave it the name of an alien
+aw3 is the software behind (almost) everything on the main AmpMod website. We gave it that strange name
 because this is the 3rd attempt at making an AmpMod website. The first attempt was [this sloppily thrown
 together PHP server](https://codeberg.org/ampmod/UBWeb) and the second was ampmod-web, which went well until
 the git history was ruined and poor decisions started to be made after we added a new contributor.
