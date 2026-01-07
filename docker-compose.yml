@@ -1,14 +1,24 @@
 services:
   db:
-    image: postgres
-    restart: always
-    ports:
-      - 5432:5432
+    image: postgres:16
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_DB: local
+      POSTGRES_USER: aw3
+      POSTGRES_PASSWORD: aw3 # we don't want to use this on deployment
+      POSTGRES_DB: aw3
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://aw3:aw3@db:5432/aw3
+      NODE_ENV: production
+
 volumes:
-  pgdata:
+  db-data:
