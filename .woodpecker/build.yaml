@@ -1,7 +1,6 @@
 steps:
   - name: build-and-push
     image: woodpeckerci/plugin-docker-buildx
-    privileged: true
     settings:
       registry: codeberg.org
       repo: codeberg.org/ampmod/aw3
