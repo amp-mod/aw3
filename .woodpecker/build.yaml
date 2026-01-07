@@ -1,3 +1,8 @@
+when:
+  event:
+    - cron
+    - manual
+    - push
 steps:
   - name: build-and-push
     image: woodpeckerci/plugin-docker-buildx
@@ -11,8 +16,3 @@ steps:
       username: ampmod-bot
       password:
         from_secret: cbtoken
-    when:
-      branch:
-        - main
-      event:
-        - push
