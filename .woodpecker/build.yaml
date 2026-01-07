@@ -1,0 +1,19 @@
+steps:
+  - name: build-and-push
+    image: woodpeckerci/plugin-docker-buildx
+    privileged: true
+    settings:
+      registry: codeberg.org
+      repo: codeberg.org/ampmod/aw3
+      dockerfile: Dockerfile
+      tags:
+        - latest
+        - ${CI_COMMIT_SHA}
+      username: ampmod-bot
+      password:
+        from_secret: cbtoken
+    when:
+      branch:
+        - main
+      event:
+        - push
