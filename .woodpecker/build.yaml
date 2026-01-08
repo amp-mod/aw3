@@ -6,6 +6,7 @@ when:
 steps:
   - name: build-and-push
     image: woodpeckerci/plugin-docker-buildx
+    output: type=docker
     settings:
       registry: codeberg.org
       repo: codeberg.org/ampmod/aw3
