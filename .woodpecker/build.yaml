@@ -5,8 +5,8 @@ when:
     - push
 steps:
   - name: build-and-push
-    image: woodpeckerci/plugin-docker-buildx
-    output: type=docker
+    image: woodpeckerci/plugin-docker-buildx:6
+    privileged: true
     settings:
       registry: codeberg.org
       repo: codeberg.org/ampmod/aw3
