@@ -9,7 +9,7 @@ COPY . .
 
 RUN pnpm run build
 
-FROM gcr.io/distroless/nodejs:20
+FROM node:24-alpine
 WORKDIR /aw3-bundle
 
 COPY --from=builder /aw3-bundle/LICENSE /aw3-bundle/LICENSE
