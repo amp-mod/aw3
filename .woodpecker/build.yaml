@@ -1,0 +1,18 @@
+when:
+  event:
+    - cron
+    - manual
+    - push
+steps:
+  - name: build-and-push
+    image: woodpeckerci/plugin-docker-buildx:6
+    settings:
+      registry: codeberg.org
+      repo: codeberg.org/ampmod/aw3
+      dockerfile: Dockerfile
+      tags:
+        - latest
+        - ${CI_COMMIT_SHA}
+      username: ampmod-bot
+      password:
+        from_secret: cbtoken
