@@ -1,0 +1,8 @@
+[
+  {
+    "location": "/",
+    "tdm-reservation": 1,
+    "tdm-policy": "https://placeholder-domain.ampmod.example/terms",
+    "opt-out": "true"
+  },
+]
