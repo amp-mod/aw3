@@ -1,0 +1,7 @@
+node_modules
+.git
+.npm
+.pnpm-store
+build
+dist
+*.log
