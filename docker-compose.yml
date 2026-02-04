@@ -8,14 +8,14 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - '5432:5432'
 
   web:
     build: .
     depends_on:
       - db
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       DATABASE_URL: postgres://aw3:aw3@db:5432/aw3
       NODE_ENV: production

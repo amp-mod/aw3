@@ -23,7 +23,8 @@
       'font-bold text-white'
     ].join(' '),
     tab: 'cursor-pointer rounded-full border border-accent bg-white px-3 py-1 font-bold data-[state=active]:bg-accent data-[state=active]:text-white dark:bg-green-900 outline-none',
-    card: 'flex flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm transition-all dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-accent grow'  };
+    card: 'flex flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm transition-all dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-accent grow'
+  };
 </script>
 
 {#if data.user}
@@ -32,40 +33,49 @@
       <h1 class="text-2xl font-bold">Hello, {data.user.username}!</h1>
     </div>
 
-<div class="flex grow basis-0 flex-col gap-3">
-  <Tabs.Root class="flex grow flex-col" value={data.user.rank === 0 ? "welcome" : "feed"}>
-    <Tabs.List class="mb-2 flex gap-2">
-      {#if data.user.rank === 0}
-        <Tabs.Trigger value="welcome" class={styles.tab}>Welcome</Tabs.Trigger>
-      {/if}
-      <Tabs.Trigger value="feed" class={styles.tab}>Following</Tabs.Trigger>
-      <Tabs.Trigger value="news" class={styles.tab}>AmpMod News</Tabs.Trigger>
-    </Tabs.List>
+    <div class="flex grow basis-0 flex-col gap-3">
+      <Tabs.Root class="flex grow flex-col" value={data.user.rank === 0 ? 'welcome' : 'feed'}>
+        <Tabs.List class="mb-2 flex gap-2">
+          {#if data.user.rank === 0}
+            <Tabs.Trigger value="welcome" class={styles.tab}>Welcome</Tabs.Trigger>
+          {/if}
+          <Tabs.Trigger value="feed" class={styles.tab}>Following</Tabs.Trigger>
+          <Tabs.Trigger value="news" class={styles.tab}>AmpMod News</Tabs.Trigger>
+        </Tabs.List>
 
-    {#if data.user.rank === 0}
-      <Tabs.Content value="welcome" class="grow rounded-lg border border-yellow-400 bg-yellow-50 p-4 dark:bg-yellow-900/20 flex items-center justify-center text-center flex-col gap-3">
-        <h1 class="text-2xl">Welcome to AmpMod!</h1>
-        <div class="flex gap-4 grow w-full basis-0">
-          <a href="/projects/editor" class={styles.card}>
-            <span class="font-bold">Make a Project</span>
-          </a>
+        {#if data.user.rank === 0}
+          <Tabs.Content
+            value="welcome"
+            class="flex grow flex-col items-center justify-center gap-3 rounded-lg border border-yellow-400 bg-yellow-50 p-4 text-center dark:bg-yellow-900/20"
+          >
+            <h1 class="text-2xl">Welcome to AmpMod!</h1>
+            <div class="flex w-full grow basis-0 gap-4">
+              <a href="/projects/editor" class={styles.card} data-sveltekit-reload>
+                <span class="font-bold">Make a Project</span>
+              </a>
 
-          <a href="/projects/explore" class={styles.card}>
-            <span class="font-bold">Explore</span>
-          </a>
-        </div>
-      </Tabs.Content>
-    {/if}
+              <a href="/projects/explore" class={styles.card}>
+                <span class="font-bold">Explore</span>
+              </a>
+            </div>
+          </Tabs.Content>
+        {/if}
 
-    <Tabs.Content value="feed" class="grow rounded-lg border border-neutral-300 bg-neutral-100 p-4 dark:border-neutral-500 dark:bg-neutral-800">
-      <p>skibidi toilet just subscribed to you yay</p>
-    </Tabs.Content>
+        <Tabs.Content
+          value="feed"
+          class="grow rounded-lg border border-neutral-300 bg-neutral-100 p-4 dark:border-neutral-500 dark:bg-neutral-800"
+        >
+          <p>skibidi toilet just subscribed to you yay</p>
+        </Tabs.Content>
 
-    <Tabs.Content value="news" class="grow rounded-lg border border-neutral-300 bg-neutral-100 p-4 dark:border-neutral-500 dark:bg-neutral-800">
-      <p>new update just dropped yay</p>
-    </Tabs.Content>
-  </Tabs.Root>
-</div>
+        <Tabs.Content
+          value="news"
+          class="grow rounded-lg border border-neutral-300 bg-neutral-100 p-4 dark:border-neutral-500 dark:bg-neutral-800"
+        >
+          <p>new update just dropped yay</p>
+        </Tabs.Content>
+      </Tabs.Root>
+    </div>
   </div>
 {:else}
   <div class="bg-slate-100 p-8 text-accent-secondary dark:bg-accent-tertiary dark:text-white">

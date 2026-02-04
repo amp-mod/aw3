@@ -81,7 +81,7 @@
       {#if admin}
         <a href="/" class="header-link w-full md:w-auto">Back to home</a>
       {:else}
-        <a href="/projects/editor" class="header-link w-full md:w-auto">Create</a>
+        <a href="/projects/editor" class="header-link w-full md:w-auto" data-sveltekit-reload>Create</a>
         <a href="/projects/explore" class="header-link w-full md:w-auto">Explore</a>
         <a href="/about" class="header-link w-full md:w-auto">About</a>
       {/if}
@@ -121,27 +121,27 @@
           </Menubar.Trigger>
           <Menubar.Portal>
             <Menubar.Content
-              class="mt-3 flex w-40 flex-col rounded-md border border-neutral-300 bg-white shadow-lg dark:border-white/20 dark:bg-accent-secondary overflow-hidden"
+              class="mt-3 flex w-40 flex-col overflow-hidden rounded-md border border-neutral-300 bg-white shadow-lg dark:border-white/20 dark:bg-accent-secondary"
             >
               {#if data.user}
                 <Menubar.Item>
                   <a
                     href={`/users/${data.user.username}`}
-                    class="block px-3 py-2 text-sm hover:bg-accent/10 dark:hover:bg-white/10 outline-hidden"
+                    class="block px-3 py-2 text-sm outline-hidden hover:bg-accent/10 dark:hover:bg-white/10"
                     >Profile</a
                   >
                 </Menubar.Item>
                 <Menubar.Item>
                   <a
                     href="/settings"
-                    class="block px-3 py-2 text-sm hover:bg-accent/10 dark:hover:bg-white/10 outline-hidden"
+                    class="block px-3 py-2 text-sm outline-hidden hover:bg-accent/10 dark:hover:bg-white/10"
                     >Settings</a
                   >
                 </Menubar.Item>
                 <Menubar.Item>
                   <button
                     onclick={logout}
-                    class="block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10 outline-hidden"
+                    class="block w-full cursor-pointer px-3 py-2 text-left text-sm outline-hidden hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
                   >
                     Log out
                   </button>
@@ -150,21 +150,21 @@
                 <Menubar.Item>
                   <a
                     href="/auth/register"
-                    class="block px-3 py-2 text-sm hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10 outline-hidden"
+                    class="block px-3 py-2 text-sm outline-hidden hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
                     >Join AmpMod</a
                   >
                 </Menubar.Item>
                 <Menubar.Item>
                   <a
                     href="/auth/login"
-                    class="block px-3 py-2 text-sm hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10 outline-hidden"
+                    class="block px-3 py-2 text-sm outline-hidden hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
                     >Log in</a
                   >
                 </Menubar.Item>
                 <Menubar.Item>
                   <a
                     href="/settings"
-                    class="block px-3 py-2 text-sm hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10 outline-hidden"
+                    class="block px-3 py-2 text-sm outline-hidden hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
                     >Settings</a
                   >
                 </Menubar.Item>
