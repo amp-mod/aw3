@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as tf from '@tensorflow/tfjs';
 import * as toxicity from '@tensorflow-models/toxicity';
 import { Filter } from 'bad-words';

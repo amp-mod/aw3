@@ -3,6 +3,7 @@
   import { page } from '$app/state';
   let { data } = $props();
 
+  // svelte-ignore non_reactive_update
   let friendlyMessage;
 
   switch (page.status) {
