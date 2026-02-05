@@ -36,14 +36,11 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 };
 
 const handleGuard: Handle = async ({ event, resolve }) => {
-  const isAdminRoute = event.route.id?.startsWith('/admin');
+  const isAdminRoute = event.route.id?.startsWith('/(protected)/');
 
   if (isAdminRoute) {
     if (!event.locals.user || (event.locals.user.rank !== 3 && !process.env.AW3_FORCE_ADMIN)) {
-      throw error(
-        403,
-        "You aren't an operator and therefore are not authorised to access the admin panel."
-      );
+      throw error(403, 'This is a protected page, only operators can access it.');
     }
   }
 
