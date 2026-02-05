@@ -6,7 +6,18 @@
     <title>Service is down - AmpMod</title>
     <style>
       body {
-        font-family: sans-serif;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          Oxygen,
+          Ubuntu,
+          Cantarell,
+          'Open Sans',
+          'Helvetica Neue',
+          sans-serif;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -14,11 +25,12 @@
         height: 100vh;
         padding: 0;
         max-width: 600px;
+        background: #4fa55c;
+        color: white;
       }
       h1 {
         font-size: 3rem;
         margin: 0;
-        color: red;
       }
       p {
         font-size: 1.2rem;
@@ -35,37 +47,9 @@
   </head>
   <body>
     <div id="message">
-      <img src="UBWeb_Guidelines_Compatibility.svg" height="180" />
-      <h1>Service is down</h1>
-      <p>
-        Please check the blog at
-        <a href="https://ampmod.flarum.cloud/blog">ampmod.flarum.cloud/blog</a> for updates.
-      </p>
-      <p>
-        <small>Information for developers: <code>%sveltekit.error.message%</code></small>
-      </p>
+      <h1>Oops!</h1>
+      <p>An error occured. Try reloading in a few minutes.</p>
+      <p>%sveltekit.error.message%</p>
     </div>
-
-    <script>
-      if (location.pathname.startsWith('/ampmod/')) {
-        document.getElementById('message').innerHTML = `
-          <img
-            src="/UBWeb_Guidelines_Compatibility.svg"
-            height="180"
-            alt="Apple Cat with warped eyes, overlaid on top of a window with a red header bar."
-          />
-          <h1>Error</h1>
-          <p>
-            Either you did something that breaks the laws of physics (usually when you try to access a
-            folder from this website's build of AmpMod), or it's a problem with our servers. Please check
-            the blog at
-            <a href="https://ampmod.flarum.cloud/blog">ampmod.flarum.cloud/blog</a> for updates.
-          </p>
-          <p>
-            <small>Information for developers: <code>%sveltekit.error.message%</code></small>
-          </p>
-        `;
-      }
-    </script>
   </body>
 </html>

@@ -1,6 +1,8 @@
 <script>
   import { Tabs } from 'bits-ui';
   import { Clapperboard, UserRound } from '@lucide/svelte';
+  import CreateCardIcon from '$lib/assets/apple-cat-programming-sm.svg';
+  import ExploreProjectsIcon from '$lib/assets/exploreprojects.svg';
   let { data } = $props();
 
   const styles = {
@@ -23,19 +25,19 @@
       'font-bold text-white'
     ].join(' '),
     tab: 'cursor-pointer rounded-full border border-accent bg-white px-3 py-1 font-bold data-[state=active]:bg-accent data-[state=active]:text-white dark:bg-green-900 outline-none',
-    card: 'flex flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm transition-all dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-accent grow'
+    card: 'flex flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-accent h-50 justify-center'
   };
 </script>
 
 {#if data.user}
-  <div class="m-auto flex min-h-96 max-w-5xl gap-3 p-8">
+  <div class="m-auto flex min-h-96 max-w-6xl gap-3 p-8">
     <div class="flex grow basis-0 items-center justify-center">
       <h1 class="text-2xl font-bold">Hello, {data.user.username}!</h1>
     </div>
 
     <div class="flex grow basis-0 flex-col gap-3">
       <Tabs.Root class="flex grow flex-col" value={data.user.rank === 0 ? 'welcome' : 'feed'}>
-        <Tabs.List class="mb-2 flex gap-2">
+        <Tabs.List class="mb-2 flex justify-center gap-2">
           {#if data.user.rank === 0}
             <Tabs.Trigger value="welcome" class={styles.tab}>Welcome</Tabs.Trigger>
           {/if}
@@ -46,15 +48,25 @@
         {#if data.user.rank === 0}
           <Tabs.Content
             value="welcome"
-            class="flex grow flex-col items-center justify-center gap-3 rounded-lg border border-yellow-400 bg-yellow-50 p-4 text-center dark:bg-yellow-900/20"
+            class="flex grow flex-col items-center justify-center gap-3 rounded-lg border border-yellow-400/30 bg-yellow-50 p-4 text-center dark:bg-yellow-900/20"
           >
-            <h1 class="text-2xl">Welcome to AmpMod!</h1>
-            <div class="flex w-full grow basis-0 gap-4">
+            <h1 class="text-2xl font-bold">Welcome to AmpMod!</h1>
+            <div class="grid w-full grid-cols-2 gap-4">
               <a href="/projects/editor" class={styles.card} data-sveltekit-reload>
+                <img
+                  src={CreateCardIcon}
+                  class="h-28 object-contain"
+                  alt="An illustration of AmpMod's mascot, Apple Cat."
+                />
                 <span class="font-bold">Make a Project</span>
               </a>
 
               <a href="/projects/explore" class={styles.card}>
+                <img
+                  src={ExploreProjectsIcon}
+                  class="h-28 object-contain"
+                  alt="An illustration of 2 rounded squares on top of each other."
+                />
                 <span class="font-bold">Explore</span>
               </a>
             </div>

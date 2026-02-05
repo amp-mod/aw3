@@ -2,7 +2,7 @@
   import Header from '$lib/components/header/header.svelte';
   import { page } from '$app/state';
 
-  let { children } = $props();
+  let { children, data } = $props();
   let accountOpen = $state(false);
 
   const navItems = [
@@ -20,7 +20,7 @@
 
 <div class="flex h-screen flex-col bg-white dark:bg-neutral-900">
   <!-- Header always on top -->
-  <Header admin={true} />
+  <Header admin={true} {data} />
 
   <!-- Wrap sidebar + main in a horizontal flex container -->
   <div class="flex flex-1 overflow-hidden">

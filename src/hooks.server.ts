@@ -1,7 +1,8 @@
 import { sequence } from '@sveltejs/kit/hooks';
 import * as auth from '$lib/server/auth';
-import type { Handle } from '@sveltejs/kit';
+import { error, type Handle } from '@sveltejs/kit';
 import { paraglideMiddleware } from '$lib/paraglide/server';
+import events from 'storybook/internal/core-events';
 
 const handleParaglide: Handle = ({ event, resolve }) =>
   paraglideMiddleware(event.request, ({ request, locale }) => {
@@ -34,4 +35,16 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-export const handle: Handle = sequence(handleParaglide, handleAuth);
+const handleGuard: Handle = async ({ event, resolve }) => {
+  const isAdminRoute = event.route.id?.startsWith('/admin');
+
+  if (isAdminRoute) {
+    if (!event.locals.user || (event.locals.user.rank !== 3 && !process.env.AW3_FORCE_ADMIN)) {
+      throw error(403, event.locals.session?.id);
+    }
+  }
+
+  return resolve(event);
+};
+
+export const handle: Handle = sequence(handleAuth, handleGuard, handleParaglide);
