@@ -40,7 +40,10 @@ const handleGuard: Handle = async ({ event, resolve }) => {
 
   if (isAdminRoute) {
     if (!event.locals.user || (event.locals.user.rank !== 3 && !process.env.AW3_FORCE_ADMIN)) {
-      throw error(403, event.locals.session?.id);
+      throw error(
+        403,
+        "You aren't an operator and therefore are not authorised to access the admin panel."
+      );
     }
   }
 
