@@ -1,20 +1,33 @@
 <script>
-  let { path = '' } = $props();
+  import { FileX } from '@lucide/svelte';
+  import Footer from './footer/footer.svelte';
+  let { path = null } = $props();
 </script>
 
-<div class="mx-auto my-4 max-w-3xl border-l-8 border-red-500 bg-red-400/10 px-6 py-4">
-  <p class="mb-2">
-    This page is unavailable because an operator has not set up the AmpMod editor on this site. You
-    can access this page at <a class="link" href={`https://ampmod.codeberg.page/${path}`}
-      >ampmod.codeberg.page/{path}</a
-    >.
-  </p>
-  <p class="text-xs">
-    For operators: This software only includes the website, not the editor itself. Most sites are
-    expected to intercept requests using a reverse proxy. To setup the editor, follow the
-    instructions on the README.
-  </p>
-  <div class="mt-4">
-    <a class="btn" href="/">Back to homepage</a>
+<svelte:head>
+  <title>Page Unavailable - AmpMod</title>
+</svelte:head>
+
+<div class="flex h-screen flex-col">
+  <div
+    class="mx-auto my-12 flex max-w-3xl grow flex-col items-center justify-center gap-4 text-center"
+  >
+    <FileX size={64} />
+    <p>
+      This page is unavailable because a server operator has not set up the AmpMod editor on this
+      site properly.
+      {#if path}You can access this page on the official site: <a
+          class="link"
+          href={`https://ampmod.codeberg.page/${path}`}>ampmod.codeberg.page/{path}</a
+        >.{/if}
+    </p>
+    <div class="flex gap-4">
+      {#if path}<a class="btn" href={`https://ampmod.codeberg.page/${path}`}
+          >Access on official site</a
+        >{/if}
+      <a class="btn" href="/">Back to homepage</a>
+    </div>
   </div>
+
+  <Footer />
 </div>
