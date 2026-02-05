@@ -1,7 +1,8 @@
 <script>
   import { Tabs } from 'bits-ui';
-  import { Clapperboard, UserRound } from '@lucide/svelte';
+  import { Clapperboard, Newspaper, Rss, UserRound, MapIcon } from '@lucide/svelte';
   import CreateCardIcon from '$lib/assets/apple-cat-programming-sm.svg';
+  import HeroImg from '$lib/assets/apple-cat-programming.svg';
   import ExploreProjectsIcon from '$lib/assets/exploreprojects.svg';
   let { data } = $props();
 
@@ -10,11 +11,13 @@
       'inline-flex',
       'rounded-lg',
       'bg-accent',
-      'px-4 py-2',
+      'px-5 py-2',
       'items-center gap-2',
       'text-2xl font-bold text-white',
-      'hover:bg-accent-secondary',
-      'dark:bg-white dark:text-accent-tertiary dark:hover:bg-slate-200'
+      'not-dark:hover:bg-accent-secondary',
+      'dark:bg-white dark:text-accent-tertiary',
+      'hover:scale-115',
+      'transition-all'
     ].join(' '),
     button_small: [
       'inline-flex',
@@ -24,25 +27,34 @@
       'items-center justify-center gap-2',
       'font-bold text-white'
     ].join(' '),
-    tab: 'cursor-pointer rounded-full border border-accent bg-white px-3 py-1 font-bold data-[state=active]:bg-accent data-[state=active]:text-white dark:bg-green-900 outline-none',
+    tab: [
+      'cursor-pointer rounded-t-lg border border-neutral-300 bg-neutral-100 px-3 h-8 text-neutral-600',
+      'outline-none border-b-0 flex items-center gap-3',
+      'data-[state=active]:border-b-transparent',
+      'data-[state=active]:bg-white',
+      'data-[state=active]:text-accent-secondary',
+      'data-[state=active]:h-10',
+      'dark:border-neutral-500 dark:bg-neutral-800 dark:text-neutral-300',
+      'dark:data-[state=active]:bg-neutral-700 dark:data-[state=active]:text-white'
+    ].join(' '),
     card: 'flex flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-accent h-50 justify-center'
   };
 </script>
 
 {#if data.user}
-  <div class="m-auto flex min-h-96 max-w-6xl gap-3 p-8">
+  <div class="m-auto flex min-h-100 max-w-6xl gap-3 p-8">
     <div class="flex grow basis-0 items-center justify-center">
       <h1 class="text-2xl font-bold">Hello, {data.user.username}!</h1>
     </div>
 
     <div class="flex grow basis-0 flex-col gap-3">
       <Tabs.Root class="flex grow flex-col" value={data.user.rank === 0 ? 'welcome' : 'feed'}>
-        <Tabs.List class="mb-2 flex justify-center gap-2">
+        <Tabs.List class="flex h-10 items-end gap-2 pl-4">
           {#if data.user.rank === 0}
-            <Tabs.Trigger value="welcome" class={styles.tab}>Welcome</Tabs.Trigger>
+            <Tabs.Trigger value="welcome" class={styles.tab}><MapIcon />Welcome</Tabs.Trigger>
           {/if}
-          <Tabs.Trigger value="feed" class={styles.tab}>Following</Tabs.Trigger>
-          <Tabs.Trigger value="news" class={styles.tab}>AmpMod News</Tabs.Trigger>
+          <Tabs.Trigger value="feed" class={styles.tab}><Rss />Feed</Tabs.Trigger>
+          <Tabs.Trigger value="news" class={styles.tab}><Newspaper />Updates</Tabs.Trigger>
         </Tabs.List>
 
         {#if data.user.rank === 0}
@@ -90,20 +102,26 @@
     </div>
   </div>
 {:else}
-  <div class="bg-slate-100 p-8 text-accent-secondary dark:bg-accent-tertiary dark:text-white">
-    <div class="m-auto max-w-6xl">
-      <h1 class="text-4xl leading-tight font-bold">
-        Block-based programming, <span
-          class="text-yellow-700 drop-shadow-[0_0_10px_#facc15] dark:text-yellow-200 dark:drop-shadow-[0_0_10px_#fef3c7]"
-          >amplified</span
-        >
-      </h1>
-      <h3 class="mt-1 text-2xl leading-tight font-bold opacity-60">
-        Build games, animations, stories and more
-      </h3>
-      <div class="mt-4 flex gap-4">
-        <a href="/projects/editor" class={styles.button_normal}><Clapperboard /> Try it out</a>
-        <a href="/join" class={styles.button_normal}><UserRound /> Join</a>
+  <div class="bg-slate-100 p-9 text-accent-secondary dark:bg-accent-tertiary dark:text-white">
+    <div class="m-auto flex max-w-6xl items-center justify-between">
+      <div class="flex grow flex-col justify-center text-left">
+        <h1 class="text-4xl leading-tight font-bold">Create games, animations and stories</h1>
+        <div class="mt-4 flex gap-6">
+          <a href="/projects/editor" class={styles.button_normal}><Clapperboard /> Try it out</a>
+          <a href="/auth/register" class={styles.button_normal}><UserRound /> Join</a>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-center">
+        <div
+          class="inset-0 scale-75 rounded-full bg-yellow-400/20 blur-3xl dark:bg-yellow-200/10"
+        ></div>
+
+        <img
+          src={HeroImg}
+          alt="An illustration of AmpMod's mascot, Apple Cat."
+          class="object-stretch relative z-10 h-38 w-full max-w-md"
+        />
       </div>
     </div>
   </div>
