@@ -35,6 +35,9 @@ export async function validateSessionToken(token: string) {
 				id: table.user.id,
 				username: table.user.username,
 				rank: table.user.rank ?? 0,
+				status: table.user.status,
+				banReason: table.user.banReason,
+				bannedExpiry: table.user.bannedExpiry,
 			},
 			session: table.session,
 		})

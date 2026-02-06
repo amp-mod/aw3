@@ -19,10 +19,9 @@ export const user = pgTable(
 		rank: smallint('rank').default(0),
 		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
 		// welcome to the banlands
-		banned: boolean('banned').default(false),
-		bannedExpiry: timestamp('banned_expiry', { withTimezone: true, mode: 'date' })
-			.notNull()
-			.defaultNow(),
+		status: text('status').default('normal'),
+		bannedExpiry: timestamp('banned_expiry', { withTimezone: true, mode: 'date' }).defaultNow(),
+		banReason: text('ban_reason'),
 	},
 	(table) => [index('username_idx').on(table.username)],
 )

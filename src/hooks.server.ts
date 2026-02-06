@@ -1,8 +1,7 @@
 import { sequence } from '@sveltejs/kit/hooks'
 import * as auth from '$lib/server/auth'
-import { error, type Handle } from '@sveltejs/kit'
+import { error, redirect, type Handle } from '@sveltejs/kit'
 import { paraglideMiddleware } from '$lib/paraglide/server'
-import events from 'storybook/internal/core-events'
 
 const handleParaglide: Handle = ({ event, resolve }) =>
 	paraglideMiddleware(event.request, ({ request, locale }) => {
@@ -47,4 +46,20 @@ const handleGuard: Handle = async ({ event, resolve }) => {
 	return resolve(event)
 }
 
-export const handle: Handle = sequence(handleAuth, handleGuard, handleParaglide)
+const handleBanned: Handle = async ({ event, resolve }) => {
+	const user = event.locals.user
+	const isBannedPage = event.url.pathname === '/banned'
+	const isLogoutAction = event.url.pathname === '/auth/logout'
+
+	if (user?.status === 'banned' && !isBannedPage && !isLogoutAction) {
+		throw redirect(307, '/banned')
+	}
+
+	if (user?.status !== 'banned' && isBannedPage) {
+		throw redirect(307, '/')
+	}
+
+	return resolve(event)
+}
+
+export const handle: Handle = sequence(handleAuth, handleBanned, handleGuard, handleParaglide)

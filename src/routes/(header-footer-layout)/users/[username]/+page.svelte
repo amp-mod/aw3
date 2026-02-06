@@ -1,8 +1,19 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte'
-	import { UserRound, Pencil, FolderOpen, Bold, Italic, List, AlertCircle } from '@lucide/svelte'
+	import {
+		UserRound,
+		Pencil,
+		FolderOpen,
+		Bold,
+		Italic,
+		List,
+		AlertCircle,
+		ShieldAlert,
+		Gavel,
+		X,
+	} from '@lucide/svelte'
 	import { enhance } from '$app/forms'
-	import { rankMap, isOp } from '$lib/ranks'
+	import { rankMap, isStaff } from '$lib/ranks'
 	import MarkdownIt from 'markdown-it'
 
 	import { Editor } from '@tiptap/core'
@@ -11,7 +22,7 @@
 
 	let { data, form } = $props()
 	let userProfile = $state(data.userProfile)
-	const { isOwnProfile } = data
+	const { isOwnProfile, isViewerStaff } = data
 
 	const md = new MarkdownIt({
 		html: false,
@@ -20,13 +31,17 @@
 		breaks: true,
 	})
 
-	const viewerIsOp = isOp(data.user?.rank)
+	// State for Bio Editing
+	const viewerIsOp = isStaff(data.user?.rank)
 	const canEdit = isOwnProfile || viewerIsOp
-
 	let isEditingBio = $state(false)
 	let editedBio = $state(userProfile.bio ?? '')
 	let editorElement: HTMLElement | undefined = $state()
 	let editor: Editor | undefined = $state()
+
+	// State for Moderation
+	let isBanModalOpen = $state(false)
+	let userStatus = $state(userProfile.status)
 
 	$effect(() => {
 		if (isEditingBio && editorElement && !editor) {
@@ -78,14 +93,46 @@
 			<UserRound size={56} />
 		</div>
 		<div class="flex grow flex-col justify-center">
-			<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">
-				{userProfile.username}{#if userProfile.rank === 3}*{/if}
-			</h1>
+			<div class="flex items-center gap-3">
+				<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">
+					{userProfile.username}{#if userProfile.rank === 3}*{/if}
+				</h1>
+				{#if isViewerStaff && userStatus === 'banned'}
+					<span
+						class="rounded border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-xs font-bold text-red-500"
+					>
+						BANNED
+					</span>
+				{/if}
+			</div>
 			<div class="flex items-center gap-1 opacity-50">
 				{rankMap[userProfile.rank ?? 0]}
 			</div>
 		</div>
+
+		{#if isViewerStaff && !isOwnProfile}
+			<div class="flex gap-2">
+				<button
+					onclick={() => (isBanModalOpen = true)}
+					class="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-red-700"
+				>
+					<Gavel size={16} /> Ban User
+				</button>
+			</div>
+		{/if}
 	</header>
+
+	{#if isViewerStaff && userStatus === 'banned' && userProfile.banReason}
+		<div
+			class="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-900/30 dark:bg-red-900/20 dark:text-red-400"
+		>
+			<ShieldAlert size={20} />
+			<div>
+				<p class="text-sm font-bold">Mod Note: User is currently banned</p>
+				<p class="text-xs opacity-80">Reason: {userProfile.banReason}</p>
+			</div>
+		</div>
+	{/if}
 
 	<div class="flex flex-col gap-6">
 		<section class={styles.sectionCard}>
@@ -114,7 +161,6 @@
 					use:enhance={() => {
 						return async ({ result, update }) => {
 							if (result.type === 'success') {
-								// Manually update local state so the UI reflects changes without a full reload
 								userProfile.bio = editedBio
 								isEditingBio = false
 							}
@@ -207,3 +253,79 @@
 		</section>
 	</div>
 </div>
+
+{#if isBanModalOpen}
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+		<div
+			class="w-full max-w-md rounded-2xl border bg-white p-6 shadow-xl dark:border-neutral-700 dark:bg-neutral-800"
+		>
+			<div class="mb-4 flex items-center justify-between">
+				<h2 class="text-xl font-bold text-red-600">Ban {userProfile.username}</h2>
+				<button
+					onclick={() => (isBanModalOpen = false)}
+					class="text-neutral-500 hover:text-neutral-700"
+				>
+					<X size={20} />
+				</button>
+			</div>
+
+			<form
+				method="POST"
+				action="?/banUser"
+				use:enhance={() => {
+					return async ({ result, update }) => {
+						if (result.type === 'success') {
+							userStatus = 'banned'
+							isBanModalOpen = false
+						}
+						await update()
+					}
+				}}
+				class="space-y-4"
+			>
+				<input type="hidden" name="userId" value={userProfile.id} />
+
+				<div>
+					<label class={styles.label} for="reason">Reason for Ban</label>
+					<input
+						name="reason"
+						type="text"
+						placeholder="Violation of community guidelines..."
+						required
+						class="w-full rounded-lg border border-neutral-300 bg-transparent p-2 outline-none focus:ring-2 focus:ring-red-500 dark:border-neutral-600"
+					/>
+				</div>
+
+				<div>
+					<label class={styles.label} for="duration">Duration</label>
+					<select
+						name="duration"
+						class="w-full rounded-lg border border-neutral-300 bg-transparent p-2 dark:border-neutral-600"
+					>
+						<option value="">Permanent</option>
+						<option value="1">Unban</option>
+						<hr />
+						<option value="86400000">24 hours</option>
+						<option value="259200000">3 days</option>
+						<option value="604800000">1 week</option>
+						<option value="10000">10 seconds [for testing - don't use for real bans!]</option>
+					</select>
+				</div>
+
+				<div class="flex gap-3 pt-2">
+					<button
+						type="submit"
+						class="flex-1 rounded-lg bg-red-600 py-2 font-bold text-white hover:bg-red-700"
+						>Confirm Ban</button
+					>
+					<button
+						type="button"
+						onclick={() => (isBanModalOpen = false)}
+						class="flex-1 rounded-lg bg-neutral-200 py-2 font-bold text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200"
+						>Cancel</button
+					>
+				</div>
+			</form>
+		</div>
+	</div>
+{/if}
