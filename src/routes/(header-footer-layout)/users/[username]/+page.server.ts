@@ -14,6 +14,7 @@ function stripMarkdown(text: string): string {
 	const tokens = md.parse(text, {})
 	let plainText = ''
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const extractText = (tokens: any[]) => {
 		tokens.forEach((token) => {
 			if (token.type === 'text' || token.type === 'code_inline') {
@@ -41,7 +42,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			rank: table.user.rank,
 			bio: table.user.bio,
 			status: table.user.status,
-			// PROTECTED DATA: Only loaded if the viewer is staff
+			createdAt: table.user.createdAt,
 			...(isStaffMember
 				? {
 						bannedExpiry: table.user.bannedExpiry,

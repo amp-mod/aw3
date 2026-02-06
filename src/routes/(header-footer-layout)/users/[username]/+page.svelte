@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte'
+	import { onDestroy } from 'svelte'
 	import {
 		UserRound,
 		Pencil,
@@ -15,10 +15,7 @@
 	import { enhance } from '$app/forms'
 	import { rankMap, isStaff } from '$lib/ranks'
 	import MarkdownIt from 'markdown-it'
-
-	import { Editor } from '@tiptap/core'
-	import StarterKit from '@tiptap/starter-kit'
-	import { Markdown } from '@tiptap/markdown'
+	import { type Editor } from '@tiptap/core'
 
 	let { data, form } = $props()
 	let userProfile = $state(data.userProfile)
@@ -30,6 +27,14 @@
 		typographer: true,
 		breaks: true,
 	})
+
+	const joinedDate = userProfile.createdAt
+		? new Date(userProfile.createdAt).toLocaleDateString('en-US', {
+				year: 'numeric',
+				month: 'long',
+				day: 'numeric',
+			})
+		: 'Unknown'
 
 	// State for Bio Editing
 	const viewerIsOp = isStaff(data.user?.rank)
@@ -43,24 +48,33 @@
 	let isBanModalOpen = $state(false)
 	let userStatus = $state(userProfile.status)
 
+	// Lazy load Tiptap only when editing starts
 	$effect(() => {
 		if (isEditingBio && editorElement && !editor) {
-			editor = new Editor({
-				element: editorElement,
-				extensions: [StarterKit, Markdown],
-				content: editedBio,
-				contentType: 'markdown',
-				editorProps: {
-					attributes: {
-						class:
-							'prose prose-sm dark:prose-invert focus:outline-none min-h-[150px] p-4 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 rounded-b-xl max-w-none',
+			const initEditor = async () => {
+				const { Editor } = await import('@tiptap/core')
+				const { default: StarterKit } = await import('@tiptap/starter-kit')
+				const { Markdown } = await import('@tiptap/markdown')
+
+				editor = new Editor({
+					element: editorElement!,
+					extensions: [StarterKit, Markdown],
+					content: editedBio,
+					contentType: 'markdown',
+					editorProps: {
+						attributes: {
+							class:
+								'prose prose-sm dark:prose-invert focus:outline-none min-h-[150px] p-4 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 rounded-b-xl max-w-none',
+						},
 					},
-				},
-				onUpdate: ({ editor }) => {
-					editedBio = editor.getMarkdown()
-				},
-			})
+					onUpdate: ({ editor }) => {
+						editedBio = editor.getMarkdown()
+					},
+				})
+			}
+			initEditor()
 		}
+
 		if (!isEditingBio && editor) {
 			editor.destroy()
 			editor = undefined
@@ -105,8 +119,10 @@
 					</span>
 				{/if}
 			</div>
-			<div class="flex items-center gap-1 opacity-50">
-				{rankMap[userProfile.rank ?? 0]}
+			<div class="flex items-center gap-2 text-sm opacity-50">
+				<span>{rankMap[userProfile.rank ?? 0]}</span>
+				<span>•</span>
+				<span>Joined {joinedDate}</span>
 			</div>
 		</div>
 
@@ -198,7 +214,15 @@
 						</button>
 					</div>
 
-					<div bind:this={editorElement}></div>
+					<div bind:this={editorElement}>
+						{#if !editor}
+							<div
+								class="flex h-[150px] items-center justify-center bg-neutral-50 dark:bg-neutral-900/50"
+							>
+								<span class="text-sm opacity-50">Loading editor...</span>
+							</div>
+						{/if}
+					</div>
 
 					<div class="mt-4 flex gap-2">
 						<button
