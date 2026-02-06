@@ -1,5 +1,5 @@
 <script>
-  import NoAmpMod from '$lib/components/NoAmpMod.svelte';
+	import NoAmpMod from '$lib/components/NoAmpMod.svelte'
 </script>
 
 <NoAmpMod path="addons" />

@@ -1,10 +1,10 @@
 <script>
-  import { page } from '$app/state';
-  const projectID = $state(page.params.projectID);
+	import { page } from '$app/state'
+	const projectID = $state(page.params.projectID)
 </script>
 
 <svelte:head>
-  <title>Project with ID {projectID} - AmpMod</title>
+	<title>Project with ID {projectID} - AmpMod</title>
 </svelte:head>
 
 <h1>{projectID}</h1>

@@ -1,77 +1,77 @@
 <script lang="ts">
-  import { ExternalLink } from '@lucide/svelte';
-  import { page } from '$app/state';
+	import { ExternalLink } from '@lucide/svelte'
+	import { page } from '$app/state'
 
-  const { data, children } = $props();
+	const { data, children } = $props()
 
-  type Tab =
-    | { label: string; id?: undefined; href?: undefined; externalIcon?: undefined }
-    | { id: string; label: string; href: string; externalIcon?: undefined }
-    | { id: string; label: string; href: string; externalIcon: boolean };
+	type Tab =
+		| { label: string; id?: undefined; href?: undefined; externalIcon?: undefined }
+		| { id: string; label: string; href: string; externalIcon?: undefined }
+		| { id: string; label: string; href: string; externalIcon: boolean }
 
-  const tabs = [
-    ...(data.user
-      ? [
-          { label: 'Website' },
-          { id: 'profile', label: 'Profile', href: '/settings/profile' },
-          { id: 'account', label: 'Account', href: '/settings/account' },
-          { id: 'danger', label: 'Dangerous', href: '/settings/danger' }
-        ]
-      : []),
-    { label: 'Editor' },
-    { id: 'theme', label: 'Theme', href: '/settings/theme' },
-    {
-      id: 'addons',
-      label: 'Addons',
-      href: '/settings/addons',
-      externalIcon: true
-    }
-  ];
-  const activeTabLabel = $derived.by(() => {
-    const currentTab: Tab = tabs.find((tab) => tab.href === page.url.pathname) || {
-      label: 'Settings'
-    };
-    return currentTab.label;
-  });
+	const tabs = [
+		...(data.user
+			? [
+					{ label: 'Website' },
+					{ id: 'profile', label: 'Profile', href: '/settings/profile' },
+					{ id: 'account', label: 'Account', href: '/settings/account' },
+					{ id: 'danger', label: 'Dangerous', href: '/settings/danger' },
+				]
+			: []),
+		{ label: 'Editor' },
+		{ id: 'theme', label: 'Theme', href: '/settings/theme' },
+		{
+			id: 'addons',
+			label: 'Addons',
+			href: '/settings/addons',
+			externalIcon: true,
+		},
+	]
+	const activeTabLabel = $derived.by(() => {
+		const currentTab: Tab = tabs.find((tab) => tab.href === page.url.pathname) || {
+			label: 'Settings',
+		}
+		return currentTab.label
+	})
 </script>
 
 <svelte:head>
-  <title>{activeTabLabel} Settings - AmpMod</title>
+	<title>{activeTabLabel} Settings - AmpMod</title>
 </svelte:head>
 
 <h1 class="mx-auto mt-8 mb-4 max-w-5xl text-3xl font-bold text-black dark:text-white">Settings</h1>
 <div
-  class="mx-auto mb-24 flex min-h-120 max-w-5xl overflow-hidden rounded-xl border border-black/10 bg-neutral-100 dark:border-white/10 dark:bg-neutral-800"
+	class="mx-auto mb-24 flex min-h-120 max-w-5xl overflow-hidden rounded-xl border border-black/10 bg-neutral-100 dark:border-white/10 dark:bg-neutral-800"
 >
-  <nav class="flex w-64 flex-col gap-2 bg-neutral-200 p-4 dark:bg-accent-secondary">
-    {#each tabs as tab (tab)}
-      {#if !tab.id}
-        <div class="gao-3 flex w-full items-center">
-          <div class="font-bold">{tab.label}</div>
-          <div
-            class="ml-4 w-full border-t border-t-neutral-500/30 dark:border-t-accent-tertiary"
-          ></div>
-        </div>
-      {:else}
-        <a
-          id={tab.id}
-          class="rounded px-3 py-2 text-left text-black transition-colors hover:bg-black/10 dark:text-white dark:hover:bg-accent-tertiary
+	<nav class="flex w-64 flex-col gap-2 bg-neutral-200 p-4 dark:bg-accent-secondary">
+		{#each tabs as tab (tab)}
+			{#if !tab.id}
+				<div class="gao-3 flex w-full items-center">
+					<div class="font-bold">{tab.label}</div>
+					<div
+						class="ml-4 w-full border-t border-t-neutral-500/30 dark:border-t-accent-tertiary"
+					></div>
+				</div>
+			{:else}
+				<a
+					id={tab.id}
+					class="rounded px-3 py-2 text-left text-black transition-colors hover:bg-black/10 dark:text-white dark:hover:bg-accent-tertiary
                {page.url.pathname === tab.href
-            ? 'bg-black/10 font-semibold dark:bg-accent-tertiary'
-            : ''}"
-          href={tab.href}
-          target={tab.externalIcon ? '_blank' : null}
-          aria-current={page.url.pathname === tab.href}
-        >
-          <div class="flex items-center justify-between">
-            <div class="inline-flex items-center gap-2">{tab.label}</div>
-            {#if tab.externalIcon}<ExternalLink size={18} class="text-black dark:text-white" />{/if}
-          </div>
-        </a>
-      {/if}
-    {/each}
-  </nav>
-  <div class="flex-1 p-6 text-black dark:text-white">
-    {@render children()}
-  </div>
+						? 'bg-black/10 font-semibold dark:bg-accent-tertiary'
+						: ''}"
+					href={tab.href}
+					target={tab.externalIcon ? '_blank' : null}
+					aria-current={page.url.pathname === tab.href}
+				>
+					<div class="flex items-center justify-between">
+						<div class="inline-flex items-center gap-2">{tab.label}</div>
+						{#if tab.externalIcon}<ExternalLink size={18} class="text-black dark:text-white" />{/if}
+					</div>
+				</a>
+			{/if}
+		{/each}
+	</nav>
+	<div class="flex-1 p-6 text-black dark:text-white">
+		{@render children()}
+	</div>
 </div>

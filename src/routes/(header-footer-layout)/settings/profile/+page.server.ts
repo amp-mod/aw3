@@ -1,18 +1,18 @@
-import { redirect } from '@sveltejs/kit';
-import { getRequestEvent } from '$app/server';
-import type { PageServerLoad } from './$types';
+import { redirect } from '@sveltejs/kit'
+import { getRequestEvent } from '$app/server'
+import type { PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async () => {
-  const user = requireLogin();
-  return { user };
-};
+	const user = requireLogin()
+	return { user }
+}
 
 function requireLogin() {
-  const { locals } = getRequestEvent();
+	const { locals } = getRequestEvent()
 
-  if (!locals.user) {
-    return redirect(302, '/auth/login');
-  }
+	if (!locals.user) {
+		return redirect(302, '/auth/login')
+	}
 
-  return locals.user;
+	return locals.user
 }
