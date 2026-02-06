@@ -120,7 +120,7 @@
 				<img
 					src={HeroImg}
 					alt="An illustration of AmpMod's mascot, Apple Cat."
-					class="object-stretch relative z-10 h-38 w-full max-w-md"
+					class="object-stretch h-38 w-full"
 				/>
 			</div>
 		</div>
