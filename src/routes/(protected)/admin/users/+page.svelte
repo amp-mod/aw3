@@ -29,7 +29,7 @@
 							<form method="POST" action="?/updateRank" use:enhance class="flex items-center gap-3">
 								<input type="hidden" name="userId" value={user.id} />
 
-								{#if user.id !== data.user.id}
+								{#if user.id !== data.user.id || user.rank !== 3}
 									<select
 										name="rank"
 										class="rounded border border-black/20 bg-white px-2 py-1 text-sm dark:border-white/20 dark:bg-transparent"
