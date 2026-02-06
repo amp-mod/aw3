@@ -41,10 +41,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			username: table.user.username,
 			rank: table.user.rank,
 			bio: table.user.bio,
-			status: table.user.status,
 			createdAt: table.user.createdAt,
 			...(isStaffMember
 				? {
+						status: table.user.status,
 						bannedExpiry: table.user.bannedExpiry,
 						banReason: table.user.banReason,
 					}
