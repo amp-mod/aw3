@@ -11,7 +11,11 @@
 		ShieldAlert,
 		Gavel,
 		X,
+		Heading as HeadingIcon,
+		ChevronDown,
+		Save,
 	} from '@lucide/svelte'
+	import { DropdownMenu } from 'bits-ui'
 	import { enhance } from '$app/forms'
 	import { rankMap, isStaff } from '$lib/ranks'
 	import MarkdownIt from 'markdown-it'
@@ -62,9 +66,13 @@
 					content: editedBio,
 					contentType: 'markdown',
 					editorProps: {
+						// CLEANING NBSP ON PASTE
+						transformPastedText(text) {
+							return text.replace(/\u00A0/g, ' ')
+						},
 						attributes: {
 							class:
-								'prose prose-sm dark:prose-invert focus:outline-none min-h-[150px] p-4 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 rounded-b-xl max-w-none',
+								'prose prose-sm dark:prose-invert focus:outline-none min-h-[200px] p-4 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 rounded-b-xl max-w-none max-h-[400px] overflow-auto',
 						},
 					},
 					onUpdate: ({ editor }) => {
@@ -91,7 +99,9 @@
 		header: 'flex items-center gap-6 my-3',
 		label: 'text-sm font-bold text-accent-secondary dark:text-neutral-300 mb-2 block',
 		toolbarBtn:
-			'p-2 rounded hover:bg-white dark:hover:bg-neutral-700 transition-colors text-neutral-600 dark:text-neutral-300',
+			'p-2 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors text-neutral-600 dark:text-neutral-300 flex items-center gap-1',
+		dropdownItem:
+			'flex cursor-pointer items-center rounded-md px-3 py-2 text-sm outline-none hover:bg-neutral-100 dark:hover:bg-neutral-700 focus:bg-neutral-100 dark:focus:bg-neutral-700 transition-colors',
 	}
 </script>
 
@@ -99,7 +109,7 @@
 	<title>{userProfile.username} - AmpMod</title>
 </svelte:head>
 
-<div class="m-auto flex max-w-6xl flex-col gap-4 lg:p-8">
+<div class="m-auto flex max-w-6xl flex-col gap-6 lg:p-8">
 	<header class={styles.header}>
 		<div
 			class="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl border-2 border-neutral-200 bg-neutral-100 text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900"
@@ -114,9 +124,8 @@
 				{#if isViewerStaff && userStatus === 'banned'}
 					<span
 						class="rounded border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-xs font-bold text-red-500"
+						>BANNED</span
 					>
-						BANNED
-					</span>
 				{/if}
 			</div>
 			<div class="flex items-center gap-2 text-sm opacity-50">
@@ -138,19 +147,7 @@
 		{/if}
 	</header>
 
-	{#if isViewerStaff && userStatus === 'banned' && userProfile.banReason}
-		<div
-			class="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-900/30 dark:bg-red-900/20 dark:text-red-400"
-		>
-			<ShieldAlert size={20} />
-			<div>
-				<p class="text-sm font-bold">Mod Note: User is currently banned</p>
-				<p class="text-xs opacity-80">Reason: {userProfile.banReason}</p>
-			</div>
-		</div>
-	{/if}
-
-	<div class="flex flex-col gap-6">
+	<div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.5fr_1fr]">
 		<section class={styles.sectionCard}>
 			<div class="mb-2 flex items-center justify-between border-b pb-2 dark:border-neutral-700">
 				<span class={styles.label}>About Me</span>
@@ -161,16 +158,13 @@
 				{/if}
 			</div>
 
-			{#if form?.message}
-				<div
-					class="mb-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400"
-				>
-					<AlertCircle size={16} />
-					{form.message}
-				</div>
-			{/if}
-
 			{#if isEditingBio}
+				{#if data.user.rank === 0 && data.userProfile.bio === ''}
+					<div class="mb-2 rounded bg-amber-300 p-3 text-sm dark:bg-amber-900">
+						This is public. Remember not to add your full real name, city/town, private messaging
+						info, or any other personal info to your profile!
+					</div>
+				{/if}
 				<form
 					method="POST"
 					action="?/updateBio"
@@ -189,35 +183,65 @@
 					<input type="hidden" name="bio" value={editedBio} />
 
 					<div
-						class="flex gap-1 rounded-t-xl border border-b-0 border-neutral-300 bg-neutral-100 p-1 dark:border-neutral-600 dark:bg-neutral-800"
+						class="flex items-center gap-1 rounded-t-xl border border-b-0 border-neutral-300 bg-neutral-100 p-1 dark:border-neutral-600 dark:bg-neutral-800"
 					>
 						<button
 							type="button"
 							class={styles.toolbarBtn}
 							onclick={() => editor?.chain().focus().toggleBold().run()}
 						>
-							<Bold size={18} />
+							<Bold size={16} />
 						</button>
 						<button
 							type="button"
 							class={styles.toolbarBtn}
 							onclick={() => editor?.chain().focus().toggleItalic().run()}
 						>
-							<Italic size={18} />
+							<Italic size={16} />
 						</button>
 						<button
 							type="button"
 							class={styles.toolbarBtn}
 							onclick={() => editor?.chain().focus().toggleBulletList().run()}
 						>
-							<List size={18} />
+							<List size={16} />
 						</button>
+
+						<DropdownMenu.Root>
+							<DropdownMenu.Trigger class={styles.toolbarBtn}>
+								<HeadingIcon size={16} />
+								<ChevronDown size={12} class="opacity-50" />
+							</DropdownMenu.Trigger>
+							<DropdownMenu.Content
+								class="z-50 min-w-[140px] rounded-lg border border-neutral-300 bg-white p-1 shadow-xl dark:border-neutral-600 dark:bg-neutral-800"
+							>
+								<DropdownMenu.Item
+									class={styles.dropdownItem}
+									onSelect={() => editor?.chain().focus().setParagraph().run()}
+								>
+									Normal text
+								</DropdownMenu.Item>
+								<DropdownMenu.Separator class="my-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+								<DropdownMenu.Item
+									class={styles.dropdownItem}
+									onSelect={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+								>
+									<span class="font-bold">Heading 1</span>
+								</DropdownMenu.Item>
+								<DropdownMenu.Item
+									class={styles.dropdownItem}
+									onSelect={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
+								>
+									<span class="font-semibold">Heading 2</span>
+								</DropdownMenu.Item>
+							</DropdownMenu.Content>
+						</DropdownMenu.Root>
 					</div>
 
 					<div bind:this={editorElement}>
 						{#if !editor}
 							<div
-								class="flex h-[150px] items-center justify-center bg-neutral-50 dark:bg-neutral-900/50"
+								class="flex h-[200px] items-center justify-center rounded-b-xl border border-neutral-300 bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-900/50"
 							>
 								<span class="text-sm opacity-50">Loading editor...</span>
 							</div>
@@ -227,25 +251,22 @@
 					<div class="mt-4 flex gap-2">
 						<button
 							type="submit"
-							class="rounded-full bg-accent px-4 py-1 text-sm font-bold text-white hover:bg-accent-secondary"
+							class="flex items-center gap-3 rounded-full bg-accent px-4 py-1 text-sm font-bold text-white hover:bg-accent-secondary"
+							><Save />Save</button
 						>
-							Save Profile
-						</button>
 						<button
 							type="button"
 							onclick={() => {
 								isEditingBio = false
 								editedBio = userProfile.bio ?? ''
 							}}
-							class="text-sm text-neutral-500"
+							class="text-sm text-neutral-500">Cancel</button
 						>
-							Cancel
-						</button>
 					</div>
 				</form>
 			{:else}
 				<div
-					class="prose max-h-[400px] min-h-[100px] max-w-none overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert"
+					class="prose max-h-[400px] min-h-[200px] max-w-none overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert"
 				>
 					{#if userProfile.bio}
 						{@html md.render(userProfile.bio)}
@@ -258,98 +279,35 @@
 			{/if}
 		</section>
 
-		<section class={styles.sectionCard}>
-			<div class="mb-4 flex items-center justify-between">
-				<span class={styles.label}>Shared Projects (0)</span>
-				<a
-					href="/users/{userProfile.username}/projects"
-					class="text-xs font-bold text-accent hover:underline">View all</a
-				>
+		<section
+			class={`${styles.sectionCard} flex aspect-4/3 w-full flex-col self-start lg:w-[480px]`}
+		>
+			<div class="mb-4">
+				<span class={styles.label}>Featured Project</span>
 			</div>
 			<div
-				class="flex h-40 items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700"
+				class="flex grow items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700"
 			>
 				<div class="text-center text-neutral-400">
-					<FolderOpen class="mx-auto mb-2 opacity-20" size={40} />
-					<p class="text-sm">No projects shared yet.</p>
+					<FolderOpen class="mx-auto mb-2 opacity-20" size={32} />
+					<p class="text-xs">No project featured.</p>
 				</div>
 			</div>
 		</section>
 	</div>
-</div>
 
-{#if isBanModalOpen}
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-		<div
-			class="w-full max-w-md rounded-2xl border bg-white p-6 shadow-xl dark:border-neutral-700 dark:bg-neutral-800"
-		>
-			<div class="mb-4 flex items-center justify-between">
-				<h2 class="text-xl font-bold text-red-600">Ban {userProfile.username}</h2>
-				<button
-					onclick={() => (isBanModalOpen = false)}
-					class="text-neutral-500 hover:text-neutral-700"
-				>
-					<X size={20} />
-				</button>
-			</div>
-
-			<form
-				method="POST"
-				action="?/banUser"
-				use:enhance={() => {
-					return async ({ result, update }) => {
-						if (result.type === 'success') {
-							userStatus = 'banned'
-							isBanModalOpen = false
-						}
-						await update()
-					}
-				}}
-				class="space-y-4"
+	<section class={styles.sectionCard}>
+		<div class="mb-4 flex items-center justify-between">
+			<span class={styles.label}>Shared Projects (0)</span>
+			<a
+				href="/users/{userProfile.username}/projects"
+				class="text-xs font-bold text-accent hover:underline">View all</a
 			>
-				<input type="hidden" name="userId" value={userProfile.id} />
-
-				<div>
-					<label class={styles.label} for="reason">Reason for Ban</label>
-					<input
-						name="reason"
-						type="text"
-						placeholder="Violation of community guidelines..."
-						required
-						class="w-full rounded-lg border border-neutral-300 bg-transparent p-2 outline-none focus:ring-2 focus:ring-red-500 dark:border-neutral-600"
-					/>
-				</div>
-
-				<div>
-					<label class={styles.label} for="duration">Duration</label>
-					<select
-						name="duration"
-						class="w-full rounded-lg border border-neutral-300 bg-transparent p-2 dark:border-neutral-600"
-					>
-						<option value="">Permanent</option>
-						<option value="1">Unban</option>
-						<hr />
-						<option value="86400000">24 hours</option>
-						<option value="259200000">3 days</option>
-						<option value="604800000">1 week</option>
-						<option value="10000">10 seconds [for testing - don't use for real bans!]</option>
-					</select>
-				</div>
-
-				<div class="flex gap-3 pt-2">
-					<button
-						type="submit"
-						class="flex-1 rounded-lg bg-red-600 py-2 font-bold text-white hover:bg-red-700"
-						>Confirm Ban</button
-					>
-					<button
-						type="button"
-						onclick={() => (isBanModalOpen = false)}
-						class="flex-1 rounded-lg bg-neutral-200 py-2 font-bold text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200"
-						>Cancel</button
-					>
-				</div>
-			</form>
 		</div>
-	</div>
-{/if}
+		<div
+			class="flex h-32 items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700"
+		>
+			<p class="text-sm text-neutral-400">User hasn't shared any projects yet.</p>
+		</div>
+	</section>
+</div>
