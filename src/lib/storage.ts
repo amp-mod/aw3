@@ -4,7 +4,8 @@ import { resolve } from 'node:path'
 
 const isDocker = process.env.IS_DOCKER === 'true'
 
-const rootPath = isDocker ? '/uploads' : resolve(process.cwd(), 'dev-fs')
+const rootPath =
+	process.env.AW3_STORAGE_ROOT ?? (isDocker ? '/uploads' : resolve(process.cwd(), 'dev-fs'))
 
 const adapter = new LocalStorageAdapter(rootPath)
 
