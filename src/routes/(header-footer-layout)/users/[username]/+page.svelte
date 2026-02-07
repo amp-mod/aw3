@@ -7,19 +7,22 @@
 		Bold,
 		Italic,
 		List,
-		AlertCircle,
 		ShieldAlert,
 		Gavel,
 		X,
 		Heading as HeadingIcon,
 		ChevronDown,
 		Save,
+		Camera,
+		Loader2,
+		Loader,
 	} from '@lucide/svelte'
 	import { DropdownMenu } from 'bits-ui'
 	import { enhance } from '$app/forms'
 	import { rankMap, isStaff } from '$lib/ranks'
 	import MarkdownIt from 'markdown-it'
 	import { type Editor } from '@tiptap/core'
+	import { getPfpPath } from '$lib/storage-helpers'
 
 	let { data, form } = $props()
 	let userProfile = $state(data.userProfile)
@@ -48,11 +51,15 @@
 	let editorElement: HTMLElement | undefined = $state()
 	let editor: Editor | undefined = $state()
 
+	// State for PFP
+	let isUploadingPfp = $state(false)
+	let pfpInput: HTMLInputElement | undefined = $state()
+
 	// State for Moderation
 	let isBanModalOpen = $state(false)
 	let userStatus = $state(userProfile.status)
 
-	// Lazy load Tiptap only when editing starts
+	// Lazy load Tiptap
 	$effect(() => {
 		if (isEditingBio && editorElement && !editor) {
 			const initEditor = async () => {
@@ -66,7 +73,6 @@
 					content: editedBio,
 					contentType: 'markdown',
 					editorProps: {
-						// CLEANING NBSP ON PASTE
 						transformPastedText(text) {
 							return text.replace(/\u00A0/g, ' ')
 						},
@@ -102,6 +108,8 @@
 			'p-2 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors text-neutral-600 dark:text-neutral-300 flex items-center gap-1',
 		dropdownItem:
 			'flex cursor-pointer items-center rounded-md px-3 py-2 text-sm outline-none hover:bg-neutral-100 dark:hover:bg-neutral-700 focus:bg-neutral-100 dark:focus:bg-neutral-700 transition-colors',
+		pfpWrapper:
+			'relative group h-24 w-24 shrink-0 overflow-hidden rounded-xl border-2 border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900',
 	}
 </script>
 
@@ -111,11 +119,48 @@
 
 <div class="m-auto flex max-w-6xl flex-col gap-6 lg:p-8">
 	<header class={styles.header}>
-		<div
-			class="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl border-2 border-neutral-200 bg-neutral-100 text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900"
-		>
-			<UserRound size={56} />
+		<div class={styles.pfpWrapper}>
+			<img src={userProfile.pfp} alt={userProfile.username} class="h-full w-full object-contain" />
+
+			{#if canEdit}
+				<button
+					onclick={() => pfpInput?.click()}
+					class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
+					disabled={isUploadingPfp}
+				>
+					{#if isUploadingPfp}
+						<Loader class="animate-spin" size={24} />
+					{:else}
+						<Pencil size={24} />
+					{/if}
+				</button>
+
+				<form
+					method="POST"
+					action="?/updatePfp"
+					enctype="multipart/form-data"
+					use:enhance={() => {
+						isUploadingPfp = true
+						return async ({ result, update }) => {
+							isUploadingPfp = false
+							await update()
+							// SvelteKit re-runs the load function, updating avatarUrl automatically
+						}
+					}}
+					class="hidden"
+				>
+					<input type="hidden" name="targetUserId" value={userProfile.id} />
+					<input
+						bind:this={pfpInput}
+						type="file"
+						name="avatar"
+						accept="image/*"
+						onchange={(e) => e.currentTarget.form?.requestSubmit()}
+					/>
+				</form>
+			{/if}
 		</div>
+
 		<div class="flex grow flex-col justify-center">
 			<div class="flex items-center gap-3">
 				<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">
@@ -159,12 +204,6 @@
 			</div>
 
 			{#if isEditingBio}
-				{#if data.user.rank === 0 && data.userProfile.bio === ''}
-					<div class="mb-2 rounded bg-amber-300 p-3 text-sm dark:bg-amber-900">
-						This is public. Remember not to add your full real name, city/town, private messaging
-						info, or any other personal info to your profile!
-					</div>
-				{/if}
 				<form
 					method="POST"
 					action="?/updateBio"
@@ -188,29 +227,24 @@
 						<button
 							type="button"
 							class={styles.toolbarBtn}
-							onclick={() => editor?.chain().focus().toggleBold().run()}
+							onclick={() => editor?.chain().focus().toggleBold().run()}><Bold size={16} /></button
 						>
-							<Bold size={16} />
-						</button>
 						<button
 							type="button"
 							class={styles.toolbarBtn}
 							onclick={() => editor?.chain().focus().toggleItalic().run()}
+							><Italic size={16} /></button
 						>
-							<Italic size={16} />
-						</button>
 						<button
 							type="button"
 							class={styles.toolbarBtn}
 							onclick={() => editor?.chain().focus().toggleBulletList().run()}
+							><List size={16} /></button
 						>
-							<List size={16} />
-						</button>
 
 						<DropdownMenu.Root>
 							<DropdownMenu.Trigger class={styles.toolbarBtn}>
-								<HeadingIcon size={16} />
-								<ChevronDown size={12} class="opacity-50" />
+								<HeadingIcon size={16} /><ChevronDown size={12} class="opacity-50" />
 							</DropdownMenu.Trigger>
 							<DropdownMenu.Content
 								class="z-50 min-w-[140px] rounded-lg border border-neutral-300 bg-white p-1 shadow-xl dark:border-neutral-600 dark:bg-neutral-800"
@@ -218,22 +252,18 @@
 								<DropdownMenu.Item
 									class={styles.dropdownItem}
 									onSelect={() => editor?.chain().focus().setParagraph().run()}
+									>Normal text</DropdownMenu.Item
 								>
-									Normal text
-								</DropdownMenu.Item>
-								<DropdownMenu.Separator class="my-1 h-px bg-neutral-200 dark:bg-neutral-700" />
 								<DropdownMenu.Item
 									class={styles.dropdownItem}
 									onSelect={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+									><span class="font-bold">Heading 1</span></DropdownMenu.Item
 								>
-									<span class="font-bold">Heading 1</span>
-								</DropdownMenu.Item>
 								<DropdownMenu.Item
 									class={styles.dropdownItem}
 									onSelect={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
+									><span class="font-semibold">Heading 2</span></DropdownMenu.Item
 								>
-									<span class="font-semibold">Heading 2</span>
-								</DropdownMenu.Item>
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
 					</div>

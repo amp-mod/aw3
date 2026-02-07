@@ -1,10 +1,12 @@
-import { error, fail, type Actions } from '@sveltejs/kit'
+import { error, fail, isHttpError, type Actions } from '@sveltejs/kit'
 import { eq } from 'drizzle-orm'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import type { PageServerLoad } from './$types'
 import { Filter } from 'bad-words'
 import MarkdownIt from 'markdown-it'
+import { storage } from '$lib/storage'
+import { getPfpPath } from '$lib/storage-helpers'
 
 /**
  * Utility to strip Markdown for profanity checking
@@ -14,7 +16,6 @@ function stripMarkdown(text: string): string {
 	const tokens = md.parse(text, {})
 	let plainText = ''
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const extractText = (tokens: any[]) => {
 		tokens.forEach((token) => {
 			if (token.type === 'text' || token.type === 'code_inline') {
@@ -41,6 +42,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			username: table.user.username,
 			rank: table.user.rank,
 			bio: table.user.bio,
+			pfp: table.user.pfp,
 			createdAt: table.user.createdAt,
 			...(isStaffMember
 				? {
@@ -55,23 +57,54 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.limit(1)
 
 	if (!userProfile) {
-		error(404, { message: 'User not found' })
+		throw error(404, { message: 'User not found' })
 	}
 
 	const isOwnProfile = locals.user?.id === userProfile.id
 
 	return {
-		userProfile,
+		userProfile: {
+			...userProfile,
+			pfp: getPfpPath(userProfile.pfp),
+		},
 		isOwnProfile,
 		isViewerStaff: isStaffMember,
 	}
 }
 
 export const actions: Actions = {
-	/**
-	 * Updates a user's bio.
-	 * Allows users to edit their own bio, or staff to edit any bio.
-	 */
+	updatePfp: async ({ request, locals }) => {
+		if (!locals.user) return fail(401, { message: 'Unauthorized' })
+
+		const formData = await request.formData()
+		const file = formData.get('avatar') as File
+		const targetUserId = formData.get('targetUserId') as string
+
+		const isOwner = locals.user.id === targetUserId
+		const isStaff = (locals.user.rank ?? 0) >= 2
+		if (!isOwner && !isStaff) return fail(403, { message: 'Forbidden' })
+
+		if (!file || file.size === 0) return fail(400, { message: 'No file uploaded' })
+		if (file.size > 720 * 1024) return fail(400, { message: 'File too large (Max 720KB)' })
+		if (!file.type.startsWith('image/')) return fail(400, { message: 'Must be an image' })
+
+		try {
+			const buffer = Buffer.from(await file.arrayBuffer())
+			const ext = file.name.split('.').pop() || 'png'
+
+			const storagePath = `aw3-avatars/${targetUserId}_${Date.now()}.${ext}`
+
+			await storage.write(storagePath, buffer)
+
+			await db.update(table.user).set({ pfp: storagePath }).where(eq(table.user.id, targetUserId))
+
+			return { success: true }
+		} catch (e) {
+			console.error('PFP Upload Error:', e)
+			return fail(500, { message: 'Internal Server Error saving file' })
+		}
+	},
+
 	updateBio: async ({ request, locals }) => {
 		if (!locals.user || !locals.session) {
 			return fail(401, { message: 'Unauthorized' })
@@ -102,7 +135,6 @@ export const actions: Actions = {
 			return fail(403, { message: 'You do not have permission to edit this bio' })
 		}
 
-		// Profanity Filter
 		const filter = new Filter()
 		filter.addWords('naughtywordfortestingeventhoughthislongwordisnotbad')
 		filter.removeWords('crap', 'heck', 'dang')
@@ -116,11 +148,6 @@ export const actions: Actions = {
 		return { success: true }
 	},
 
-	/**
-	 * Bans a user.
-	 * Only accessible by staff (rank >= 2).
-	 * Prevents banning users of equal or higher rank.
-	 */
 	banUser: async ({ request, locals }) => {
 		const viewerRank = locals.user?.rank ?? 0
 
@@ -131,7 +158,7 @@ export const actions: Actions = {
 		const formData = await request.formData()
 		const targetUserId = formData.get('userId') as string
 		const reason = (formData.get('reason') as string) || 'No reason provided'
-		const durationHours = formData.get('duration') ? Number(formData.get('duration')) : null // null = permanent
+		const durationHours = formData.get('duration') ? Number(formData.get('duration')) : null
 
 		const [targetUser] = await db
 			.select()
@@ -143,7 +170,6 @@ export const actions: Actions = {
 			return fail(404, { message: 'User not found' })
 		}
 
-		// Hierarchy Check: Cannot ban equal or higher ranks
 		if (viewerRank <= (targetUser.rank ?? 0)) {
 			return fail(403, { message: 'You cannot ban a user with an equal or higher rank' })
 		}
@@ -151,7 +177,7 @@ export const actions: Actions = {
 		let expiryDate: Date | null = null
 		if (durationHours && durationHours > 0) {
 			expiryDate = new Date()
-			expiryDate.setMilliseconds(expiryDate.getMilliseconds() + durationHours)
+			expiryDate.setHours(expiryDate.getHours() + durationHours)
 		}
 
 		await db

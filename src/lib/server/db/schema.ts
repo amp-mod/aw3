@@ -1,4 +1,4 @@
-import { pgTable, smallint, text, timestamp, varchar, index, boolean } from 'drizzle-orm/pg-core'
+import { pgTable, smallint, text, timestamp, varchar, index } from 'drizzle-orm/pg-core'
 
 export const user = pgTable(
 	'user',
@@ -22,6 +22,7 @@ export const user = pgTable(
 		status: text('status').default('normal'),
 		bannedExpiry: timestamp('banned_expiry', { withTimezone: true, mode: 'date' }).defaultNow(),
 		banReason: text('ban_reason'),
+		pfp: text(),
 	},
 	(table) => [index('username_idx').on(table.username)],
 )
