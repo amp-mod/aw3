@@ -13,16 +13,15 @@
 		Heading as HeadingIcon,
 		ChevronDown,
 		Save,
-		Camera,
-		Loader2,
 		Loader,
+		AlertCircle,
 	} from '@lucide/svelte'
 	import { DropdownMenu } from 'bits-ui'
 	import { enhance } from '$app/forms'
 	import { rankMap, isStaff } from '$lib/ranks'
 	import MarkdownIt from 'markdown-it'
 	import { type Editor } from '@tiptap/core'
-	import { getPfpPath } from '$lib/storage-helpers'
+	import Modal from '$lib/components/Modal.svelte'
 
 	let { data, form } = $props()
 	let userProfile = $state(data.userProfile)
@@ -110,6 +109,9 @@
 			'flex cursor-pointer items-center rounded-md px-3 py-2 text-sm outline-none hover:bg-neutral-100 dark:hover:bg-neutral-700 focus:bg-neutral-100 dark:focus:bg-neutral-700 transition-colors',
 		pfpWrapper:
 			'relative group h-24 w-24 shrink-0 overflow-hidden rounded-xl border-2 border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900',
+		modalLabel: 'mb-1 block text-xs font-bold uppercase text-neutral-500',
+		modalInput:
+			'w-full rounded-lg border border-neutral-300 bg-neutral-50 p-2.5 text-sm outline-none focus:ring-2 focus:ring-red-500 dark:border-neutral-700 dark:bg-neutral-900',
 	}
 </script>
 
@@ -117,10 +119,79 @@
 	<title>{userProfile.username} - AmpMod</title>
 </svelte:head>
 
+<Modal bind:open={isBanModalOpen} title="Ban User">
+	<div class="flex flex-col gap-2">
+		<p class="mb-4 text-sm text-neutral-600 dark:text-neutral-300">
+			You are about to ban <strong>{userProfile.username}</strong> from logging into their account. Please
+			provide a reason and duration.
+		</p>
+
+		<form
+			method="POST"
+			action="?/banUser"
+			use:enhance={() => {
+				return async ({ result, update }) => {
+					if (result.type === 'success') {
+						userStatus = 'banned'
+						isBanModalOpen = false
+					}
+					await update()
+				}
+			}}
+			class="flex flex-col gap-4"
+		>
+			<input type="hidden" name="targetUserId" value={userProfile.id} />
+
+			<div>
+				<label for="duration" class={styles.modalLabel}>Duration</label>
+				<select name="duration" id="duration" class={styles.modalInput}>
+					<option value="permanent">Permanent</option>
+					<option value="24h">24 Hours</option>
+					<option value="7d">7 Days</option>
+					<option value="30d">30 Days</option>
+				</select>
+			</div>
+
+			<div>
+				<label for="reason" class={styles.modalLabel}>Reason</label>
+				<textarea
+					id="reason"
+					name="reason"
+					placeholder="Violation of community guidelines..."
+					class="{styles.modalInput} min-h-[100px] resize-none"
+					required
+				></textarea>
+			</div>
+
+			<div class="mt-2 flex justify-end gap-3">
+				<button
+					type="button"
+					onclick={() => (isBanModalOpen = false)}
+					class="px-4 py-2 text-sm font-semibold text-neutral-500 hover:text-neutral-700"
+				>
+					Cancel
+				</button>
+				<button
+					type="submit"
+					class="rounded-lg bg-red-600 px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-red-700"
+				>
+					Confirm Ban
+				</button>
+			</div>
+		</form>
+	</div>
+</Modal>
+
 <div class="m-auto flex max-w-6xl flex-col gap-6 lg:p-8">
 	<header class={styles.header}>
 		<div class={styles.pfpWrapper}>
-			<img src={userProfile.pfp} alt={userProfile.username} class="h-full w-full object-contain" />
+			{#if userProfile.pfp}
+				<img src={userProfile.pfp} alt={userProfile.username} class="h-full w-full object-cover" />
+			{:else}
+				<div class="flex h-full w-full items-center justify-center text-neutral-400">
+					<UserRound size={56} />
+				</div>
+			{/if}
 
 			{#if canEdit}
 				<button
@@ -141,10 +212,9 @@
 					enctype="multipart/form-data"
 					use:enhance={() => {
 						isUploadingPfp = true
-						return async ({ result, update }) => {
+						return async ({ update }) => {
 							isUploadingPfp = false
 							await update()
-							// SvelteKit re-runs the load function, updating avatarUrl automatically
 						}
 					}}
 					class="hidden"
@@ -166,11 +236,12 @@
 				<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">
 					{userProfile.username}{#if userProfile.rank === 3}*{/if}
 				</h1>
-				{#if isViewerStaff && userStatus === 'banned'}
+				{#if userStatus === 'banned'}
 					<span
 						class="rounded border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-xs font-bold text-red-500"
-						>BANNED</span
 					>
+						BANNED
+					</span>
 				{/if}
 			</div>
 			<div class="flex items-center gap-2 text-sm opacity-50">
@@ -204,7 +275,7 @@
 			</div>
 
 			{#if isEditingBio}
-				{#if data.user.rank === 0 && data.userProfile.bio === ''}
+				{#if data.user.rank === 0 && (userProfile.bio === '' || !userProfile.bio)}
 					<div class="mb-2 rounded bg-amber-300 p-3 text-sm dark:bg-amber-900">
 						This is public. Remember not to add your full real name, city/town, private messaging
 						info, or any other personal info to your profile!
@@ -233,24 +304,29 @@
 						<button
 							type="button"
 							class={styles.toolbarBtn}
-							onclick={() => editor?.chain().focus().toggleBold().run()}><Bold size={16} /></button
+							onclick={() => editor?.chain().focus().toggleBold().run()}
 						>
+							<Bold size={16} />
+						</button>
 						<button
 							type="button"
 							class={styles.toolbarBtn}
 							onclick={() => editor?.chain().focus().toggleItalic().run()}
-							><Italic size={16} /></button
 						>
+							<Italic size={16} />
+						</button>
 						<button
 							type="button"
 							class={styles.toolbarBtn}
 							onclick={() => editor?.chain().focus().toggleBulletList().run()}
-							><List size={16} /></button
 						>
+							<List size={16} />
+						</button>
 
 						<DropdownMenu.Root>
 							<DropdownMenu.Trigger class={styles.toolbarBtn}>
-								<HeadingIcon size={16} /><ChevronDown size={12} class="opacity-50" />
+								<HeadingIcon size={16} />
+								<ChevronDown size={12} class="opacity-50" />
 							</DropdownMenu.Trigger>
 							<DropdownMenu.Content
 								class="z-50 min-w-[140px] rounded-lg border border-neutral-300 bg-white p-1 shadow-xl dark:border-neutral-600 dark:bg-neutral-800"
@@ -258,18 +334,22 @@
 								<DropdownMenu.Item
 									class={styles.dropdownItem}
 									onSelect={() => editor?.chain().focus().setParagraph().run()}
-									>Normal text</DropdownMenu.Item
 								>
+									Normal text
+								</DropdownMenu.Item>
+								<DropdownMenu.Separator class="my-1 h-px bg-neutral-200 dark:bg-neutral-700" />
 								<DropdownMenu.Item
 									class={styles.dropdownItem}
 									onSelect={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
-									><span class="font-bold">Heading 1</span></DropdownMenu.Item
 								>
+									<span class="font-bold">Heading 1</span>
+								</DropdownMenu.Item>
 								<DropdownMenu.Item
 									class={styles.dropdownItem}
 									onSelect={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
-									><span class="font-semibold">Heading 2</span></DropdownMenu.Item
 								>
+									<span class="font-semibold">Heading 2</span>
+								</DropdownMenu.Item>
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
 					</div>
@@ -287,17 +367,20 @@
 					<div class="mt-4 flex gap-2">
 						<button
 							type="submit"
-							class="flex items-center gap-3 rounded-full bg-accent px-4 py-1 text-sm font-bold text-white hover:bg-accent-secondary"
-							><Save />Save</button
+							class="flex items-center gap-3 rounded-full bg-accent px-4 py-1 text-sm font-bold text-white transition-colors hover:bg-accent-secondary"
 						>
+							<Save size={18} /> Save
+						</button>
 						<button
 							type="button"
 							onclick={() => {
 								isEditingBio = false
 								editedBio = userProfile.bio ?? ''
 							}}
-							class="text-sm text-neutral-500">Cancel</button
+							class="text-sm text-neutral-500"
 						>
+							Cancel
+						</button>
 					</div>
 				</form>
 			{:else}
@@ -337,8 +420,10 @@
 			<span class={styles.label}>Shared Projects (0)</span>
 			<a
 				href="/users/{userProfile.username}/projects"
-				class="text-xs font-bold text-accent hover:underline">View all</a
+				class="text-xs font-bold text-accent hover:underline"
 			>
+				View all
+			</a>
 		</div>
 		<div
 			class="flex h-32 items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700"
