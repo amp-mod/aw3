@@ -1,31 +1,23 @@
-<!-- TODO: Add stuff for the website. This file is modified from website-v2 in ampmod/extensions.
-     Styling is inspired by the AmpMod static website UI. -->
 <script lang="ts">
-	import { Menubar } from 'bits-ui'
+	import { NavigationMenu } from 'bits-ui'
 	import Logo from './tw-advanced.svelte'
-
 	import {
 		MenuIcon,
 		X,
 		Search,
 		UserRound,
 		TriangleAlert,
-		EyeOff,
 		ChevronDown,
 		HatGlasses,
 	} from '@lucide/svelte'
-	let { admin = false, data } = $props()
 
+	let { admin = false, data } = $props()
 	let menuOpen = $state(false)
 
 	async function logout() {
 		try {
 			const res = await fetch('/auth/logout', { method: 'POST' })
-			if (res.ok) {
-				location.reload()
-			} else {
-				console.error('Logout failed')
-			}
+			if (res.ok) location.reload()
 		} catch (err) {
 			console.error(err)
 		}
@@ -43,7 +35,6 @@
 	class="flex h-14 w-full items-center border-b border-black/10 bg-white px-3 font-sans text-sm text-black md:px-6 dark:bg-accent-secondary dark:text-white"
 >
 	<div class="flex w-full items-center justify-between">
-		<!-- Logo -->
 		<a
 			href={admin ? '/admin' : '/'}
 			aria-label="AmpMod homepage"
@@ -53,13 +44,11 @@
 				{#if admin}
 					<TriangleAlert /> <span>Admin panel</span>
 				{:else}
-					<Logo />
-					AmpMod
+					<Logo /> AmpMod
 				{/if}
 			</span>
 		</a>
 
-		<!-- Hamburger for small screens -->
 		<button
 			class="block p-2 text-xl focus:outline-none md:hidden"
 			onclick={() => (menuOpen = !menuOpen)}
@@ -72,109 +61,138 @@
 			{/if}
 		</button>
 
-		<!-- Navigation -->
-		<nav
-			aria-label="Navigation"
-			class="absolute top-14 left-0 z-40 hidden w-full flex-col items-start gap-2 border-t border-black/10 bg-white p-4 shadow-lg md:static md:flex md:w-auto md:flex-row md:items-center md:gap-2 md:border-0 md:bg-transparent md:p-0 md:shadow-none dark:border-white/20 dark:bg-accent-secondary"
-			class:!flex={menuOpen}
-		>
-			{#if admin}
-				<a href="/" class="header-link w-full md:w-auto">Back to home</a>
-			{:else}
-				<a href="/projects/editor" class="header-link w-full md:w-auto" data-sveltekit-reload
-					>Create</a
-				>
-				<a href="/projects/explore" class="header-link w-full md:w-auto">Explore</a>
-				<a href="/about" class="header-link w-full md:w-auto">About</a>
-			{/if}
-
-			<!-- Search bar -->
-			<form
-				role="search"
-				aria-label="Site search"
-				class="relative flex items-center md:ml-2"
-				onsubmit={(event) => {
-					event?.preventDefault()
-				}}
+		<NavigationMenu.Root class="relative z-10 flex items-center">
+			<NavigationMenu.List
+				class="absolute top-14 left-0 z-40 hidden w-full flex-col items-start gap-2 border-t border-black/10 bg-white p-4 shadow-lg md:static md:flex md:w-auto md:flex-row md:items-center md:gap-2 md:border-0 md:bg-transparent md:p-0 md:shadow-none dark:border-white/20 dark:bg-accent-secondary"
 			>
-				<input
-					type="search"
-					placeholder="Search..."
-					class="h-8 w-36 rounded-lg border border-neutral-300 bg-transparent px-3 pr-12 text-sm outline-none focus:border-accent-secondary sm:w-44 md:w-48 dark:border-white/20 dark:focus:border-white"
-				/>
-				<button
-					type="submit"
-					class="absolute top-1/2 right-1 flex -translate-y-1/2 cursor-pointer items-center justify-center rounded bg-accent-secondary px-2.5 py-1 text-white hover:bg-accent-tertiary dark:bg-white/10 dark:hover:bg-white/20"
-					aria-label="Search"
-				>
-					<Search class="h-4 w-4" />
-				</button>
-			</form>
-			<div
-				class="hidden h-5 self-center border-l border-neutral-300 md:block dark:border-white/20"
-			></div>
+				{#if admin}
+					<NavigationMenu.Item>
+						<NavigationMenu.Link href="/">
+							{#snippet child({ props })}
+								<a {...props} class="header-link w-full md:w-auto">Back to home</a>
+							{/snippet}
+						</NavigationMenu.Link>
+					</NavigationMenu.Item>
+				{:else}
+					<NavigationMenu.Item>
+						<NavigationMenu.Link href="/projects/editor" data-sveltekit-reload>
+							{#snippet child({ props })}
+								<a {...props} class="header-link w-full md:w-auto">Create</a>
+							{/snippet}
+						</NavigationMenu.Link>
+					</NavigationMenu.Item>
+					<NavigationMenu.Item>
+						<NavigationMenu.Link href="/projects/explore">
+							{#snippet child({ props })}
+								<a {...props} class="header-link w-full md:w-auto">Explore</a>
+							{/snippet}
+						</NavigationMenu.Link>
+					</NavigationMenu.Item>
+					<NavigationMenu.Item>
+						<NavigationMenu.Link href="/about">
+							{#snippet child({ props })}
+								<a {...props} class="header-link w-full md:w-auto">About</a>
+							{/snippet}
+						</NavigationMenu.Link>
+					</NavigationMenu.Item>
+				{/if}
 
-			<Menubar.Root class="relative">
-				<Menubar.Menu>
-					<Menubar.Trigger class="header-link flex items-center gap-2">
-						{#if data.user}<UserRound />{:else}<HatGlasses />{/if}
-						{data?.user?.username || 'Not logged in'}
-						<ChevronDown />
-					</Menubar.Trigger>
-					<Menubar.Portal>
-						<Menubar.Content
-							class="mt-3 flex w-40 flex-col overflow-hidden rounded-md border border-neutral-300 bg-white shadow-lg dark:border-white/20 dark:bg-accent-secondary"
-						>
+				<form
+					role="search"
+					aria-label="Site search"
+					class="relative flex items-center md:ml-2"
+					onsubmit={(e) => e.preventDefault()}
+				>
+					<input
+						type="search"
+						placeholder="Search..."
+						class="h-8 w-36 rounded-lg border border-neutral-300 bg-transparent px-3 pr-12 text-sm outline-none focus:border-accent-secondary sm:w-44 md:w-48 dark:border-white/20 dark:focus:border-white"
+					/>
+					<button
+						type="submit"
+						class="absolute top-1/2 right-1 flex -translate-y-1/2 items-center justify-center rounded bg-accent-secondary px-2.5 py-1 text-white hover:bg-accent-tertiary dark:bg-white/10 dark:hover:bg-white/20"
+					>
+						<Search class="h-4 w-4" />
+					</button>
+				</form>
+
+				<div
+					class="hidden h-5 self-center border-l border-neutral-300 md:block dark:border-white/20"
+				></div>
+
+				<NavigationMenu.Item value="profile" openOnHover={false}>
+					<NavigationMenu.Trigger>
+						{#snippet child({ props })}
+							<button {...props} class="header-link flex items-center gap-2">
+								{#if data.user}<UserRound class="h-4 w-4" />{:else}<HatGlasses
+										class="h-4 w-4"
+									/>{/if}
+								{data?.user?.username || 'Not logged in'}
+								<ChevronDown
+									class="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180"
+								/>
+							</button>
+						{/snippet}
+					</NavigationMenu.Trigger>
+
+					<NavigationMenu.Content
+						class="absolute top-full right-0 z-50 mt-2 w-40 overflow-hidden rounded-md border border-neutral-300 bg-white shadow-lg dark:border-white/20 dark:bg-accent-secondary"
+					>
+						<ul class="flex flex-col p-1">
 							{#if data.user}
-								<Menubar.Item>
-									<a
-										href={`/users/${data.user.username}`}
-										class="block px-3 py-2 text-sm outline-hidden hover:bg-accent/10 dark:hover:bg-white/10"
-										>Profile</a
-									>
-								</Menubar.Item>
-								<Menubar.Item>
-									<a
-										href="/settings"
-										class="block px-3 py-2 text-sm outline-hidden hover:bg-accent/10 dark:hover:bg-white/10"
-										>Settings</a
-									>
-								</Menubar.Item>
-								<Menubar.Item>
-									<button
-										onclick={logout}
-										class="block w-full cursor-pointer px-3 py-2 text-left text-sm outline-hidden hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
-									>
-										Log out
-									</button>
-								</Menubar.Item>
+								<li>
+									<NavigationMenu.Link href={`/users/${data.user.username}`}>
+										{#snippet child({ props })}<a {...props} class="submenu-item">Profile</a
+											>{/snippet}
+									</NavigationMenu.Link>
+								</li>
+								<li>
+									<NavigationMenu.Link href="/settings">
+										{#snippet child({ props })}<a {...props} class="submenu-item">Settings</a
+											>{/snippet}
+									</NavigationMenu.Link>
+								</li>
+								<li>
+									<button onclick={logout} class="submenu-item w-full text-left">Log out</button>
+								</li>
 							{:else}
-								<Menubar.Item>
-									<a
-										href="/auth/register"
-										class="block px-3 py-2 text-sm outline-hidden hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
-										>Join AmpMod</a
-									>
-								</Menubar.Item>
-								<Menubar.Item>
-									<a
-										href="/auth/login"
-										class="block px-3 py-2 text-sm outline-hidden hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
-										>Log in</a
-									>
-								</Menubar.Item>
-								<Menubar.Item>
-									<a
-										href="/settings"
-										class="block px-3 py-2 text-sm outline-hidden hover:bg-accent/10 hover:ring-0 dark:hover:bg-white/10"
-										>Settings</a
-									>
-								</Menubar.Item>
+								<li>
+									<NavigationMenu.Link href="/auth/register">
+										{#snippet child({ props })}<a {...props} class="submenu-item">Join</a>{/snippet}
+									</NavigationMenu.Link>
+								</li>
+								<li>
+									<NavigationMenu.Link href="/auth/login">
+										{#snippet child({ props })}<a {...props} class="submenu-item">Log in</a
+											>{/snippet}
+									</NavigationMenu.Link>
+								</li>
 							{/if}
-						</Menubar.Content>
-					</Menubar.Portal>
-				</Menubar.Menu>
-			</Menubar.Root>
-		</nav>
+						</ul>
+					</NavigationMenu.Content>
+				</NavigationMenu.Item>
+			</NavigationMenu.List>
+		</NavigationMenu.Root>
 	</div>
 </header>
+
+<style>
+	@reference '../../../app.css';
+
+	.header-link {
+		@apply flex h-9 cursor-pointer items-center rounded-lg px-3 font-bold whitespace-nowrap transition-colors outline-none;
+
+		@apply hover:bg-black/5 focus-visible:bg-black/5;
+		@apply dark:hover:bg-white/10 dark:focus-visible:bg-white/10;
+
+		@apply data-[state=open]:bg-accent-light/20 dark:data-[state=open]:bg-white/20;
+		@apply not-dark:data-[state=open]:text-accent-secondary;
+	}
+
+	.submenu-item {
+		@apply block cursor-pointer rounded-sm px-3 py-2 text-sm transition-colors outline-none;
+
+		@apply hover:bg-neutral-100 focus-visible:bg-neutral-100 data-[highlighted]:bg-neutral-100;
+		@apply dark:hover:bg-white/10 dark:focus-visible:bg-white/10 dark:data-[highlighted]:bg-white/10;
+	}
+</style>
