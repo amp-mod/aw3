@@ -6,7 +6,7 @@ export const user = pgTable(
 		id: text('id').primaryKey(),
 		username: text('username').notNull().unique(),
 		passwordHash: text('password_hash').notNull(),
-		bio: varchar({ length: 256 }).default(''),
+		bio: varchar({ length: 2000 }).default(''),
 		/*
          0 = new ampmodder
          1 = ampmodder

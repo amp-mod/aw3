@@ -81,7 +81,7 @@ export const actions: Actions = {
 		const newBio = formData.get('bio') as string
 		const targetUserId = formData.get('targetUserId') as string
 
-		if (newBio.length > 500) {
+		if (newBio.length > 2000) {
 			return fail(400, { message: 'Bio is too long' })
 		}
 
