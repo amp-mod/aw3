@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { NavigationMenu } from 'bits-ui'
 	import Logo from './tw-advanced.svelte'
+	import { modals } from '$lib/modals.svelte'
 	import {
 		MenuIcon,
 		X,
@@ -157,13 +158,20 @@
 								</li>
 							{:else}
 								<li>
+									<button
+										onclick={() => (modals.login = true)}
+										class="submenu-item w-full text-left">Log in</button
+									>
+								</li>
+								<li>
 									<NavigationMenu.Link href="/auth/register">
-										{#snippet child({ props })}<a {...props} class="submenu-item">Join</a>{/snippet}
+										{#snippet child({ props })}<a {...props} class="submenu-item">Join AmpMod</a
+											>{/snippet}
 									</NavigationMenu.Link>
 								</li>
 								<li>
-									<NavigationMenu.Link href="/auth/login">
-										{#snippet child({ props })}<a {...props} class="submenu-item">Log in</a
+									<NavigationMenu.Link href="/settings">
+										{#snippet child({ props })}<a {...props} class="submenu-item">Settings</a
 											>{/snippet}
 									</NavigationMenu.Link>
 								</li>
