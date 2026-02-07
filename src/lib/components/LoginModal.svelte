@@ -31,7 +31,7 @@
 		class="flex flex-col gap-2"
 	>
 		{#if errorMessage}
-			<div class="rounded bg-red-500 p-2 text-sm text-white">
+			<div class="rounded bg-amber-100 p-2 text-sm dark:bg-red-700/40">
 				{errorMessage}
 			</div>
 		{/if}

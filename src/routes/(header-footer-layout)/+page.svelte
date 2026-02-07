@@ -13,16 +13,15 @@
 			'bg-accent',
 			'px-5 py-2',
 			'items-center gap-2',
-			'text-2xl font-bold text-white',
-			'not-dark:hover:bg-accent-secondary',
-			'dark:bg-white dark:text-accent-tertiary',
+			'text-2xl font-bold',
+			'bg-white text-accent',
 			'hover:scale-115',
 			'transition-all',
 		].join(' '),
 		button_small: [
 			'inline-flex',
 			'rounded-full',
-			'bg-accent-secondary',
+			'bg-accent',
 			'px-4 py-2',
 			'items-center justify-center gap-2',
 			'font-bold text-white',
@@ -102,7 +101,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="bg-slate-100 p-9 text-accent-secondary dark:bg-accent-tertiary dark:text-white">
+	<div class="bg-accent p-9 text-white">
 		<div class="m-auto flex max-w-6xl items-center justify-between">
 			<div class="flex grow flex-col justify-center text-left">
 				<h1 class="text-4xl leading-tight font-bold">Create games, animations and stories</h1>
@@ -113,10 +112,6 @@
 			</div>
 
 			<div class="flex items-center justify-center">
-				<div
-					class="inset-0 scale-75 rounded-full bg-yellow-400/20 blur-3xl dark:bg-yellow-200/10"
-				></div>
-
 				<img
 					src={HeroImg}
 					alt="An illustration of AmpMod's mascot, Apple Cat."
@@ -126,7 +121,9 @@
 		</div>
 	</div>
 
-	<div class="bg-slate-200 p-4 text-accent-secondary dark:bg-accent-tertiary/80 dark:text-white">
+	<div
+		class="bg-accent-light/30 p-4 text-accent-secondary dark:bg-accent-tertiary/80 dark:text-white"
+	>
 		<div class="flex justify-center gap-4">
 			<a href="https://ampmod.codeberg.org/manual" class={styles.button_small}>Manual</a>
 			<a href="https://ampmod.miraheze.org" class={styles.button_small}>AmpMod Wiki</a>

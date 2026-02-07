@@ -33,7 +33,7 @@
 </a>
 
 <header
-	class="flex h-14 w-full items-center border-b border-black/10 bg-white px-3 font-sans text-sm text-black md:px-6 dark:bg-accent-secondary dark:text-white"
+	class="flex h-14 w-full items-center border-b border-black/10 bg-white px-3 font-sans text-sm text-black md:px-6 dark:bg-accent dark:text-white"
 >
 	<div class="flex w-full items-center justify-between">
 		<a
@@ -64,7 +64,7 @@
 
 		<NavigationMenu.Root class="relative z-10 flex items-center">
 			<NavigationMenu.List
-				class="absolute top-14 left-0 z-40 hidden w-full flex-col items-start gap-2 border-t border-black/10 bg-white p-4 shadow-lg md:static md:flex md:w-auto md:flex-row md:items-center md:gap-2 md:border-0 md:bg-transparent md:p-0 md:shadow-none dark:border-white/20 dark:bg-accent-secondary"
+				class="absolute top-14 left-0 z-40 hidden w-full flex-col items-start gap-2 border-t p-4 shadow-lg md:static md:flex md:w-auto md:flex-row md:items-center md:gap-2 md:border-0 md:bg-transparent md:p-0 md:shadow-none"
 			>
 				{#if admin}
 					<NavigationMenu.Item>
