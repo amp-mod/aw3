@@ -204,6 +204,12 @@
 			</div>
 
 			{#if isEditingBio}
+				{#if data.user.rank === 0 && data.userProfile.bio === ''}
+					<div class="mb-2 rounded bg-amber-300 p-3 text-sm dark:bg-amber-900">
+						This is public. Remember not to add your full real name, city/town, private messaging
+						info, or any other personal info to your profile!
+					</div>
+				{/if}
 				<form
 					method="POST"
 					action="?/updateBio"
