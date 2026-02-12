@@ -7,14 +7,11 @@
 		Bold,
 		Italic,
 		List,
-		ShieldAlert,
 		Gavel,
-		X,
 		Heading as HeadingIcon,
 		ChevronDown,
 		Save,
 		Loader,
-		AlertCircle,
 	} from '@lucide/svelte'
 	import { DropdownMenu } from 'bits-ui'
 	import { enhance } from '$app/forms'
@@ -23,9 +20,30 @@
 	import { type Editor } from '@tiptap/core'
 	import Modal from '$lib/components/Modal.svelte'
 
-	let { data, form } = $props()
+	let { data } = $props()
+
+	// 1. Initialize local state from data
 	let userProfile = $state(data.userProfile)
-	const { isOwnProfile, isViewerStaff } = data
+	let userStatus = $state(data.userProfile.status)
+	let isEditingBio = $state(false)
+	let editedBio = $state(data.userProfile.bio ?? '')
+	let isUploadingPfp = $state(false)
+	let isBanModalOpen = $state(false)
+
+	// 2. Navigation Sync: Reset state when the user ID changes
+	$effect(() => {
+		// Accessing data.userProfile.id creates a dependency on the current route's user
+		const newUser = data.userProfile
+		userProfile = newUser
+		userStatus = newUser.status
+		editedBio = newUser.bio ?? ''
+
+		// Close UI states when moving to a new person
+		isEditingBio = false
+		isBanModalOpen = false
+	})
+
+	const { isOwnProfile, isViewerStaff } = $derived(data)
 
 	const md = new MarkdownIt({
 		html: false,
@@ -34,29 +52,22 @@
 		breaks: true,
 	})
 
-	const joinedDate = userProfile.createdAt
-		? new Date(userProfile.createdAt).toLocaleDateString('en-US', {
-				year: 'numeric',
-				month: 'long',
-				day: 'numeric',
-			})
-		: 'Unknown'
+	const joinedDate = $derived(
+		userProfile.createdAt
+			? new Date(userProfile.createdAt).toLocaleDateString('en-US', {
+					year: 'numeric',
+					month: 'long',
+					day: 'numeric',
+				})
+			: 'Unknown',
+	)
 
-	// State for Bio Editing
-	const viewerIsOp = isStaff(data.user?.rank)
-	const canEdit = isOwnProfile || viewerIsOp
-	let isEditingBio = $state(false)
-	let editedBio = $state(userProfile.bio ?? '')
+	const viewerIsOp = $derived(isStaff(data.user?.rank))
+	const canEdit = $derived(isOwnProfile || viewerIsOp)
+
 	let editorElement: HTMLElement | undefined = $state()
 	let editor: Editor | undefined = $state()
-
-	// State for PFP
-	let isUploadingPfp = $state(false)
 	let pfpInput: HTMLInputElement | undefined = $state()
-
-	// State for Moderation
-	let isBanModalOpen = $state(false)
-	let userStatus = $state(userProfile.status)
 
 	// Lazy load Tiptap
 	$effect(() => {
@@ -88,9 +99,12 @@
 			initEditor()
 		}
 
-		if (!isEditingBio && editor) {
-			editor.destroy()
-			editor = undefined
+		// Cleanup editor if user stops editing or moves pages
+		return () => {
+			if (editor) {
+				editor.destroy()
+				editor = undefined
+			}
 		}
 	})
 
@@ -122,8 +136,8 @@
 <Modal bind:open={isBanModalOpen} title="Ban User">
 	<div class="flex flex-col gap-2">
 		<p class="mb-4 text-sm text-neutral-600 dark:text-neutral-300">
-			You are about to ban <strong>{userProfile.username}</strong> from logging into their account. Please
-			provide a reason and duration.
+			You are about to ban <strong>{userProfile.username}</strong>. Please provide a reason and
+			duration.
 		</p>
 
 		<form
@@ -141,7 +155,6 @@
 			class="flex flex-col gap-4"
 		>
 			<input type="hidden" name="targetUserId" value={userProfile.id} />
-
 			<div>
 				<label for="duration" class={styles.modalLabel}>Duration</label>
 				<select name="duration" id="duration" class={styles.modalInput}>
@@ -151,7 +164,6 @@
 					<option value="30d">30 Days</option>
 				</select>
 			</div>
-
 			<div>
 				<label for="reason" class={styles.modalLabel}>Reason</label>
 				<textarea
@@ -162,21 +174,18 @@
 					required
 				></textarea>
 			</div>
-
 			<div class="mt-2 flex justify-end gap-3">
 				<button
 					type="button"
 					onclick={() => (isBanModalOpen = false)}
 					class="px-4 py-2 text-sm font-semibold text-neutral-500 hover:text-neutral-700"
+					>Cancel</button
 				>
-					Cancel
-				</button>
 				<button
 					type="submit"
 					class="rounded-lg bg-red-600 px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-red-700"
+					>Confirm Ban</button
 				>
-					Confirm Ban
-				</button>
 			</div>
 		</form>
 	</div>
@@ -239,9 +248,8 @@
 				{#if userStatus === 'banned'}
 					<span
 						class="rounded border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-xs font-bold text-red-500"
+						>BANNED</span
 					>
-						BANNED
-					</span>
 				{/if}
 			</div>
 			<div class="flex items-center gap-2 text-sm opacity-50">
@@ -275,12 +283,6 @@
 			</div>
 
 			{#if isEditingBio}
-				{#if data.user.rank === 0 && (userProfile.bio === '' || !userProfile.bio)}
-					<div class="mb-2 rounded bg-amber-300 p-3 text-sm dark:bg-amber-900">
-						This is public. Remember not to add your full real name, city/town, private messaging
-						info, or any other personal info to your profile!
-					</div>
-				{/if}
 				<form
 					method="POST"
 					action="?/updateBio"
@@ -304,52 +306,46 @@
 						<button
 							type="button"
 							class={styles.toolbarBtn}
-							onclick={() => editor?.chain().focus().toggleBold().run()}
+							onclick={() => editor?.chain().focus().toggleBold().run()}><Bold size={16} /></button
 						>
-							<Bold size={16} />
-						</button>
 						<button
 							type="button"
 							class={styles.toolbarBtn}
 							onclick={() => editor?.chain().focus().toggleItalic().run()}
+							><Italic size={16} /></button
 						>
-							<Italic size={16} />
-						</button>
 						<button
 							type="button"
 							class={styles.toolbarBtn}
 							onclick={() => editor?.chain().focus().toggleBulletList().run()}
+							><List size={16} /></button
 						>
-							<List size={16} />
-						</button>
-
 						<DropdownMenu.Root>
-							<DropdownMenu.Trigger class={styles.toolbarBtn}>
-								<HeadingIcon size={16} />
-								<ChevronDown size={12} class="opacity-50" />
-							</DropdownMenu.Trigger>
+							<DropdownMenu.Trigger class={styles.toolbarBtn}
+								><HeadingIcon size={16} /><ChevronDown
+									size={12}
+									class="opacity-50"
+								/></DropdownMenu.Trigger
+							>
 							<DropdownMenu.Content
 								class="z-50 min-w-[140px] rounded-lg border border-neutral-300 bg-white p-1 shadow-xl dark:border-neutral-600 dark:bg-neutral-800"
 							>
 								<DropdownMenu.Item
 									class={styles.dropdownItem}
 									onSelect={() => editor?.chain().focus().setParagraph().run()}
+									>Normal text</DropdownMenu.Item
 								>
-									Normal text
-								</DropdownMenu.Item>
 								<DropdownMenu.Separator class="my-1 h-px bg-neutral-200 dark:bg-neutral-700" />
 								<DropdownMenu.Item
 									class={styles.dropdownItem}
 									onSelect={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+									><span class="font-bold">Heading 1</span></DropdownMenu.Item
 								>
-									<span class="font-bold">Heading 1</span>
-								</DropdownMenu.Item>
 								<DropdownMenu.Item
 									class={styles.dropdownItem}
 									onSelect={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
+									><span class="font-semibold">Heading 2</span></DropdownMenu.Item
 								>
-									<span class="font-semibold">Heading 2</span>
-								</DropdownMenu.Item>
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
 					</div>
@@ -368,19 +364,13 @@
 						<button
 							type="submit"
 							class="flex items-center gap-3 rounded-full bg-accent px-4 py-1 text-sm font-bold text-white transition-colors hover:bg-accent-secondary"
+							><Save size={18} /> Save</button
 						>
-							<Save size={18} /> Save
-						</button>
 						<button
 							type="button"
-							onclick={() => {
-								isEditingBio = false
-								editedBio = userProfile.bio ?? ''
-							}}
-							class="text-sm text-neutral-500"
+							onclick={() => (isEditingBio = false)}
+							class="text-sm text-neutral-500">Cancel</button
 						>
-							Cancel
-						</button>
 					</div>
 				</form>
 			{:else}
@@ -401,9 +391,7 @@
 		<section
 			class={`${styles.sectionCard} flex aspect-4/3 w-full flex-col self-start lg:w-[480px]`}
 		>
-			<div class="mb-4">
-				<span class={styles.label}>Featured Project</span>
-			</div>
+			<div class="mb-4"><span class={styles.label}>Featured Project</span></div>
 			<div
 				class="flex grow items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700"
 			>
@@ -414,21 +402,4 @@
 			</div>
 		</section>
 	</div>
-
-	<section class={styles.sectionCard}>
-		<div class="mb-4 flex items-center justify-between">
-			<span class={styles.label}>Shared Projects (0)</span>
-			<a
-				href="/users/{userProfile.username}/projects"
-				class="text-xs font-bold text-accent hover:underline"
-			>
-				View all
-			</a>
-		</div>
-		<div
-			class="flex h-32 items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700"
-		>
-			<p class="text-sm text-neutral-400">User hasn't shared any projects yet.</p>
-		</div>
-	</section>
 </div>
