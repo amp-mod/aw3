@@ -15,6 +15,12 @@
 					even maliciously. Remove the AW3_FORCE_ADMIN env var to remove this banner.
 				</div>
 			{/if}
+			<noscript>
+				<div class="bg-red-700 p-2 text-center text-lg font-bold">
+					Enable JavaScript to use most features on AmpMod, including logging in or running
+					projects. If you're afraid of remote scripts, download AmpMod on your computer.
+				</div>
+			</noscript>
 			{@render children?.()}
 		</main>
 		<Footer />
