@@ -38,6 +38,7 @@ export async function validateSessionToken(token: string) {
 				status: table.user.status,
 				banReason: table.user.banReason,
 				bannedExpiry: table.user.bannedExpiry,
+				pfp: table.user.pfp,
 			},
 			session: table.session,
 		})

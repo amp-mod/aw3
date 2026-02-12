@@ -20,16 +20,12 @@ export const actions: Actions = {
 		const formData = await event.request.formData()
 		const username = formData.get('username')
 		const password = formData.get('password')
-		const passwordConfirm = formData.get('password2')
 
 		if (!validateUsername(username)) {
 			return fail(400, { message: 'Invalid username' })
 		}
 		if (!validatePassword(password)) {
 			return fail(400, { message: 'Invalid password' })
-		}
-		if (passwordConfirm !== password) {
-			return fail(400, { message: 'Password does not match confirmation' })
 		}
 		const altchaPayload = formData.get('altcha')
 
@@ -59,7 +55,7 @@ export const actions: Actions = {
 		} catch {
 			return fail(500, { message: 'An error has occurred' })
 		}
-		return redirect(302, '/')
+		return { success: true }
 	},
 }
 

@@ -1,16 +1,8 @@
 <script lang="ts">
 	import { NavigationMenu } from 'bits-ui'
-	import Logo from './tw-advanced.svelte'
+	import logo from './logo.svg'
 	import { modals } from '$lib/modals.svelte'
-	import {
-		MenuIcon,
-		X,
-		Search,
-		UserRound,
-		TriangleAlert,
-		ChevronDown,
-		HatGlasses,
-	} from '@lucide/svelte'
+	import { MenuIcon, X, Search, ChevronDown, Mail, FolderClosed } from '@lucide/svelte'
 
 	let { admin = false, data } = $props()
 	let menuOpen = $state(false)
@@ -27,28 +19,22 @@
 
 <a
 	href="#main"
-	class="sr-only z-50 text-2xl font-bold focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:rounded focus:bg-accent-tertiary focus:p-2 focus:text-white"
+	class="sr-only z-50 font-bold focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:rounded focus:bg-accent-tertiary focus:px-2 focus:text-white"
 >
 	Skip to main content
 </a>
 
 <header
-	class="flex h-14 w-full items-center border-b border-black/10 bg-white px-3 font-sans text-sm text-black md:px-6 dark:bg-accent dark:text-white"
+	class="flex h-12 w-full items-center border-b border-black/10 bg-white px-3 font-sans text-sm text-black md:px-6 dark:bg-accent dark:text-white"
 >
-	<div class="flex w-full items-center justify-between">
-		<a
-			href={admin ? '/admin' : '/'}
-			aria-label="AmpMod homepage"
-			class="header-link flex items-center text-xl"
-		>
-			<span class="flex items-center gap-1 font-semibold">
-				{#if admin}
-					<TriangleAlert /> <span>Admin panel</span>
-				{:else}
-					<Logo /> AmpMod
-				{/if}
-			</span>
-		</a>
+	<div class="flex w-full items-center justify-center">
+		{#if !admin}<a href={'/'} aria-label="AmpMod homepage" class="flex items-center text-xl">
+				<span
+					class="flex transform items-center gap-1 px-3 font-semibold transition-transform hover:scale-105"
+				>
+					<img src={logo} alt="AmpMod" class="h-7" />
+				</span>
+			</a>{/if}
 
 		<button
 			class="block p-2 text-xl focus:outline-none md:hidden"
@@ -89,13 +75,13 @@
 							{/snippet}
 						</NavigationMenu.Link>
 					</NavigationMenu.Item>
-					<NavigationMenu.Item>
-						<NavigationMenu.Link href="/about">
-							{#snippet child({ props })}
-								<a {...props} class="header-link w-full md:w-auto">About</a>
-							{/snippet}
-						</NavigationMenu.Link>
-					</NavigationMenu.Item>
+					{#if !data.user}<NavigationMenu.Item>
+							<NavigationMenu.Link href="/about">
+								{#snippet child({ props })}
+									<a {...props} class="header-link w-full md:w-auto">About</a>
+								{/snippet}
+							</NavigationMenu.Link>
+						</NavigationMenu.Item>{/if}
 				{/if}
 
 				<form
@@ -107,7 +93,7 @@
 					<input
 						type="search"
 						placeholder="Search..."
-						class="h-8 w-36 rounded-lg border border-neutral-300 bg-transparent px-3 pr-12 text-sm outline-none focus:border-accent-secondary sm:w-44 md:w-48 dark:border-white/20 dark:focus:border-white"
+						class="h-8 w-full rounded-lg border border-neutral-300 bg-transparent px-3 pr-12 text-sm outline-none focus:border-accent-secondary sm:w-44 md:w-64 dark:border-white/20 dark:focus:border-white"
 					/>
 					<button
 						type="submit"
@@ -116,19 +102,35 @@
 						<Search class="h-4 w-4" />
 					</button>
 				</form>
-
-				<div
-					class="hidden h-5 self-center border-l border-neutral-300 md:block dark:border-white/20"
-				></div>
-
+				{#if data.user}
+					<NavigationMenu.Item>
+						<NavigationMenu.Link href="/about">
+							{#snippet child({ props })}
+								<a {...props} class="header-link w-full md:w-auto"><Mail /></a>
+							{/snippet}
+						</NavigationMenu.Link>
+					</NavigationMenu.Item>
+					<NavigationMenu.Item>
+						<NavigationMenu.Link href="/about">
+							{#snippet child({ props })}
+								<a {...props} class="header-link w-full md:w-auto"><FolderClosed /></a>
+							{/snippet}
+						</NavigationMenu.Link>
+					</NavigationMenu.Item>{/if}
 				<NavigationMenu.Item value="profile" openOnHover={false}>
 					<NavigationMenu.Trigger>
 						{#snippet child({ props })}
 							<button {...props} class="header-link flex items-center gap-2">
-								{#if data.user}<UserRound class="h-4 w-4" />{:else}<HatGlasses
-										class="h-4 w-4"
-									/>{/if}
-								{data?.user?.username || 'Not logged in'}
+								{#if data.user}
+									<img
+										src={data.userPfp}
+										class="h-6 w-6 rounded border border-black/10 bg-white object-cover"
+										alt="User icon"
+									/>
+									<div class="max-w-30 overflow-hidden text-ellipsis">{data.user.username}</div>
+								{:else}
+									<span>Not logged in</span>
+								{/if}
 								<ChevronDown
 									class="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180"
 								/>
@@ -148,6 +150,12 @@
 									</NavigationMenu.Link>
 								</li>
 								<li>
+									<NavigationMenu.Link href={'/mystuff'}>
+										{#snippet child({ props })}<a {...props} class="submenu-item">My Stuff</a
+											>{/snippet}
+									</NavigationMenu.Link>
+								</li>
+								<li>
 									<NavigationMenu.Link href="/settings">
 										{#snippet child({ props })}<a {...props} class="submenu-item">Settings</a
 											>{/snippet}
@@ -158,16 +166,16 @@
 								</li>
 							{:else}
 								<li>
-									<button
-										onclick={() => (modals.login = true)}
-										class="submenu-item w-full text-left">Log in</button
-									>
-								</li>
-								<li>
 									<NavigationMenu.Link href="/auth/register">
 										{#snippet child({ props })}<a {...props} class="submenu-item">Join AmpMod</a
 											>{/snippet}
 									</NavigationMenu.Link>
+								</li>
+								<li>
+									<button
+										onclick={() => (modals.login = true)}
+										class="submenu-item w-full text-left">Log in</button
+									>
 								</li>
 								<li>
 									<NavigationMenu.Link href="/settings">
@@ -188,7 +196,7 @@
 	@reference '../../../app.css';
 
 	.header-link {
-		@apply flex h-9 cursor-pointer items-center rounded-lg px-3 font-bold whitespace-nowrap transition-colors outline-none;
+		@apply flex h-10 cursor-pointer items-center rounded-lg px-3 font-bold whitespace-nowrap transition-colors outline-none;
 
 		@apply hover:bg-black/5 focus-visible:bg-black/5;
 		@apply dark:hover:bg-white/10 dark:focus-visible:bg-white/10;
