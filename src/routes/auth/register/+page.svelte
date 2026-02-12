@@ -3,7 +3,7 @@
 	import type { ActionData } from './$types'
 	import { browser } from '$app/environment'
 	import { Loader, ArrowLeft, CheckCircle2 } from '@lucide/svelte'
-	import TwAdvanced from '$lib/components/header/tw-advanced.svelte'
+	import TwAdvanced from './tw-advanced.svelte'
 
 	let { form }: { form: ActionData } = $props()
 
