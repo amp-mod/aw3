@@ -7,8 +7,11 @@ the git history was ruined and poor decisions started to be made after we added 
 
 Stack:
 
-- SvelteKit
-- TypeScript
+- SvelteKit for integrating the backend and frontend. Because of this, we use Svelte for the frontend.
+- TypeScript for scripting.
+- pnpm for package management.
+- Drizzle ORM and PostgreSQL for the database.
+- Paraglide for translations.
 
 ## What aw3 does
 
@@ -30,6 +33,12 @@ Stack:
 
 - Studios
 
+## aw3 is purpose-built
+
+aw3 is designed specifically for official AmpMod hosting. It is not built to be a general platform for hosting
+projects. Using it for a mod of AmpMod or its upstream projects would require heavy modification to have it
+under your branding, as unlike AmpMod itself, aw3 doesn't use a set-and-forget branding module.
+
 ## Dev setup
 
 ```
@@ -39,8 +48,9 @@ pnpm dev
 
 ### Database additional step
 
-To run the database, you will need Docker. Then, you can run `docker compose up` in the root of your copy
-of aw3.
+To run the database, you will need Docker. Then, you can run `pnpm db:start` in the root of your copy
+of aw3. It's good to run this in a separate terminal, and run `pnpm db:push` every time you update
+the schema.
 
 ## Running in production
 
@@ -57,28 +67,8 @@ To set up links to AmpMod itself, such as `/projects/editor`, you need to use a 
 paths to AmpMod. aw3 previously hosted these routes by itself, but it was a bit clunky so we now expect
 that you do it yourself.
 
-## How projects are stored
-
-```mermaid
-flowchart TB
-    n2[".svg, .png, .wav, .mp3, .ttf, .otf, .woff, .woff2"] --> n5["Compress if possible"]
-    n1["project.json"] --> n6["Is &gt;20MB?"]
-    n5 --> n7["S3 compatible storage"]
-    n6 -- yes --> n8["no lol"]
-    n6 -- no --> n10["Is &gt;10MB?"]
-    n10 -- yes --> n11["S3 compatible storage"]
-    n10 -- no --> n12["SQL storage"]
-
-    n2@{ shape: docs}
-    n1@{ shape: braces}
-    n6@{ shape: diam}
-    n10@{ shape: diam}
-```
-
 ## Licensing
 
 aw3 is licenced under the AGPLv3 or at your option, any later version. See `COPYING` for more information.
 
 Some files are taken from ampmod-web-front under the MIT licence, and the ampmod gui package under the GPLv3.
-
-aw3's developers do not copyright any files uploaded to any server hosting aw3.
