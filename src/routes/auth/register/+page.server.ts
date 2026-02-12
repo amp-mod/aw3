@@ -7,6 +7,8 @@ import * as table from '$lib/server/db/schema'
 import type { Actions, PageServerLoad } from './$types'
 import { verifySolution } from 'altcha-lib'
 import { hmacKey } from '$lib/server/hmac'
+import { eq } from 'drizzle-orm'
+import { isProfane } from '$lib/server/bad-word-checker'
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -18,10 +20,10 @@ export const load: PageServerLoad = async (event) => {
 export const actions: Actions = {
 	register: async (event) => {
 		const formData = await event.request.formData()
-		const username = formData.get('username')
+		const username = formData.get('username') as string
 		const password = formData.get('password')
 
-		if (!validateUsername(username)) {
+		if (!validateUsername(username) || isProfane(username, true)) {
 			return fail(400, { message: 'Invalid username' })
 		}
 		if (!validatePassword(password)) {
@@ -45,6 +47,16 @@ export const actions: Actions = {
 			outputLen: 32,
 			parallelism: 1,
 		})
+		const existingUser = (
+			await db
+				.select({ id: table.user.id })
+				.from(table.user)
+				.where(eq(table.user.username, username.toLowerCase()))
+				.limit(1)
+		)[0]
+		if (existingUser) {
+			return fail(409, { message: 'Username already exists' })
+		}
 
 		try {
 			await db.insert(table.user).values({ id: userId, username, passwordHash })
@@ -56,6 +68,35 @@ export const actions: Actions = {
 			return fail(500, { message: 'An error has occurred' })
 		}
 		return { success: true }
+	},
+	checkUsername: async ({ request }) => {
+		const formData = await request.formData()
+		const username = formData.get('username') as string
+
+		if (isProfane(username, true)) {
+			return { available: false, message: 'Username is profane.' }
+		}
+		if (!validateUsername(username)) {
+			return {
+				available: false,
+				message:
+					'Usernames must only consist of lowercase alphanumeric characters, underscores and dashes. They must also be 3-20 characters long.',
+			}
+		}
+
+		const existingUser = (
+			await db
+				.select({ id: table.user.id })
+				.from(table.user)
+				.where(eq(table.user.username, username.toLowerCase()))
+				.limit(1)
+		)[0]
+
+		if (existingUser) {
+			return { available: false, message: 'Username already taken.' }
+		}
+
+		return { available: true }
 	},
 }
 
