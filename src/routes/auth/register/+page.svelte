@@ -5,6 +5,7 @@
 	import type { ActionData } from './$types'
 	import { enhance } from '$app/forms'
 	import { deserialize } from '$app/forms'
+	import Button from '$lib/components/Button.svelte'
 
 	let { form = $bindable() }: { form: ActionData } = $props()
 
@@ -152,14 +153,9 @@
 						/>
 					</label>
 
-					<button
-						type="button"
-						onclick={nextStep}
-						class="btn"
-						disabled={!isStep1Valid || checkingUsername}
-					>
+					<Button type="button" onclick={nextStep} disabled={!isStep1Valid || checkingUsername}>
 						Next
-					</button>
+					</Button>
 				</div>
 			{/if}
 
@@ -189,9 +185,7 @@
 						{/if}
 					</label>
 
-					<button type="button" onclick={nextStep} class="btn" disabled={!isStep2Valid}>
-						Next
-					</button>
+					<Button type="button" onclick={nextStep} disabled={!isStep2Valid}>Next</Button>
 				</div>
 			{/if}
 
@@ -223,10 +217,10 @@
 						</span>
 					</label>
 
-					<button
+					<Button
 						form="register-form"
 						type="submit"
-						class="btn flex items-center justify-center gap-2"
+						class="flex items-center justify-center gap-2"
 						disabled={submitting || loadingWidget || !agreedToTerms}
 					>
 						{#if submitting}
@@ -234,7 +228,7 @@
 						{:else}
 							Join AmpMod
 						{/if}
-					</button>
+					</Button>
 				</div>
 			{/if}
 
@@ -247,7 +241,7 @@
 							create your own projects.
 						</p>
 					</div>
-					<a href="/" class="btn w-full text-center">Check the front page</a>
+					<Button href="/" class="w-full text-center">Check the front page</Button>
 				</div>
 			{/if}
 

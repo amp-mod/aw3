@@ -1,5 +1,6 @@
 <script>
 	import { m } from '$lib/paraglide/messages'
+	import Button from '$lib/components/Button.svelte'
 </script>
 
 <div
@@ -19,7 +20,7 @@
 		{m.sourceCodeEditorDesc()}
 	</p>
 	<div>
-		<a href="https://codeberg.org/ampmod/ampmod" class="btn" target="_blank">{m.codeberg()}</a>
+		<Button href="https://codeberg.org/ampmod/ampmod" target="_blank">Codeberg</Button>
 	</div>
 
 	<h2 class="text-3xl font-bold">{m.sourceCodeAw3()}</h2>
@@ -27,30 +28,34 @@
 		{m.sourceCodeAw3Desc()}
 	</p>
 	<div>
-		<a href="https://codeberg.org/ampmod/aw3" class="btn" target="_blank">{m.codeberg()}</a>
+		<Button href="https://codeberg.org/aw3" target="_blank">Codeberg</Button>
 	</div>
 
 	<h2 class="text-3xl font-bold">{m.sourceCodeWiki()}</h2>
 	<p>{m.sourceCodeWikiDesc()}</p>
 	<div>
-		<a href="https://mediawiki.org" class="btn" target="_blank">{m.sourceCodeMediawiki()}</a>
+		<Button href="https://mediawiki.org" target="_blank">{m.sourceCodeMediawiki()}</Button>
 	</div>
 
 	<h2 class="text-3xl font-bold">{m.sourceCodeForums()}</h2>
 	<p>{m.sourceCodeForumsDesc()}</p>
-	<div><a href="https://flarum.org" class="btn" target="_blank">{m.sourceCodeFlarum()}</a></div>
+	<div>
+		<Button href="https://flarum.org" target="_blank">{m.sourceCodeFlarum()}</Button>
+	</div>
 
 	<h2 class="text-3xl font-bold">{m.sourceCodeCloudvar()}</h2>
 	<p>{m.sourceCodeCloudvarDesc()}</p>
-	<div><a href="#TODO" class="btn" target="_blank">{m.sourceCodeCloudvarAmp()}</a></div>
 	<div>
-		<a href="https://github.com/TurboWarp/extensions" class="btn" target="_blank"
-			>{m.sourceCodeCloudvarTw()}</a
-		>
+		<Button href="#TODO" target="_blank">{m.sourceCodeCloudvarAmp()}</Button>
 	</div>
 	<div>
-		<a href="https://docs.turbowarp.org/cloud-variables" class="btn" target="_blank"
-			>{m.learnMore()}</a
-		>
+		<Button href="https://github.com/TurboWarp/extensions" target="_blank">
+			{m.sourceCodeCloudvarTw()}
+		</Button>
+	</div>
+	<div>
+		<Button href="https://docs.turbowarp.org/cloud-variables" target="_blank">
+			{m.learnMore()}
+		</Button>
 	</div>
 </div>

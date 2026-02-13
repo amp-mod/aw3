@@ -1,6 +1,7 @@
 <script>
 	import { FileX } from '@lucide/svelte'
 	import Footer from './footer/footer.svelte'
+	import { Button } from '$lib/components/button'
 	let { path = null } = $props()
 </script>
 
@@ -22,10 +23,10 @@
 				>.{/if}
 		</p>
 		<div class="flex gap-4">
-			{#if path}<a class="btn" href={`https://ampmod.codeberg.page/${path}`}
-					>Access on official site</a
+			{#if path}<Button href={`https://ampmod.codeberg.page/${path}`}
+					>Access on official site</Button
 				>{/if}
-			<a class="btn" href="/">Back to homepage</a>
+			<Button href="/">Back to homepage</Button>
 		</div>
 	</div>
 

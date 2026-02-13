@@ -1,4 +1,6 @@
 <script>
+	import Button from '$lib/components/Button.svelte'
+
 	let { data } = $props()
 
 	const expiryDate = data.user.bannedExpiry
@@ -54,5 +56,5 @@
 		and may result in more serious consequences.
 	</p>
 
-	<div><button onclick={logout} class="btn">Log out</button></div>
+	<div><Button onclick={logout}>Log out</Button></div>
 </div>

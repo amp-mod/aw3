@@ -1,6 +1,7 @@
 <script>
 	import NewLayout from './(header-footer-layout)/+layout.svelte'
 	import { page } from '$app/state'
+	import Button from '$lib/components/Button.svelte'
 	let { data } = $props()
 
 	// svelte-ignore non_reactive_update
@@ -57,7 +58,7 @@
 			{friendlyMessage}
 		</p>
 		<div class="mt-4">
-			<a class="btn" href="/">Back to homepage</a>
+			<Button href="/">Back to homepage</Button>
 		</div>
 	</main>
 </NewLayout>

@@ -3,6 +3,7 @@
 	import { enhance } from '$app/forms'
 	import { afterNavigate, invalidateAll } from '$app/navigation'
 	import { browser } from '$app/environment'
+	import Button from './Button.svelte'
 
 	let { open = $bindable(false), required = false }: { open: boolean; required: boolean } = $props()
 	let errorMessage = $state('')
@@ -62,10 +63,10 @@
 		</p>
 
 		<div class="mt-4 flex flex-col gap-2">
-			<button type="submit" class="btn btn-primary">Login</button>
+			<Button type="submit">Login</Button>
 
 			{#if required}
-				<button type="button" class="btn btn-secondary" onclick={goBack}> Back </button>
+				<Button type="button" onclick={goBack}>Back</Button>
 			{/if}
 		</div>
 	</form>
