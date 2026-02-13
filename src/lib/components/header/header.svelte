@@ -79,7 +79,7 @@
 					{#if !data.user}<NavigationMenu.Item>
 							<NavigationMenu.Link href="/about">
 								{#snippet child({ props })}
-									<a {...props} class="header-link w-full md:w-auto">{m.aboutShort()}</a>
+									<a {...props} class="header-link w-full md:w-auto">{m.aboutHeader()}</a>
 								{/snippet}
 							</NavigationMenu.Link>
 						</NavigationMenu.Item>{/if}

@@ -1,5 +1,4 @@
 {
-	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"errorProtectedPage": "This is a protected page, only operators can access it.",
 	"footerPolicy": "Policy",
 	"guidelines": "Guidelines",
@@ -59,7 +58,7 @@
 	"adminBackToHome": "Back to home",
 	"createProject": "Create",
 	"explore": "Explore",
-	"aboutShort": "About",
+	"aboutHeader": "About",
 	"searchAriaLabel": "Site search",
 	"searchPlaceholder": "Search...",
 	"notLoggedInDropdown": "Not logged in",
