@@ -17,6 +17,7 @@
 				{ href: '/projects/explore', label: m.exploreProjects() },
 				{ href: 'https://ampblog.flarum.cloud', label: m.footerBlog(), external: true },
 				{ href: 'https://ampmod.miraheze.org', label: m.footerWiki(), external: true },
+				// Do not localise!
 				{ href: 'https://youtube.com/@Amp-Mod', label: 'YouTube', external: true },
 			],
 		},
