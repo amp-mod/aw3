@@ -19,6 +19,7 @@
 	import MarkdownIt from 'markdown-it'
 	import { type Editor } from '@tiptap/core'
 	import Modal from '$lib/components/Modal.svelte'
+	import { m } from '$lib/paraglide/messages'
 
 	let { data } = $props()
 
@@ -133,11 +134,10 @@
 	<title>{userProfile.username} - AmpMod</title>
 </svelte:head>
 
-<Modal bind:open={isBanModalOpen} title="Ban User">
+<Modal bind:open={isBanModalOpen} title={m.adminBan()}>
 	<div class="flex flex-col gap-2">
 		<p class="mb-4 text-sm text-neutral-600 dark:text-neutral-300">
-			You are about to ban <strong>{userProfile.username}</strong>. Please provide a reason and
-			duration.
+			{m.adminBanDesc({ username: data.userProfile.username })}
 		</p>
 
 		<form
@@ -156,16 +156,16 @@
 		>
 			<input type="hidden" name="targetUserId" value={userProfile.id} />
 			<div>
-				<label for="duration" class={styles.modalLabel}>Duration</label>
+				<label for="duration" class={styles.modalLabel}>{m.duration()}</label>
 				<select name="duration" id="duration" class={styles.modalInput}>
-					<option value="permanent">Permanent</option>
-					<option value="24h">24 Hours</option>
-					<option value="7d">7 Days</option>
-					<option value="30d">30 Days</option>
+					<option value="permanent">{m.permanent()}</option>
+					<option value="24h">{m.dayInHours()}</option>
+					<option value="7d">{m.weekInDays()}</option>
+					<option value="30d">{m.monthInDays()}</option>
 				</select>
 			</div>
 			<div>
-				<label for="reason" class={styles.modalLabel}>Reason</label>
+				<label for="reason" class={styles.modalLabel}>{m.reason()}</label>
 				<textarea
 					id="reason"
 					name="reason"
@@ -179,12 +179,12 @@
 					type="button"
 					onclick={() => (isBanModalOpen = false)}
 					class="px-4 py-2 text-sm font-semibold text-neutral-500 hover:text-neutral-700"
-					>Cancel</button
+					>{m.cancel()}</button
 				>
 				<button
 					type="submit"
 					class="rounded-lg bg-red-600 px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-red-700"
-					>Confirm Ban</button
+					>{m.adminBanConfirm()}</button
 				>
 			</div>
 		</form>
@@ -248,14 +248,14 @@
 				{#if userStatus === 'banned'}
 					<span
 						class="rounded border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-xs font-bold text-red-500"
-						>BANNED</span
+						>{m.userBanned()}</span
 					>
 				{/if}
 			</div>
 			<div class="flex items-center gap-2 text-sm opacity-50">
 				<span>{rankMap[userProfile.rank ?? 0]}</span>
 				<span>•</span>
-				<span>Joined {joinedDate}</span>
+				<span>{m.joinedDate({ joinedDate })}</span>
 			</div>
 		</div>
 
@@ -265,7 +265,8 @@
 					onclick={() => (isBanModalOpen = true)}
 					class="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-red-700"
 				>
-					<Gavel size={16} /> Ban User
+					<Gavel size={16} />
+					{m.adminBan()}
 				</button>
 			</div>
 		{/if}
@@ -274,7 +275,7 @@
 	<div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.5fr_1fr]">
 		<section class={styles.sectionCard}>
 			<div class="mb-2 flex items-center justify-between border-b pb-2 dark:border-neutral-700">
-				<span class={styles.label}>About Me</span>
+				<span class={styles.label}>{m.aboutMe()}</span>
 				{#if canEdit && !isEditingBio}
 					<button onclick={() => (isEditingBio = true)} class="text-neutral-400 hover:text-accent">
 						<Pencil size={16} />
@@ -333,18 +334,18 @@
 								<DropdownMenu.Item
 									class={styles.dropdownItem}
 									onSelect={() => editor?.chain().focus().setParagraph().run()}
-									>Normal text</DropdownMenu.Item
+									>{m.wysiwygNormal()}</DropdownMenu.Item
 								>
 								<DropdownMenu.Separator class="my-1 h-px bg-neutral-200 dark:bg-neutral-700" />
 								<DropdownMenu.Item
 									class={styles.dropdownItem}
 									onSelect={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
-									><span class="font-bold">Heading 1</span></DropdownMenu.Item
+									><span class="font-bold">{m.wysiwygHeading1()}</span></DropdownMenu.Item
 								>
 								<DropdownMenu.Item
 									class={styles.dropdownItem}
 									onSelect={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
-									><span class="font-semibold">Heading 2</span></DropdownMenu.Item
+									><span class="font-semibold">{m.wysiwygHeading2()}</span></DropdownMenu.Item
 								>
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
@@ -355,7 +356,7 @@
 							<div
 								class="flex h-[200px] items-center justify-center rounded-b-xl border border-neutral-300 bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-900/50"
 							>
-								<span class="text-sm opacity-50">Loading editor...</span>
+								<span class="text-sm opacity-50"><Loader /></span>
 							</div>
 						{/if}
 					</div>
@@ -364,12 +365,12 @@
 						<button
 							type="submit"
 							class="flex items-center gap-3 rounded-full bg-accent px-4 py-1 text-sm font-bold text-white transition-colors hover:bg-accent-secondary"
-							><Save size={18} /> Save</button
+							><Save size={18} /> {m.save()}</button
 						>
 						<button
 							type="button"
 							onclick={() => (isEditingBio = false)}
-							class="text-sm text-neutral-500">Cancel</button
+							class="text-sm text-neutral-500">{m.cancel()}</button
 						>
 					</div>
 				</form>
@@ -380,9 +381,9 @@
 					{#if userProfile.bio}
 						{@html md.render(userProfile.bio)}
 					{:else if isOwnProfile}
-						<i class="opacity-50">Tell us about yourself!</i>
+						<i class="opacity-50">{m.aboutMePlaceholderEdit()}</i>
 					{:else}
-						<i class="opacity-50">This user does not have an About Me.</i>
+						<i class="opacity-50">{m.aboutMePlaceholder()}</i>
 					{/if}
 				</div>
 			{/if}
@@ -391,13 +392,13 @@
 		<section
 			class={`${styles.sectionCard} flex aspect-4/3 w-full flex-col self-start lg:w-[480px]`}
 		>
-			<div class="mb-4"><span class={styles.label}>Featured Project</span></div>
+			<div class="mb-4"><span class={styles.label}>{m.featuredProject()}</span></div>
 			<div
 				class="flex grow items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700"
 			>
 				<div class="text-center text-neutral-400">
 					<FolderOpen class="mx-auto mb-2 opacity-20" size={32} />
-					<p class="text-xs">No project featured.</p>
+					<p class="text-xs">{m.noFeaturedProject()}</p>
 				</div>
 			</div>
 		</section>

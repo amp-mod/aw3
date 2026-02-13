@@ -1,37 +1,73 @@
-<footer class="bg-neutral-150 w-full bg-neutral-200 px-4 py-4 dark:bg-neutral-800">
+<script>
+	import LangSwitcher from '../LangSwitcher.svelte'
+	import { m } from '$lib/paraglide/messages'
+
+	// 1. Define the object structure
+	const footerSections = [
+		{
+			title: m.footerAbout(),
+			links: [
+				{ href: '/about', label: m.about() },
+				{ href: '/credits', label: m.credits() },
+			],
+		},
+		{
+			title: m.footerCommunity(),
+			links: [
+				{ href: '/projects/explore', label: m.exploreProjects() },
+				{ href: 'https://ampblog.flarum.cloud', label: m.footerBlog(), external: true },
+				{ href: 'https://ampmod.miraheze.org', label: m.footerWiki(), external: true },
+				{ href: 'https://youtube.com/@Amp-Mod', label: 'YouTube', external: true },
+			],
+		},
+		{
+			title: m.footerResources(),
+			links: [
+				{ href: '/source-code', label: m.sourceCode() },
+				{ href: '/faq', label: m.faq() },
+			],
+		},
+		{
+			title: m.footerPolicy(),
+			links: [
+				{ href: '/guidelines', label: m.guidelines() },
+				{ href: '/terms', label: m.termsOfService() },
+				{ href: '/privacy', label: m.privacyPolicy() },
+			],
+		},
+	]
+</script>
+
+<footer class="w-full bg-neutral-100 p-4 dark:bg-neutral-800">
 	<div class="mx-auto max-w-6xl">
-		<div class="mb-12 grid grid-cols-2 gap-8 text-sm md:grid-cols-4">
-			<div class="flex flex-col space-y-2">
-				<span class="mb-1 font-bold">About</span>
-				<a href="/about" class="link">About AmpMod</a>
-				<a href="/credits" class="link">Credits</a>
-			</div>
+		<nav class="mb-12 grid grid-cols-2 gap-8 text-sm md:grid-cols-4" aria-label="Footer Navigation">
+			{#each footerSections as section}
+				<div class="flex flex-col space-y-2">
+					<h2 class="mb-1 font-bold text-neutral-900 dark:text-neutral-100">
+						{section.title}
+					</h2>
+					<ul class="flex flex-col space-y-2">
+						{#each section.links as link}
+							<li>
+								<a
+									href={link.href}
+									class="link"
+									target={link.external ? '_blank' : null}
+									rel={link.external ? 'noopener noreferrer' : null}
+								>
+									{link.label}
+								</a>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/each}
+		</nav>
 
-			<div class="flex flex-col space-y-2">
-				<span class="mb-1 font-bold">Community</span>
-				<a href="/projects/explore" class="link">Explore projects</a>
-				<a href="https://ampblog.flarum.cloud" class="link">AmpMod Blog</a>
-				<a href="https://ampmod.miraheze.org" class="link">AmpMod Wiki</a>
-				<a href="https://youtube.com/@Amp-Mod" class="link">YouTube</a>
-			</div>
-
-			<div class="flex flex-col space-y-2">
-				<span class="mb-1 font-bold">Resources</span>
-				<a href="/source-code" class="link">Source Code</a>
-				<a href="/faq" class="link">FAQ</a>
-			</div>
-
-			<div class="flex flex-col space-y-2">
-				<span class="mb-1 font-bold">Policy</span>
-				<a href="/guidelines" class="link">Guidelines</a>
-				<a href="/terms" class="link">Terms of Service</a>
-				<a href="/privacy" class="link">Privacy Policy</a>
-			</div>
-		</div>
-
-		<div class="flex flex-col items-center space-y-2">
-			<p class="text-center text-xs opacity-75">
-				AmpMod is not affiliated with Scratch or TurboWarp.
+		<div class="flex flex-col items-center space-y-4">
+			<LangSwitcher />
+			<p class="max-w-md text-center text-xs opacity-75">
+				{m.footerNotAffiliated()}
 			</p>
 		</div>
 	</div>

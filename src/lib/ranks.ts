@@ -1,8 +1,10 @@
+import { m } from './paraglide/messages'
+
 export const rankMap: Record<number, string> = {
-	0: 'New AmpModder',
-	1: 'AmpModder',
-	2: 'Moderator',
-	3: 'Operator',
+	0: m.newAmpModder(),
+	1: m.ampModder(),
+	2: m.moderator(),
+	3: m.operator(),
 }
 
 export const getRankName = (rank: number | null) => rankMap[rank ?? 0]

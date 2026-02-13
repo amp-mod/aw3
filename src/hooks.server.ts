@@ -1,16 +1,31 @@
 import { sequence } from '@sveltejs/kit/hooks'
 import * as auth from '$lib/server/auth'
 import { error, redirect, type Handle } from '@sveltejs/kit'
-import { paraglideMiddleware } from '$lib/paraglide/server'
+import {
+	setLocale,
+	baseLocale,
+	extractLocaleFromHeader,
+	isLocale,
+	cookieName as langCookieName,
+} from '$lib/paraglide/runtime'
+import { m } from '$lib/paraglide/messages'
 
-const handleParaglide: Handle = ({ event, resolve }) =>
-	paraglideMiddleware(event.request, ({ request, locale }) => {
-		event.request = request
+const handleParaglide: Handle = async ({ event, resolve }) => {
+	const cookieLang = event.cookies.get(langCookieName)
+	const headerLang = extractLocaleFromHeader(event.request)
 
-		return resolve(event, {
-			transformPageChunk: ({ html }) => html.replace('%paraglide.lang%', locale),
-		})
+	const finalLang = isLocale(cookieLang)
+		? cookieLang
+		: isLocale(headerLang)
+			? headerLang
+			: baseLocale
+
+	setLocale(finalLang)
+
+	return resolve(event, {
+		transformPageChunk: ({ html }) => html.replace('%paraglide.lang%', finalLang),
 	})
+}
 
 const handleAuth: Handle = async ({ event, resolve }) => {
 	const sessionToken = event.cookies.get(auth.sessionCookieName)
@@ -39,7 +54,7 @@ const handleGuard: Handle = async ({ event, resolve }) => {
 
 	if (isAdminRoute) {
 		if (!event.locals.user || (event.locals.user.rank !== 3 && !process.env.AW3_FORCE_ADMIN)) {
-			throw error(403, 'This is a protected page, only operators can access it.')
+			throw error(403, m.errorProtectedPage())
 		}
 	}
 
@@ -62,4 +77,4 @@ const handleBanned: Handle = async ({ event, resolve }) => {
 	return resolve(event)
 }
 
-export const handle: Handle = sequence(handleAuth, handleBanned, handleGuard, handleParaglide)
+export const handle: Handle = sequence(handleParaglide, handleAuth, handleBanned, handleGuard)
