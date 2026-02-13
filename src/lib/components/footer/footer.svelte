@@ -5,7 +5,7 @@
 	// 1. Define the object structure
 	const footerSections = [
 		{
-			title: m.footerAbout(),
+			title: m.aboutShort(),
 			links: [
 				{ href: '/about', label: m.about() },
 				{ href: '/credits', label: m.credits() },

@@ -3,6 +3,7 @@
 	import logo from './logo.svg'
 	import { modals } from '$lib/modals.svelte'
 	import { MenuIcon, X, Search, ChevronDown, Mail, FolderClosed } from '@lucide/svelte'
+	import { m } from '$lib/paraglide/messages'
 
 	let { admin = false, data } = $props()
 	let menuOpen = $state(false)
@@ -56,7 +57,7 @@
 					<NavigationMenu.Item>
 						<NavigationMenu.Link href="/">
 							{#snippet child({ props })}
-								<a {...props} class="header-link w-full md:w-auto">Back to home</a>
+								<a {...props} class="header-link w-full md:w-auto">{m.adminBackToHome()}</a>
 							{/snippet}
 						</NavigationMenu.Link>
 					</NavigationMenu.Item>
@@ -64,21 +65,21 @@
 					<NavigationMenu.Item>
 						<NavigationMenu.Link href="/projects/editor" data-sveltekit-reload>
 							{#snippet child({ props })}
-								<a {...props} class="header-link w-full md:w-auto">Create</a>
+								<a {...props} class="header-link w-full md:w-auto">{m.createProject()}</a>
 							{/snippet}
 						</NavigationMenu.Link>
 					</NavigationMenu.Item>
 					<NavigationMenu.Item>
 						<NavigationMenu.Link href="/projects/explore">
 							{#snippet child({ props })}
-								<a {...props} class="header-link w-full md:w-auto">Explore</a>
+								<a {...props} class="header-link w-full md:w-auto">{m.explore()}</a>
 							{/snippet}
 						</NavigationMenu.Link>
 					</NavigationMenu.Item>
 					{#if !data.user}<NavigationMenu.Item>
 							<NavigationMenu.Link href="/about">
 								{#snippet child({ props })}
-									<a {...props} class="header-link w-full md:w-auto">About</a>
+									<a {...props} class="header-link w-full md:w-auto">{m.aboutShort()}</a>
 								{/snippet}
 							</NavigationMenu.Link>
 						</NavigationMenu.Item>{/if}
@@ -86,13 +87,13 @@
 
 				<form
 					role="search"
-					aria-label="Site search"
+					aria-label={m.searchAriaLabel()}
 					class="relative flex items-center md:ml-2"
 					onsubmit={(e) => e.preventDefault()}
 				>
 					<input
 						type="search"
-						placeholder="Search..."
+						placeholder={m.searchPlaceholder()}
 						class="h-8 w-full rounded-lg border border-neutral-300 bg-transparent px-3 pr-12 text-sm outline-none focus:border-accent-secondary sm:w-44 md:w-64 dark:border-white/20 dark:focus:border-white"
 					/>
 					<button
@@ -129,7 +130,7 @@
 									/>
 									<div class="max-w-30 overflow-hidden text-ellipsis">{data.user.username}</div>
 								{:else}
-									<span>Not logged in</span>
+									<span>{m.notLoggedInDropdown()}</span>
 								{/if}
 								<ChevronDown
 									class="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180"
@@ -145,41 +146,44 @@
 							{#if data.user}
 								<li>
 									<NavigationMenu.Link href={`/users/${data.user.username}`}>
-										{#snippet child({ props })}<a {...props} class="submenu-item">Profile</a
+										{#snippet child({ props })}<a {...props} class="submenu-item">{m.myProfile()}</a
 											>{/snippet}
 									</NavigationMenu.Link>
 								</li>
 								<li>
 									<NavigationMenu.Link href={'/mystuff'}>
-										{#snippet child({ props })}<a {...props} class="submenu-item">My Stuff</a
+										{#snippet child({ props })}<a {...props} class="submenu-item">{m.myStuff()}</a
 											>{/snippet}
 									</NavigationMenu.Link>
 								</li>
 								<li>
 									<NavigationMenu.Link href="/settings">
-										{#snippet child({ props })}<a {...props} class="submenu-item">Settings</a
+										{#snippet child({ props })}<a {...props} class="submenu-item">{m.settings()}</a
 											>{/snippet}
 									</NavigationMenu.Link>
 								</li>
 								<li>
-									<button onclick={logout} class="submenu-item w-full text-left">Log out</button>
+									<button onclick={logout} class="submenu-item w-full text-left"
+										>{m.logOut()}</button
+									>
 								</li>
 							{:else}
 								<li>
 									<NavigationMenu.Link href="/auth/register">
-										{#snippet child({ props })}<a {...props} class="submenu-item">Join AmpMod</a
+										{#snippet child({ props })}<a {...props} class="submenu-item"
+												>{m.joinAmpMod()}</a
 											>{/snippet}
 									</NavigationMenu.Link>
 								</li>
 								<li>
 									<button
 										onclick={() => (modals.login = true)}
-										class="submenu-item w-full text-left">Log in</button
+										class="submenu-item w-full text-left">{m.logIn()}</button
 									>
 								</li>
 								<li>
 									<NavigationMenu.Link href="/settings">
-										{#snippet child({ props })}<a {...props} class="submenu-item">Settings</a
+										{#snippet child({ props })}<a {...props} class="submenu-item">{m.settings()}</a
 											>{/snippet}
 									</NavigationMenu.Link>
 								</li>

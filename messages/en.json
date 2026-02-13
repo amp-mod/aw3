@@ -11,7 +11,6 @@
 	"footerBlog": "AmpMod Blog",
 	"footerWiki": "AmpMod Wiki",
 	"exploreProjects": "Explore projects",
-	"footerAbout": "About",
 	"about": "About AmpMod",
 	"credits": "Credits",
 	"sourceCode": "Source Code",
@@ -57,5 +56,18 @@
 	"noFeaturedProject": "No project featured.",
 	"wysiwygNormal": "Normal text",
 	"wysiwygHeading1": "Heading 1",
-	"wysiwygHeading2": "Heading 2"
+	"wysiwygHeading2": "Heading 2",
+	"adminBackToHome": "Back to home",
+	"createProject": "Create",
+	"explore": "Explore",
+	"aboutShort": "About",
+	"searchAriaLabel": "Site search",
+	"searchPlaceholder": "Search...",
+	"notLoggedInDropdown": "Not logged in",
+	"myProfile": "Profile",
+	"myStuff": "My Stuff",
+	"settings": "Settings",
+	"logOut": "Log out",
+	"joinAmpMod": "Join AmpMod",
+	"logIn": "Log in"
 }
