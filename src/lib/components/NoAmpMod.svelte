@@ -1,7 +1,7 @@
 <script>
 	import { FileX } from '@lucide/svelte'
 	import Footer from './footer/footer.svelte'
-	import { Button } from '$lib/components/button'
+	import Button from '$lib/components/Button.svelte'
 	let { path = null } = $props()
 </script>
 
