@@ -3,6 +3,23 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--
+         unfortunately we can't really use anything looser due to custom extensions being a thing.
+         we plan to have a moderation system when a project with third-party extensions is loaded,
+         which should mitigate the issue.
+         for now this attempts to match what the AmpMod compiler and most extensions need.
+      -->
+		<meta
+			http-equiv="Content-Security-Policy"
+			content="
+            default-src 'self'; 
+            script-src 'self' 'unsafe-inline' 'unsafe-eval'; 
+            worker-src 'self' blob:;
+            style-src 'self' 'unsafe-inline'; 
+            img-src * data:; 
+            connect-src *;
+      "
+		/>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
