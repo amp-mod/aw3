@@ -40,6 +40,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{data.user ? 'Front Page - AmpMod' : 'AmpMod - Block-based programming. amplified'}</title>
+</svelte:head>
+
 {#if data.user}
 	<div class="m-auto flex min-h-100 max-w-6xl gap-3 p-8">
 		<div class="flex grow basis-0 items-center justify-center">
