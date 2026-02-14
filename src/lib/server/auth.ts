@@ -4,10 +4,11 @@ import { sha256 } from '@oslojs/crypto/sha2'
 import { encodeBase64url, encodeHexLowerCase } from '@oslojs/encoding'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
+import { dev } from '$app/environment'
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24
 
-export const sessionCookieName = 'auth-session'
+export const sessionCookieName = '.aw3Dontleakme'
 
 export function generateSessionToken() {
 	const bytes = crypto.getRandomValues(new Uint8Array(18))
@@ -77,8 +78,11 @@ export async function invalidateSession(sessionId: string) {
 
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date) {
 	event.cookies.set(sessionCookieName, token, {
+		httpOnly: true,
+		sameSite: 'lax',
 		expires: expiresAt,
 		path: '/',
+		secure: !dev,
 	})
 }
 
