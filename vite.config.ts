@@ -12,6 +12,9 @@ if (process.env.AW3_FORCE_ADMIN) {
 }
 
 export default defineConfig({
+	experimental: {
+		fullBundle: true,
+	},
 	plugins: [
 		tailwindcss(),
 		sveltekit(),
