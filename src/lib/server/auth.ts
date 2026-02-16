@@ -8,7 +8,7 @@ import { dev } from '$app/environment'
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24
 
-export const sessionCookieName = '.aw3Dontleakme'
+export const sessionCookieName = 'THIS_COOKIE_IS_COATED_WITH_BITTERANT'
 
 export function generateSessionToken() {
 	const bytes = crypto.getRandomValues(new Uint8Array(18))
@@ -77,13 +77,17 @@ export async function invalidateSession(sessionId: string) {
 }
 
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date) {
-	event.cookies.set(sessionCookieName, token, {
-		httpOnly: true,
-		sameSite: 'lax',
-		expires: expiresAt,
-		path: '/',
-		secure: !dev,
-	})
+	event.cookies.set(
+		sessionCookieName,
+		'DONT_LEAK_THIS_COOKIE_ELSE_YOU_WILL_LOSE_YOUR_ACCOUNT..' + token,
+		{
+			httpOnly: true,
+			sameSite: 'lax',
+			expires: expiresAt,
+			path: '/',
+			secure: !dev,
+		},
+	)
 }
 
 export function deleteSessionTokenCookie(event: RequestEvent) {

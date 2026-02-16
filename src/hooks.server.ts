@@ -28,7 +28,7 @@ const handleParaglide: Handle = async ({ event, resolve }) => {
 }
 
 const handleAuth: Handle = async ({ event, resolve }) => {
-	const sessionToken = event.cookies.get(auth.sessionCookieName)
+	const sessionToken = event.cookies.get(auth.sessionCookieName)?.split('..')[1]
 
 	if (!sessionToken) {
 		event.locals.user = null
