@@ -24,6 +24,7 @@ export const load: PageServerLoad = async (event) => {
 		sessions: sessions.map((s) => ({
 			...s,
 			isCurrent: s.id === currentSession.id,
+			id: undefined,
 		})),
 	}
 }
