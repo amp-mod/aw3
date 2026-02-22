@@ -1,0 +1,66 @@
+---
+title: AmpMod Privacy Policy
+---
+
+The AmpMod project respects your privacy. In the interest of full transparency, this document lists
+every place where your data might be collected or shared:
+
+## Main website
+
+This website may store cookies in your browser for the sole purposes of:
+
+* Logging you in
+* Storing what language you use on the website
+* Other technical purposes
+
+Your IP address will be stored on our servers until you log out or your session expires (after 30 days
+of inactivity). This data is only used to prevent severe abuse of the website, such as ban evasion or
+illegal activity regarding minors.
+
+When registering for AmpMod, we will only ask for a username, password, and an optional email. Your
+username must not contain your real name
+
+AmpMod stores a hash of your password so you can login. Since your password is hashed, we can't see
+it after you register.
+
+The AmpMod project does not sell your personal information to third parties, use it to personalise ads,
+or train artificial intelligence or large language models on it. We do not have any interest in your
+personal data. Companies often treat personal data like gold. We don't. If you are a company and want
+to harvest everyone's data, go ask Big Tech.
+
+This website is free software. You can view its source code [here](https://codeberg.org/ampmod/aw3).
+
+## Projects uploaded to the website
+
+Projects that contain custom extensions outside of our servers will be hidden until we review such custom
+extensions. After that, we will either approve the extension, storing a SHA-256 checksum of that extension
+so future projects with that extension will be automatically approved.
+
+We will not approve extensions that use geolocation or transmit recordings or camera images to a server.
+
+## AmpMod IDE
+
+The AmpMod IDE may store settings in your browser. These settings will never reach our servers.
+
+Custom extensions may be able to geolocate you, record your voice, fetch external sites, and more.
+Such data will never reach any servers unless the extension is malicious.
+
+Simply loading an extension into the IDE does not mean we have to audit it. That only happens if you uploaded
+your project here. You are responsible for what extensions you use in your projects.
+
+## AmpMod app for desktop
+
+Everything in the AmpMod IDE section applies here.
+
+The AmpMod app may make requests to [Codeberg](https://codeberg.org) on startup to check for new releases.
+You can disable this in Settings > Desktop Settings.
+
+## Analytics
+
+AmpMod may collect anonymous aggregated data for analytical purposes, such as how many people are using AmpMod
+per day.
+
+## Contact
+
+Contact <ampelectrecuted@gmail.com> if you have any questions or want to delete or export any data stored on our
+servers.
