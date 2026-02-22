@@ -57,10 +57,18 @@ export const actions: Actions = {
 		}
 
 		try {
-			await db.insert(table.user).values({ username, passwordHash })
+			const [newUser] = await db
+				.insert(table.user)
+				.values({ username, passwordHash })
+				.returning({ id: table.user.id })
 
 			const sessionToken = auth.generateSessionToken()
-			const session = await auth.createSession(sessionToken)
+			const session = await auth.createSession(
+				sessionToken,
+				newUser.id,
+				event.getClientAddress(),
+				event.request.headers.get('user-agent'),
+			)
 			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt)
 		} catch {
 			return fail(500, { message: 'An error has occurred' })

@@ -16,12 +16,15 @@ export function generateSessionToken() {
 	return token
 }
 
-export async function createSession(token: string, userId: number) {
+export async function createSession(token: string, userId: number, ip: string, userAgent: string) {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
+	if (!userAgent) throw new Error('User-Agent missing')
 	const session: table.Session = {
 		id: sessionId,
 		userId,
 		expiresAt: new Date(Date.now() + DAY_IN_MS * 30),
+		ip,
+		userAgent,
 	}
 	await db.insert(table.session).values(session)
 	return session
@@ -94,4 +97,17 @@ export function deleteSessionTokenCookie(event: RequestEvent) {
 	event.cookies.delete(sessionCookieName, {
 		path: '/',
 	})
+}
+
+export async function updateSessionDetails(
+	sessionId: string,
+	details: { ip: string; userAgent: string },
+) {
+	await db
+		.update(table.session)
+		.set({
+			ip: details.ip,
+			userAgent: details.userAgent,
+		})
+		.where(eq(table.session.id, sessionId))
 }

@@ -53,6 +53,9 @@ importers:
       bits-ui:
         specifier: ^2.15.5
         version: 2.15.5(@internationalized/date@3.10.1)(@sveltejs/kit@2.50.2(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.49.2)(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.25.12)(jiti@2.6.1)))(svelte@5.49.2)(typescript@5.9.3)(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.25.12)(jiti@2.6.1)))(svelte@5.49.2)
+      bowser:
+        specifier: ^2.14.1
+        version: 2.14.1
       markdown-it:
         specifier: ^14.1.0
         version: 14.1.0
@@ -1944,6 +1947,9 @@ packages:
     peerDependencies:
       '@internationalized/date': ^3.8.1
       svelte: ^5.33.0
+
+  bowser@2.14.1:
+    resolution: {integrity: sha512-tzPjzCxygAKWFOJP011oxFHs57HzIhOEracIgAePE4pqB3LikALKnSzUyU4MGs9/iCEUuHlAJTjTc5M+u7YEGg==}
 
   brace-expansion@2.0.2:
     resolution: {integrity: sha512-Jt0vHyM+jmUBqojB7E1NIYadt0vI0Qxjxd2TErW94wDz+E2LAm5vKMXXwg6ZZBTHPuUlDgQHKXvjGBdfcF1ZDQ==}
@@ -5037,6 +5043,8 @@ snapshots:
       tabbable: 6.4.0
     transitivePeerDependencies:
       - '@sveltejs/kit'
+
+  bowser@2.14.1: {}
 
   brace-expansion@2.0.2:
     dependencies:

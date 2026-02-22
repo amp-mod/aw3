@@ -88,6 +88,7 @@
 		"altcha-lib": "^1.4.1",
 		"bad-words": "^4.0.0",
 		"bits-ui": "^2.15.5",
+		"bowser": "^2.14.1",
 		"markdown-it": "^14.1.0",
 		"postgres": "^3.4.8",
 		"smile-js": "^0.10.1",

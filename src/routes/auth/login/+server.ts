@@ -7,6 +7,7 @@ import * as table from '$lib/server/db/schema'
 import type { RequestHandler } from './$types'
 
 export const POST: RequestHandler = async (event) => {
+	const ip = event.getClientAddress()
 	const formData = await event.request.formData()
 	const username = formData.get('username')
 	const password = formData.get('password')
@@ -37,7 +38,12 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	const sessionToken = auth.generateSessionToken()
-	const session = await auth.createSession(sessionToken, existingUser.id)
+	const session = await auth.createSession(
+		sessionToken,
+		existingUser.id,
+		ip,
+		event.request.headers.get('user-agent'),
+	)
 	auth.setSessionTokenCookie(event, sessionToken, session.expiresAt)
 
 	return json({ success: true })

@@ -39,6 +39,23 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	const { session, user } = await auth.validateSessionToken(sessionToken)
 
 	if (session) {
+		const currentIp = event.getClientAddress()
+		const currentUserAgent = event.request.headers.get('user-agent')
+
+		if (session.ip !== currentIp && session.userAgent !== currentUserAgent) {
+			// If this happens, it is almost certainly a session hijack.
+			// Better to just shut it down.
+			auth.invalidateSession(session.id)
+			auth.deleteSessionTokenCookie(event)
+			throw redirect(307, '/sessionpwned')
+		}
+		if (session.ip !== currentIp || session.userAgent !== currentUserAgent) {
+			await auth.updateSessionDetails(session.id, {
+				ip: currentIp,
+				userAgent: currentUserAgent ?? '???',
+			})
+		}
+
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt)
 	} else {
 		auth.deleteSessionTokenCookie(event)

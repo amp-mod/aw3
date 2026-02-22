@@ -14,9 +14,9 @@
 	}
 
 	const tabs: Tab[] = [
-		{ label: 'Website' },
+		{ label: 'Account', restricted: true },
 		{ id: 'profile', label: 'Profile', href: '/settings/profile', restricted: true },
-		{ id: 'account', label: 'Account', href: '/settings/account', restricted: true },
+		{ id: 'sessions', label: 'Sessions', href: '/settings/session', restricted: true },
 		{ id: 'danger', label: 'Dangerous', href: '/settings/danger', restricted: true },
 		{ label: 'Editor' },
 		{ id: 'theme', label: 'Theme', href: '/settings/theme' },
@@ -28,10 +28,8 @@
 		},
 	]
 
-	// Find the object associated with the current URL
 	const activeTab = $derived(tabs.find((t) => t.href === page.url.pathname))
 
-	// Derive values for the UI
 	const activeTabLabel = $derived(activeTab?.label ?? 'Settings')
 	const isRestrictedPath = $derived(!!activeTab?.restricted)
 </script>
@@ -41,7 +39,7 @@
 {/if}
 
 <svelte:head>
-	<title>{activeTabLabel} Settings - AmpMod</title>
+	<title>Settings: {activeTabLabel} - AmpMod</title>
 </svelte:head>
 
 <h1 class="mx-auto mt-8 mb-4 max-w-5xl text-3xl font-bold text-black dark:text-white">Settings</h1>
@@ -51,14 +49,14 @@
 >
 	<nav class="flex w-64 flex-col gap-2 bg-neutral-200 p-4 dark:bg-accent-secondary">
 		{#each tabs as tab}
-			{#if !tab.id}
+			{#if !tab.id && (data.user || !tab.restricted)}
 				<div class="flex w-full items-center gap-3 py-2">
-					<div class="text-sm font-bold tracking-wider uppercase opacity-60">
+					<div class="text-sm font-bold">
 						{tab.label}
 					</div>
 					<div class="flex-1 border-t border-neutral-500/30 dark:border-accent-tertiary"></div>
 				</div>
-			{:else}
+			{:else if data.user || !tab.restricted}
 				<a
 					id={tab.id}
 					class="rounded px-3 py-2 text-left text-black transition-colors hover:bg-black/10 dark:text-white dark:hover:bg-accent-tertiary

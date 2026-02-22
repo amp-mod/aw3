@@ -60,6 +60,7 @@ export const session = pgTable(
 			.references(() => user.id, { onDelete: 'cascade' }),
 		expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
 		ip: inet('ip'), // only used for IP bans
+		userAgent: text('user_agent'),
 	},
 	(table) => [index('user_id_idx').on(table.userId)],
 )
