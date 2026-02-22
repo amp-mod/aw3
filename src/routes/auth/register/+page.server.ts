@@ -1,5 +1,4 @@
 import { hash } from '@node-rs/argon2'
-import { encodeBase32LowerCase } from '@oslojs/encoding'
 import { fail, redirect } from '@sveltejs/kit'
 import * as auth from '$lib/server/auth'
 import { db } from '$lib/server/db'
@@ -39,7 +38,6 @@ export const actions: Actions = {
 		if (!ok) {
 			return { success: false, error: 'CAPTCHA failed' }
 		}
-		const userId = generateUserId()
 		const passwordHash = await hash(password, {
 			// recommended minimum parameters
 			memoryCost: 19456,
@@ -59,10 +57,10 @@ export const actions: Actions = {
 		}
 
 		try {
-			await db.insert(table.user).values({ id: userId, username, passwordHash })
+			await db.insert(table.user).values({ username, passwordHash })
 
 			const sessionToken = auth.generateSessionToken()
-			const session = await auth.createSession(sessionToken, userId)
+			const session = await auth.createSession(sessionToken)
 			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt)
 		} catch {
 			return fail(500, { message: 'An error has occurred' })
@@ -98,13 +96,6 @@ export const actions: Actions = {
 
 		return { available: true }
 	},
-}
-
-function generateUserId() {
-	// ID with 120 bits of entropy, or about the same as UUID v4.
-	const bytes = crypto.getRandomValues(new Uint8Array(15))
-	const id = encodeBase32LowerCase(bytes)
-	return id
 }
 
 function validateUsername(username: unknown): username is string {
