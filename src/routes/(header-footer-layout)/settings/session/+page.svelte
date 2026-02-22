@@ -89,8 +89,8 @@
 					}
 				}}
 			>
-				<input type="hidden" name="sessionId" value={session.id} />
-				<Button type="submit" class="!px-3 !py-1 !text-xs">
+				<input type="hidden" name="index" value={session.index} />
+				<Button type="submit">
 					{session.isCurrent ? 'Logout' : 'Revoke'}
 				</Button>
 			</form>

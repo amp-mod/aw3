@@ -1,7 +1,7 @@
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import { eq, desc } from 'drizzle-orm'
-import { error, redirect } from '@sveltejs/kit'
+import { error, fail, redirect } from '@sveltejs/kit'
 import type { PageServerLoad, Actions } from './$types'
 import { invalidateSession, deleteSessionTokenCookie } from '$lib/server/auth'
 
@@ -21,36 +21,44 @@ export const load: PageServerLoad = async (event) => {
 
 	return {
 		user,
-		sessions: sessions.map((s) => ({
+		sessions: sessions.map((s, index) => ({
 			...s,
 			isCurrent: s.id === currentSession.id,
 			id: undefined,
+			index,
 		})),
 	}
 }
 
 export const actions: Actions = {
 	revoke: async (event) => {
-		const user = event.locals.user
-		if (!user) throw error(401)
+		const { user, session: currentSession } = event.locals
+		if (!user || !currentSession) throw error(401)
 
 		const formData = await event.request.formData()
-		const sessionId = formData.get('sessionId') as string
+		const targetIndex = Number(formData.get('index'))
 
-		if (!sessionId) return { success: false }
+		if (isNaN(targetIndex)) {
+			return fail(400, { message: 'Invalid index' })
+		}
 
-		const [sessionToId] = await db
+		const userSessions = await db
 			.select()
 			.from(table.session)
-			.where(eq(table.session.id, sessionId))
+			.where(eq(table.session.userId, user.id))
+			.orderBy(desc(table.session.expiresAt))
 
-		if (sessionToId && sessionToId.userId === user.id) {
-			await invalidateSession(sessionId)
+		const targetSession = userSessions[targetIndex]
 
-			if (sessionId === event.locals.session?.id) {
-				deleteSessionTokenCookie(event)
-				throw redirect(302, '/')
-			}
+		if (!targetSession) {
+			return fail(404, { message: 'Session no longer exists' })
+		}
+
+		await invalidateSession(targetSession.id)
+
+		if (targetSession.id === currentSession.id) {
+			deleteSessionTokenCookie(event)
+			throw redirect(302, '/')
 		}
 
 		return { success: true }
