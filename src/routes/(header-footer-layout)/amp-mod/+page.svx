@@ -1,0 +1,37 @@
+---
+title: AmpMod ≠ Amp Mods
+---
+
+AmpMod coincidentally shares a name with a type of guitar thing called an amp mod. We aren't
+guitarists, so we don't know much about them. They seem to be something that amplifies a guitar,
+as in making it louder.
+
+**To be clear: AmpMod is a block-based programming language. We do NOT produce hardware for amplifying
+guitars. The name is a complete coincidence.**
+
+If you came here searching for "ampmod" in the interest of an amplifier modifier for your guitar, try
+searching it with a space in the middle. Search engines tend to give you results about guitar amplifiers
+when you search it like that.
+
+## Backstory
+
+AmpMod originally wasn't even called AmpMod. Upon the creation of AmpMod (3 Feb 2025), it was called UltiBlocks. The
+name was chosen because AmpMod was intended to be an "ultimate" version of Scratch.
+
+A few days later though (11 Feb 2025), we did a poll to see whether people preferred the name UltiBlocks, or the new name,
+AmpMod. The community, presumably not knowing what an amp mod was, landed on the name AmpMod. The Amp prefix
+comes from the username of the creator of AmpMod (AmpElectrecuted).
+
+We did not choose this name to hijack SEO. It is rather an unfortunate coincidence related to my username.
+Not even I knew about amp mods, because uhh, I don't really play guitars.
+
+However, there are a few registered trademarks for the name "AMPMOD". Thankfully none of these are related to
+programming. However, since we do not trademark the name AmpMod, we may have to change our name back if a new
+app called AmpMod registers its name with a trademark office.
+
+Since we have already wrote a lot of code that relies heavily on the name AmpMod for the system to even work,
+changing the name would be cumbersome. The AmpMod Wiki did not move domains from ultiblocks.miraheze.org to
+ampmod.miraheze.org until April 2025, because bots heavily relied on that domain and the ability to change Miraheze
+subdomains is locked behind a request as the subdomain is related to the name of the database the wiki uses.
+
+Hope this makes it clear.

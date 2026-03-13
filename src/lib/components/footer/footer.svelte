@@ -8,6 +8,7 @@
 			title: m.footerAbout(),
 			links: [
 				{ href: '/about', label: m.about() },
+				{ href: '/amp-mod', label: "AmpMod ≠ Amp Mods" },
 				{ href: '/credits', label: m.credits() },
 			],
 		},
