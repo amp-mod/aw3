@@ -4,9 +4,19 @@
 	import favicon from '$lib/assets/favicon.ico'
 	import LoginModal from '$lib/components/LoginModal.svelte'
 	import { getLocale } from '$lib/paraglide/runtime'
+	import SessionRevoked from '$lib/components/SessionRevoked.svelte'
+	import { invalidateAll } from '$app/navigation'
+	import { onMount } from 'svelte'
 
 	let { children, data } = $props()
 	const dir = ['ar', 'he'].includes(getLocale()) ? 'rtl' : 'ltr'
+
+	onMount(() => {
+		if (data.sessionDeleted) {
+			console.warn('Session has been deleted!')
+			invalidateAll().then(() => (modals.sessionRevoked = true))
+		}
+	})
 </script>
 
 <svelte:head>
@@ -18,6 +28,7 @@
 	{@render children?.()}
 
 	<LoginModal bind:open={modals.login} />
+	<SessionRevoked bind:open={modals.sessionRevoked} />
 
 	{#if data?.isDangerousMode}
 		<div

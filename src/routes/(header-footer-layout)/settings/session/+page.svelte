@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms'
-	import { invalidate } from '$app/navigation'
+	import { goto, invalidate, invalidateAll } from '$app/navigation'
+	import { page } from '$app/state'
 	import Button from '$lib/components/Button.svelte'
 	import { getLocale } from '$lib/paraglide/runtime.js'
 	import { Smartphone, Globe, Calendar, Tablet, Bot, Monitor } from '@lucide/svelte'
@@ -38,6 +39,12 @@
 			icon: Icon,
 		}
 	}
+
+	function confirmRevokeAll(e: SubmitEvent) {
+		if (!confirm('Are you sure you want to log out of all devices?')) {
+			e.preventDefault()
+		}
+	}
 </script>
 
 <h2 class="mb-2 text-3xl font-bold">Sessions</h2>
@@ -50,13 +57,32 @@
 	<p>If you see a session you don't recognize, change your password immediately.</p>
 </div>
 
-<Button class="mb-6" onclick={invalidate}>Reload</Button>
+<div class="mb-6 flex items-center justify-between">
+	<div class="flex gap-2">
+		<Button onclick={() => invalidate('aw3:sessions')}>Reload</Button>
+	</div>
+
+	<form
+		method="POST"
+		action="?/revokeAll"
+		use:enhance={() => {
+			return async ({ update }) => {
+				await invalidateAll()
+				await goto('/')
+			}
+		}}
+		onsubmit={confirmRevokeAll}
+	>
+		<Button type="submit">Revoke all</Button>
+	</form>
+</div>
 
 <div class="flex flex-col gap-4">
-	{#each data.sessions as session}
+	{#each data.sessions as session (session.sha256ofID)}
 		{@const DeviceIcon = getSessionDetails(session.userAgent).icon}
 		<div
-			class="flex items-center justify-between rounded border border-black/5 p-4 transition-colors dark:border-white/5 dark:bg-neutral-800/50" transition:fade
+			class="flex items-center justify-between rounded border border-black/5 p-4 transition-colors dark:border-white/5 dark:bg-neutral-800/50"
+			transition:slide
 		>
 			<div class="flex items-center gap-4">
 				<div class="rounded-full">
@@ -94,7 +120,7 @@
 					}
 				}}
 			>
-				<input type="hidden" name="index" value={session.index} />
+				<input type="hidden" name="sha256ofID" value={session.sha256ofID} />
 				<Button type="submit">
 					{session.isCurrent ? 'Logout' : 'Revoke'}
 				</Button>

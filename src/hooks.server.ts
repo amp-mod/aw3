@@ -58,6 +58,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt)
 	} else {
+		event.locals.sessionDeleted = true
 		auth.deleteSessionTokenCookie(event)
 	}
 
