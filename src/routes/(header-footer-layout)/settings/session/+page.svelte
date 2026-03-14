@@ -1,13 +1,16 @@
 <script lang="ts">
 	import { enhance } from '$app/forms'
+	import { invalidate } from '$app/navigation'
 	import Button from '$lib/components/Button.svelte'
+	import { getLocale } from '$lib/paraglide/runtime.js'
 	import { Smartphone, Globe, Calendar, Tablet, Bot, Monitor } from '@lucide/svelte'
 	import Bowser from 'bowser'
+	import { fade, fly, scale, slide } from 'svelte/transition'
 
 	let { data } = $props()
 
 	function formatDate(date: Date) {
-		return new Intl.DateTimeFormat('en-US', {
+		return new Intl.DateTimeFormat(getLocale(), {
 			month: 'short',
 			day: 'numeric',
 			hour: '2-digit',
@@ -47,11 +50,13 @@
 	<p>If you see a session you don't recognize, change your password immediately.</p>
 </div>
 
+<Button class="mb-6" onclick={invalidate}>Reload</Button>
+
 <div class="flex flex-col gap-4">
 	{#each data.sessions as session}
 		{@const DeviceIcon = getSessionDetails(session.userAgent).icon}
 		<div
-			class="flex items-center justify-between rounded border border-black/5 p-4 transition-colors dark:border-white/5 dark:bg-neutral-800/50"
+			class="flex items-center justify-between rounded border border-black/5 p-4 transition-colors dark:border-white/5 dark:bg-neutral-800/50" transition:fade
 		>
 			<div class="flex items-center gap-4">
 				<div class="rounded-full">

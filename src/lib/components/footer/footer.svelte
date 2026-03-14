@@ -1,6 +1,7 @@
 <script>
 	import LangSwitcher from '../LangSwitcher.svelte'
 	import { m } from '$lib/paraglide/messages'
+	let { noJS } = $props()
 
 	// 1. Define the object structure
 	const footerSections = [
@@ -8,7 +9,7 @@
 			title: m.footerAbout(),
 			links: [
 				{ href: '/about', label: m.about() },
-				{ href: '/amp-mod', label: "AmpMod ≠ Amp Mods" },
+				{ href: '/amp-mod', label: 'AmpMod ≠ Amp Mods' },
 				{ href: '/credits', label: m.credits() },
 			],
 		},
@@ -40,8 +41,8 @@
 	]
 </script>
 
-<footer class="w-full bg-neutral-100 p-4 dark:bg-neutral-800">
-	<div class="mx-auto max-w-6xl">
+<footer class="w-full border-neutral-300 p-4 border-t dark:border-neutral-700">
+	<div class="mx-auto max-w-5xl">
 		<nav class="mb-12 grid grid-cols-2 gap-8 text-sm md:grid-cols-4" aria-label="Footer Navigation">
 			{#each footerSections as section}
 				<div class="flex flex-col space-y-2">
@@ -66,10 +67,10 @@
 			{/each}
 		</nav>
 
-		<div class="flex flex-col items-center space-y-4">
-			<LangSwitcher />
-			<p class="max-w-md text-center text-xs opacity-75">
-				{m.footerNotAffiliated()}
+		<div class="flex justify-between gap-4">
+			{#if !noJS}<LangSwitcher />{/if}
+			<p class="text-xs">
+				{@html m.footerNotAffiliated()}
 			</p>
 		</div>
 	</div>

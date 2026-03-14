@@ -4,7 +4,7 @@
 	"guidelines": "Guidelines",
 	"termsOfService": "Terms of Service",
 	"privacyPolicy": "Privacy Policy",
-	"footerNotAffiliated": "AmpMod is not affiliated with Scratch or TurboWarp.",
+	"footerNotAffiliated": "AmpMod is not affiliated with the Scratch Foundation, TurboWarp, or any of their affiliates. Scratch is a project of the Scratch Foundation, available at scratch.org. This website is free software under the GNU Affero General Public Licence 3.0. All user-generated content is licenced under the Creative Commons Attribution-ShareAlike 4.0 licence.",
 	"footerResources": "Resources",
 	"footerCommunity": "Community",
 	"footerBlog": "AmpMod Blog",
@@ -65,8 +65,10 @@
 	"notLoggedInDropdown": "Not logged in",
 	"myProfile": "Profile",
 	"myStuff": "My Stuff",
+	"messages": "Messages",
 	"settings": "Settings",
 	"logOut": "Log out",
 	"joinAmpMod": "Join AmpMod",
+	"join": "Join",
 	"logIn": "Log in"
 }

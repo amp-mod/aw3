@@ -26,7 +26,7 @@ export const load: PageServerLoad = async (event) => {
 			isCurrent: s.id === currentSession.id,
 			id: undefined,
 			index,
-		})),
+		})).sort((s, t) => +s.expiresAt - +t.expiresAt),
 	}
 }
 

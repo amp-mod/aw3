@@ -108,11 +108,17 @@
 	<div class="bg-accent p-9 text-white">
 		<div class="m-auto flex max-w-6xl items-center justify-between">
 			<div class="flex grow flex-col justify-center text-left">
-				<h1 class="text-4xl leading-tight font-bold">Create games, animations and stories</h1>
+				<h1 class="text-4xl leading-tight font-bold">Block-based programming, amplified</h1>
 				<div class="mt-4 flex gap-6">
 					<a href="/projects/editor" class={styles.button_normal}><Clapperboard /> Try it out</a>
 					<a href="/auth/register" class={styles.button_normal}><UserRound /> Join</a>
 				</div>
+				<p class="mt-4">
+					AmpMod is built on TurboWarp, which is built on Scratch, making it really powerful. <a
+						href="/about"
+						class="underline">Learn more.</a
+					>
+				</p>
 			</div>
 
 			<div class="flex items-center justify-center">

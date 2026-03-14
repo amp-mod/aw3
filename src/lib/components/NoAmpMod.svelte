@@ -30,5 +30,5 @@
 		</div>
 	</div>
 
-	<Footer />
+	<Footer noJS />
 </div>

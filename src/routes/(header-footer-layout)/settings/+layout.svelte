@@ -62,7 +62,7 @@
 		{#each tabs as tab}
 			{#if !tab.id && (data.user || !tab.restricted)}
 				<div
-					class="flex w-full items-center border-b border-neutral-500/30 pt-3 pb-1 text-sm font-bold text-neutral-500"
+					class="flex w-full items-center border-b border-neutral-500/30 pt-3 pb-1 text-sm font-bold opacity-80"
 				>
 					{tab.label}
 				</div>

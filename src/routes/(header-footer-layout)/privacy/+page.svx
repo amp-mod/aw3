@@ -18,7 +18,7 @@ of inactivity). This data is only used to prevent severe abuse of the website, s
 illegal activity regarding minors.
 
 When registering for AmpMod, we will only ask for a username, password, and an optional email. Your
-username must not contain your real name
+username must not contain your real name.
 
 AmpMod stores a hash of your password so you can login. Since your password is hashed, we can't see
 it after you register.
