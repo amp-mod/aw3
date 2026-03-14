@@ -4,6 +4,8 @@
 	import CreateCardIcon from '$lib/assets/apple-cat-programming-sm.svg'
 	import HeroImg from '$lib/assets/apple-cat-programming.svg'
 	import ExploreProjectsIcon from '$lib/assets/exploreprojects.svg'
+	import Button from '$lib/components/Button.svelte'
+	import { m } from '$lib/paraglide/messages'
 	let { data } = $props()
 
 	const styles = {
@@ -46,8 +48,14 @@
 
 {#if data.user}
 	<div class="m-auto flex min-h-100 max-w-6xl gap-3 p-8">
-		<div class="flex grow basis-0 items-center justify-center">
+		<div class="flex grow basis-0 flex-col items-center justify-center gap-3">
+			<img src={data.userPfp} alt="Your user icon" height={72} width={72} class="rounded" />
 			<h1 class="text-2xl font-bold">Hello, {data.user.username}!</h1>
+			<div class="flex items-center justify-center gap-1">
+				<Button href="/projects/editor" data-sveltekit-reload>{m.createProject()}</Button>
+				<Button href={`/users/${data.user.username}`}>{m.myProfile()}</Button>
+				<Button href="/mystuff">{m.myStuff()}</Button>
+			</div>
 		</div>
 
 		<div class="flex grow basis-0 flex-col gap-3">
@@ -105,7 +113,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="bg-accent p-9 text-white">
+	<div class="relative bg-accent p-9 text-white">
 		<div class="m-auto flex max-w-6xl items-center justify-between">
 			<div class="flex grow flex-col justify-center text-left">
 				<h1 class="text-4xl leading-tight font-bold">Block-based programming, amplified</h1>
@@ -113,22 +121,21 @@
 					<a href="/projects/editor" class={styles.button_normal}><Clapperboard /> Try it out</a>
 					<a href="/auth/register" class={styles.button_normal}><UserRound /> Join</a>
 				</div>
-				<p class="mt-4">
-					AmpMod is built on TurboWarp, which is built on Scratch, making it really powerful. <a
-						href="/about"
-						class="underline">Learn more.</a
-					>
-				</p>
 			</div>
 
 			<div class="flex items-center justify-center">
 				<img
 					src={HeroImg}
 					alt="An illustration of AmpMod's mascot, Apple Cat."
-					class="object-stretch h-38 w-full"
+					class="h-38 w-full object-fill"
 				/>
 			</div>
 		</div>
+
+		<div
+			style="clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);"
+			class="pointer-events-none absolute -bottom-6 left-36 h-6 w-24 -translate-x-1/2 bg-accent"
+		></div>
 	</div>
 
 	<div
