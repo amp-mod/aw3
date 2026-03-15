@@ -8,6 +8,7 @@
 	import Button from '$lib/components/Button.svelte'
 	import Tiptap from '$lib/components/Tiptap.svelte'
 	import { getLocale } from '$lib/paraglide/runtime.js'
+	import DOMPurify from 'isomorphic-dompurify'
 
 	let { data } = $props()
 
@@ -275,7 +276,8 @@
 						class="prose max-h-100 min-h-50 max-w-none overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert prose-a:text-accent prose-a:not-hover:no-underline dark:prose-a:text-accent-light"
 					>
 						{#if userProfile.bio}
-							{@html md.render(userProfile.bio)}
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							{@html DOMPurify.sanitize(md.render(userProfile.bio))}
 						{:else}
 							<i class="opacity-50"
 								>{isOwnProfile ? m.aboutMePlaceholderEdit() : m.aboutMePlaceholder()}</i

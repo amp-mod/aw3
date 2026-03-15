@@ -102,6 +102,7 @@
 		"bowser": "^2.14.1",
 		"dompurify": "^3.3.3",
 		"geoip-lite": "^2.0.0",
+		"isomorphic-dompurify": "^3.3.0",
 		"markdown-it": "^14.1.0",
 		"postgres": "^3.4.8",
 		"smile-js": "^0.10.1",
