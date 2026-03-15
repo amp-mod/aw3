@@ -7,6 +7,7 @@
 	import { m } from '$lib/paraglide/messages'
 	import Button from '$lib/components/Button.svelte'
 	import Tiptap from '$lib/components/Tiptap.svelte'
+	import { getLocale } from '$lib/paraglide/runtime.js'
 
 	let { data } = $props()
 
@@ -31,14 +32,21 @@
 	const { isOwnProfile, isViewerStaff } = $derived(data)
 	const md = new MarkdownIt({ html: false, linkify: true, breaks: true, typographer: true })
 
-	const joinedDate = $derived(
-		userProfile.createdAt
-			? new Date(userProfile.createdAt).toLocaleDateString('en-US', {
-					year: 'numeric',
-					month: 'long',
-					day: 'numeric',
-				})
-			: 'Unknown',
+	let joinedDate = $derived(
+		(() => {
+			try {
+				return userProfile.createdAt
+					? new Date(userProfile.createdAt).toLocaleDateString(getLocale(), {
+							year: 'numeric',
+							month: 'long',
+							day: 'numeric',
+						})
+					: 'Unknown'
+			} catch (e) {
+				console.error('Failed to translate joined date!', e)
+				return new Date(userProfile.createdAt).toISOString()
+			}
+		})(),
 	)
 
 	const viewerIsOp = $derived(isStaff(data.user?.rank))
