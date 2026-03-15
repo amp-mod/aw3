@@ -7,7 +7,7 @@ import type { PageServerLoad } from './$types'
 export const load: PageServerLoad = async ({ locals }) => {
 	// 1. Ensure the user is logged in
 	if (!locals.user) {
-		throw error(401, 'Unauthorized')
+		return {}
 	}
 
 	// 2. Fetch the user's settings from the DB
