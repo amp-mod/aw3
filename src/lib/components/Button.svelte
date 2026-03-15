@@ -13,7 +13,7 @@
 		{href}
 		{...props}
 		class={[
-			'rounded bg-accent px-4 py-1 text-center text-lg font-bold text-white',
+			'rounded-lg bg-accent px-4 py-1.5 text-center text-lg font-bold text-white',
 			'not-disabled:cursor-pointer not-disabled:hover:bg-accent-secondary disabled:opacity-70',
 			props.class,
 		]}
@@ -24,7 +24,7 @@
 	<button
 		{...props}
 		class={[
-			'rounded-xl bg-accent px-4 py-1 text-center text-lg font-bold text-white',
+			'rounded-lg bg-accent px-4 py-1.5 text-center text-lg font-bold text-white',
 			'not-disabled:cursor-pointer not-disabled:hover:bg-accent-secondary disabled:opacity-70',
 			props.class,
 		]}
