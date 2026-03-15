@@ -67,18 +67,21 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	return resolve(event)
 }
 
-const handleGuard: Handle = async ({ event, resolve }) => {
+export const handleGuard: Handle = async ({ event, resolve }) => {
 	const isAdminRoute = event.route.id?.startsWith('/(protected)/')
+	const isNotGet = event.request.method !== 'GET'
 
-	if (isAdminRoute) {
-		if (!event.locals.user || (event.locals.user.rank !== 3 && !process.env.AW3_FORCE_ADMIN)) {
-			throw error(403, m.errorProtectedPage())
+	if (isAdminRoute && isNotGet) {
+		const hasRank = event.locals.user?.rank === 3
+		const isForced = process.env.AW3_FORCE_ADMIN === 'true' || process.env.AW3_FORCE_ADMIN === '1'
+
+		if (!event.locals.user || (!hasRank && !isForced)) {
+			throw error(404, 'Not Found')
 		}
 	}
 
 	return resolve(event)
 }
-
 const handleBanned: Handle = async ({ event, resolve }) => {
 	const user = event.locals.user
 	const isBannedPage = event.url.pathname === '/banned'
