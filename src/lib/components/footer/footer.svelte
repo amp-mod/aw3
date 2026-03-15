@@ -41,7 +41,7 @@
 	]
 </script>
 
-<footer class="w-full border-neutral-300 p-4 border-t dark:border-neutral-700">
+<footer class="w-full border-t border-neutral-300 p-4 dark:border-neutral-700">
 	<div class="mx-auto max-w-5xl">
 		<nav class="mb-12 grid grid-cols-2 gap-8 text-sm md:grid-cols-4" aria-label="Footer Navigation">
 			{#each footerSections as section}
@@ -70,7 +70,7 @@
 		<div class="flex justify-between gap-4">
 			{#if !noJS}<LangSwitcher />{/if}
 			<p class="text-xs">
-				{@html m.footerNotAffiliated()}
+				{m.footerNotAffiliated()}
 			</p>
 		</div>
 	</div>
