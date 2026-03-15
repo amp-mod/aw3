@@ -41,6 +41,7 @@ export const user = pgTable(
 		bio: varchar({ length: 2000 }).default(''),
 		pfp: text(),
 		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+		isPrivate: boolean().default(false),
 
 		// moderation
 		status: text('status').default('normal'),

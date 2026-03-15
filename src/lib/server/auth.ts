@@ -43,6 +43,7 @@ export async function validateSessionToken(token: string) {
 				banReason: table.user.banReason,
 				bannedExpiry: table.user.bannedExpiry,
 				pfp: table.user.pfp,
+				isPrivate: table.user.isPrivate,
 			},
 			session: table.session,
 		})

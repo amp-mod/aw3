@@ -44,6 +44,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			bio: table.user.bio,
 			pfp: table.user.pfp,
 			createdAt: table.user.createdAt,
+			isPrivate: table.user.isPrivate,
 			...(isStaffMember
 				? {
 						status: table.user.status,
@@ -60,6 +61,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(404, { message: 'User not found' })
 	}
 
+	if (userProfile.isPrivate && !isStaffMember && userProfile.id !== locals.user?.id) {
+		return {
+			private: true,
+			userProfile: {},
+		}
+	}
+
 	const isOwnProfile = locals.user?.id === userProfile.id
 
 	return {
@@ -68,6 +76,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			pfp: getPfpPath(userProfile.pfp),
 		},
 		isOwnProfile,
+		isPrivate: userProfile.isPrivate,
 		isViewerStaff: isStaffMember,
 	}
 }
@@ -156,7 +165,7 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData()
-		const targetUserId = formData.get('userId') as string
+		const targetUserId = formData.get('targetUserId') as string
 		const reason = (formData.get('reason') as string) || 'No reason provided'
 		const durationHours = formData.get('duration') ? Number(formData.get('duration')) : null
 
