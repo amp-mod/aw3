@@ -1,5 +1,16 @@
 <script lang="ts">
-	import { ExternalLink, UserRound, Palette, Key, Puzzle, Paintbrush } from '@lucide/svelte'
+	import {
+		ExternalLink,
+		UserRound,
+		Palette,
+		Key,
+		Puzzle,
+		Paintbrush,
+		SquareAsterisk,
+		Asterisk,
+		Shield,
+		LogIn,
+	} from '@lucide/svelte'
 	import { page } from '$app/state'
 	import LoginModal from '$lib/components/LoginModal.svelte'
 	import { m } from '$lib/paraglide/messages.js'
@@ -19,17 +30,24 @@
 		{ label: 'Account', restricted: true },
 		{
 			id: 'profile',
-			label: 'Public profile',
+			label: 'Profile',
 			href: '/settings/profile',
 			restricted: true,
 			icon: UserRound,
 		},
 		{
+			id: 'auth',
+			label: 'Passwords and 2FA',
+			href: '/settings/auth',
+			restricted: true,
+			icon: SquareAsterisk,
+		},
+		{
 			id: 'sessions',
-			label: 'Sessions',
+			label: 'Manage sessions',
 			href: '/settings/session',
 			restricted: true,
-			icon: Key,
+			icon: LogIn,
 		},
 		{ label: 'AmpMod editor' },
 		{ id: 'theme', label: 'Theme', href: '/settings/theme', icon: Paintbrush },

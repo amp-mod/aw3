@@ -43,6 +43,9 @@ export const user = pgTable(
 		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
 		isPrivate: boolean().default(false),
 
+		// passkeys
+		passkeys: jsonb(),
+
 		// moderation
 		status: text('status').default('normal'),
 		bannedExpiry: timestamp('banned_expiry', { withTimezone: true, mode: 'date' }),
@@ -161,6 +164,32 @@ export const config = pgTable('config', {
 	value: text(),
 })
 
+export const authenticator = pgTable(
+	'authenticator',
+	{
+		// The unique ID returned by the browser (Base64URL encoded)
+		id: text('id').primaryKey(),
+		userId: bigint('user_id', { mode: 'number' })
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+
+		// Friendly name (e.g., "Blue YubiKey", "Firefox Arch Linux")
+		name: varchar('name', { length: 255 }).default('New Passkey'),
+
+		// WebAuthn specific data
+		publicKey: text('public_key').notNull(), // Store as Base64 string
+		counter: bigint('counter', { mode: 'number' }).notNull().default(0),
+		deviceType: varchar('device_type', { length: 32 }).notNull(),
+		backedUp: boolean('backed_up').notNull().default(false),
+		transports: text('transports'), // comma-separated or jsonb (e.g. "usb,nfc,internal")
+
+		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+		lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
+	},
+	(table) => [index('auth_user_id_idx').on(table.userId)],
+)
+
+export type Authenticator = typeof authenticator.$inferSelect
 export type User = typeof user.$inferSelect
 export type Session = typeof session.$inferSelect
 export type Project = typeof project.$inferSelect

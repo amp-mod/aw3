@@ -1,11 +1,13 @@
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, and } from 'drizzle-orm'
 import { error, fail, redirect } from '@sveltejs/kit'
 import type { PageServerLoad, Actions } from './$types'
 import { invalidateSession, deleteSessionTokenCookie } from '$lib/server/auth'
 import { sha256 } from '@oslojs/crypto/sha2'
 import { encodeHexLowerCase } from '@oslojs/encoding'
+import geoip from 'geoip-lite'
+import { getLocale } from '$lib/paraglide/runtime'
 
 export const load: PageServerLoad = async (event) => {
 	event.depends('aw3:sessions')
@@ -13,8 +15,15 @@ export const load: PageServerLoad = async (event) => {
 	const user = event.locals.user
 	const currentSession = event.locals.session
 
-	if (!user || !currentSession) {
-		return {}
+	if (!user || !currentSession) return {}
+
+	// 1. Setup Localization for Country Names
+	const locale = getLocale()
+	let countryNames: Intl.DisplayNames
+	try {
+		countryNames = new Intl.DisplayNames([locale, 'en'], { type: 'region' })
+	} catch {
+		countryNames = new Intl.DisplayNames(['en'], { type: 'region' })
 	}
 
 	const sessions = await db
@@ -26,13 +35,32 @@ export const load: PageServerLoad = async (event) => {
 	return {
 		user,
 		sessions: sessions
-			.map((s, index) => ({
-				...s,
-				isCurrent: s.id === currentSession.id,
-				sha256ofID: encodeHexLowerCase(sha256(new TextEncoder().encode(s.id))),
-				id: undefined,
-				index,
-			}))
+			.map((s, index) => {
+				// 2. Geolocation Lookup
+				const geo = geoip.lookup(s.ip || '')
+				let location = 'Unknown Location'
+
+				if (s.ip === '127.0.0.1' || s.ip === '::1') {
+					location = 'Localhost'
+				} else if (geo) {
+					try {
+						const countryFull = geo.country ? countryNames.of(geo.country) : ''
+						location = [geo.city, countryFull].filter(Boolean).join(', ')
+					} catch {
+						location = [geo.city, geo.country].filter(Boolean).join(', ')
+					}
+				}
+
+				return {
+					...s,
+					location,
+					isCurrent: s.id === currentSession.id,
+					// Security: We send a hash of the ID to the client, not the raw session token
+					sha256ofID: encodeHexLowerCase(sha256(new TextEncoder().encode(s.id))),
+					id: undefined, // Strip the actual session ID
+					index,
+				}
+			})
 			.sort((a, b) => {
 				if (a.isCurrent) return -1
 				if (b.isCurrent) return 1
@@ -53,6 +81,7 @@ export const actions: Actions = {
 			return fail(400, { message: 'Invalid session hash' })
 		}
 
+		// Find the actual session ID by re-hashing user sessions
 		const userSessions = await db
 			.select()
 			.from(table.session)
@@ -76,12 +105,16 @@ export const actions: Actions = {
 
 		return { success: true }
 	},
+
 	revokeAll: async (event) => {
 		const { user, session: currentSession } = event.locals
 		if (!user || !currentSession) throw error(401)
 
-		await db.delete(table.session)
+		// Delete all sessions for this user EXCEPT the current one (optional)
+		// Or delete all if you want to force a full logout
+		await db.delete(table.session).where(eq(table.session.userId, user.id))
 
-		return { success: true }
+		deleteSessionTokenCookie(event)
+		throw redirect(302, '/auth/login')
 	},
 }

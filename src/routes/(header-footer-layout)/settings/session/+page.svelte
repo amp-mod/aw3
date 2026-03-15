@@ -11,12 +11,19 @@
 	let { data } = $props()
 
 	function formatDate(date: Date) {
-		return new Intl.DateTimeFormat(getLocale(), {
+		const locale = getLocale()
+		const options: Intl.DateTimeFormatOptions = {
 			month: 'short',
 			day: 'numeric',
 			hour: '2-digit',
 			minute: '2-digit',
-		}).format(new Date(date))
+		}
+
+		try {
+			return new Intl.DateTimeFormat(locale, options).format(new Date(date))
+		} catch (e) {
+			return new Intl.DateTimeFormat('en', options).format(new Date(date))
+		}
 	}
 	function getSessionDetails(uaString: string | null) {
 		if (!uaString) {
@@ -54,7 +61,13 @@
 <div
 	class="mb-6 flex items-center gap-2 rounded bg-amber-100 p-3 text-sm text-amber-900 dark:bg-amber-800/20 dark:text-amber-200"
 >
-	<p>If you see a session you don't recognize, change your password immediately.</p>
+	<p>
+		If you see a session you don't recognize, such as one that is from a different country from you
+		or using a type of device you don't own, you should revoke it and consider <a
+			href="/settings/auth"
+			class="underline">changing your password</a
+		>.
+	</p>
 </div>
 
 <div class="mb-6 flex items-center justify-between">
@@ -93,7 +106,7 @@
 					<span
 						class="flex items-center gap-2 text-sm font-medium text-neutral-800 dark:text-white"
 					>
-						{session.ip}
+						{session.location}
 						{#if session.isCurrent}(This session){/if}
 					</span>
 
