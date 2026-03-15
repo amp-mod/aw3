@@ -32,7 +32,7 @@
 	"sourceCodeCloudvarTw": "GitHub (TurboWarp Implementation)",
 	"learnMore": "Learn More",
 	"adminBanDesc": "You are about to ban {username}. Please provide a reason and duration.",
-	"adminBan": "Ban User",
+	"adminBan": "Ban / Unban",
 	"duration": "Duration",
 	"permanent": "Permanent",
 	"dayInHours": "24 Hours",

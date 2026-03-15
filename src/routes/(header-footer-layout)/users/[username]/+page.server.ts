@@ -184,7 +184,9 @@ export const actions: Actions = {
 		}
 
 		let expiryDate: Date | null = null
-		if (durationHours && durationHours > 0) {
+		if (durationHours === 0) {
+			expiryDate = new Date()
+		} else if (durationHours && durationHours > 0) {
 			expiryDate = new Date()
 			expiryDate.setHours(expiryDate.getHours() + durationHours)
 		}
@@ -192,9 +194,9 @@ export const actions: Actions = {
 		await db
 			.update(table.user)
 			.set({
-				status: 'banned',
+				status: durationHours === 0 ? 'normal' : 'banned',
 				bannedExpiry: expiryDate,
-				banReason: reason,
+				banReason: durationHours === 0 ? null : reason,
 			})
 			.where(eq(table.user.id, targetUserId))
 

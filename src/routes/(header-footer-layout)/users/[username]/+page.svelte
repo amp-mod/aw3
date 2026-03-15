@@ -138,10 +138,6 @@
 
 <Modal bind:open={isBanModalOpen} title={m.adminBan()}>
 	<div class="flex flex-col gap-2">
-		<p class="mb-4 text-sm text-neutral-600 dark:text-neutral-300">
-			{m.adminBanDesc({ username: data.userProfile.username })}
-		</p>
-
 		<form
 			method="POST"
 			action="?/banUser"
@@ -164,6 +160,7 @@
 					<option value="24h">{m.dayInHours()}</option>
 					<option value="7d">{m.weekInDays()}</option>
 					<option value="30d">{m.monthInDays()}</option>
+					<option value="0">Unban</option>
 				</select>
 			</div>
 			<div>
@@ -173,7 +170,6 @@
 					name="reason"
 					placeholder="Violation of community guidelines..."
 					class="{styles.modalInput} min-h-[100px] resize-none"
-					required
 				></textarea>
 			</div>
 			<div class="mt-2 flex justify-end gap-3">
