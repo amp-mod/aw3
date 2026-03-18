@@ -9,13 +9,17 @@
 	import { onMount } from 'svelte'
 
 	let { children, data } = $props()
-	const dir = ['ar', 'he'].includes(getLocale()) ? 'rtl' : 'ltr'
 
 	onMount(() => {
 		if (data.sessionDeleted) {
 			console.warn('Session has been deleted!')
 			invalidateAll().then(() => (modals.sessionRevoked = true))
 		}
+		console.warn(
+			'%cSTOP NOW!%cPasting code here can allow an attacker to LOG IN to your account. Read the AmpMod FAQ for more information.',
+			'font-size: 3em; font-weight: bold; display: block; font-family: sans-serif;',
+			'font-size: 1.5em; font-weight: bold; font-family: sans-serif;',
+		)
 	})
 </script>
 
@@ -24,17 +28,15 @@
 	<title>AmpMod</title>
 </svelte:head>
 
-<div {dir}>
-	{@render children?.()}
+{@render children?.()}
 
-	<LoginModal bind:open={modals.login} />
-	<SessionRevoked bind:open={modals.sessionRevoked} />
+<LoginModal bind:open={modals.login} />
+<SessionRevoked bind:open={modals.sessionRevoked} />
 
-	{#if data?.isDangerousMode}
-		<div
-			class="pointer-events-none fixed right-4 bottom-4 z-999999 text-xl font-bold text-red-500 opacity-50"
-		>
-			Insecure
-		</div>
-	{/if}
-</div>
+{#if data?.isDangerousMode}
+	<div
+		class="pointer-events-none fixed right-4 bottom-4 z-999999 text-xl font-bold text-red-500 opacity-50"
+	>
+		Insecure
+	</div>
+{/if}

@@ -8,7 +8,6 @@ import {
 	isLocale,
 	cookieName as langCookieName,
 } from '$lib/paraglide/runtime'
-import { m } from '$lib/paraglide/messages'
 
 const handleParaglide: Handle = async ({ event, resolve }) => {
 	const cookieLang = event.cookies.get(langCookieName)
@@ -22,8 +21,11 @@ const handleParaglide: Handle = async ({ event, resolve }) => {
 
 	setLocale(finalLang)
 
+	const dir = ['ar', 'he', 'fa', 'ckb'].includes(finalLang) ? 'rtl' : 'ltr'
+
 	return resolve(event, {
-		transformPageChunk: ({ html }) => html.replace('%paraglide.lang%', finalLang),
+		transformPageChunk: ({ html }) =>
+			html.replace('%paraglide.lang%', finalLang).replace('%paraglide.dir%', dir),
 	})
 }
 
