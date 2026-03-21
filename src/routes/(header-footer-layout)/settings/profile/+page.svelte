@@ -1,6 +1,7 @@
 <script>
 	import { enhance } from '$app/forms'
 	import Button from '$lib/components/Button.svelte'
+	import { getPfpPath } from '$lib/storage-helpers.js'
 
 	let { data } = $props()
 	let formElement = $state()
@@ -55,7 +56,11 @@
 
 	<div>
 		<Button class="inline-flex items-center gap-2" href={`/users/${data.user.username}`}>
-			<img src={data.userPfp} alt="Your user icon" class="h-7 w-7 rounded border border-black/10" />
+			<img
+				src={getPfpPath(data.user)['32']}
+				alt="Your user icon"
+				class="h-7 w-7 rounded border border-black/10"
+			/>
 			Visit profile
 		</Button>
 	</div>
