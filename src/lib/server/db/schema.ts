@@ -39,7 +39,7 @@ export const user = pgTable(
 
 		// profile
 		bio: varchar({ length: 2000 }).default(''),
-		pfp: text(),
+		hasPFP: boolean().default(false).notNull(),
 		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
 		isPrivate: boolean().default(false),
 
@@ -189,6 +189,56 @@ export const authenticator = pgTable(
 	(table) => [index('auth_user_id_idx').on(table.userId)],
 )
 
+export const follow = pgTable(
+	'follow',
+	{
+		// The person doing the following
+		followerId: bigint('follower_id', { mode: 'number' })
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		// The person being followed
+		followingId: bigint('following_id', { mode: 'number' })
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	},
+	(t) => [
+		primaryKey({ columns: [t.followerId, t.followingId] }),
+		index('follower_idx').on(t.followerId),
+		index('following_idx').on(t.followingId),
+	],
+)
+
+export const notification = pgTable(
+	'notification',
+	{
+		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+		// The user who receives the notification
+		recipientId: bigint('recipient_id', { mode: 'number' })
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		// The user who triggered the notification (optional, e.g., "System" notices)
+		issuerId: bigint('issuer_id', { mode: 'number' }).references(() => user.id, {
+			onDelete: 'set null',
+		}),
+
+		/* Types: 'follow', 'project_update', 'gallery_invite', 'featured', 'system'
+		 */
+		type: text('type').notNull(),
+
+		// References to the object involved (Project ID, Gallery ID, etc.)
+		targetId: bigint('target_id', { mode: 'number' }),
+		targetType: text('target_type'), // e.g., 'project', 'gallery'
+
+		isRead: boolean('is_read').default(false).notNull(),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+
+		// Flexible data for UI (e.g., "Project name was changed to X")
+		metadata: jsonb('metadata'),
+	},
+	(t) => [index('recipient_idx').on(t.recipientId), index('is_read_idx').on(t.isRead)],
+)
+
 export type Authenticator = typeof authenticator.$inferSelect
 export type User = typeof user.$inferSelect
 export type Session = typeof session.$inferSelect
@@ -200,3 +250,5 @@ export type AuditLog = typeof auditLog.$inferSelect
 export type FeaturedProject = typeof featuredProject.$inferSelect
 export type FeaturedGallery = typeof featuredGallery.$inferSelect
 export type Config = typeof config.$inferSelect
+export type Follow = typeof follow.$inferSelect
+export type Notification = typeof notification.$inferSelect

@@ -1,7 +1,29 @@
-import DefaultPfp from './assets/default-pfp.png'
+import type { User } from './server/db/schema'
+import DefaultPFP from '$lib/assets/default-pfp.png'
 
 export const getPublicUrl = (path: string) => {
 	return `/uploads/${path}`
 }
 
-export const getPfpPath = (path: string | null) => (path ? getPublicUrl(path) : DefaultPfp)
+/**
+ * Returns an object containing URLs for all profile picture sizes.
+ * @param user - The user object
+ */
+export const getPfpPath = (user: User) => {
+	const base = `aw3-avatars/${user.id}`
+
+	if (!user.hasPFP || user.isPrivate)
+		return {
+			'16': DefaultPFP,
+			'32': DefaultPFP,
+			'64': DefaultPFP,
+			full: DefaultPFP,
+		}
+
+	return {
+		'16': getPublicUrl(`${base}_16.png`),
+		'32': getPublicUrl(`${base}_32.png`),
+		'64': getPublicUrl(`${base}_64.png`),
+		full: getPublicUrl(`${base}_full.png`),
+	}
+}

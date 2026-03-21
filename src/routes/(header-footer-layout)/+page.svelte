@@ -6,6 +6,7 @@
 	import ExploreProjectsIcon from '$lib/assets/exploreprojects.svg'
 	import Button from '$lib/components/Button.svelte'
 	import { m } from '$lib/paraglide/messages'
+	import { getPfpPath } from '$lib/storage-helpers.js'
 	let { data } = $props()
 
 	const styles = {
@@ -49,7 +50,13 @@
 {#if data.user}
 	<div class="m-auto flex min-h-100 max-w-6xl gap-3 p-8">
 		<div class="flex grow basis-0 flex-col items-center justify-center gap-3">
-			<img src={data.userPfp} alt="Your user icon" height={72} width={72} class="rounded" />
+			<img
+				src={getPfpPath(data.user)['64']}
+				alt="Your user icon"
+				height={72}
+				width={72}
+				class="rounded-lg border border-neutral-500/20"
+			/>
 			<h1 class="text-2xl font-bold">Hello, {data.user.username}!</h1>
 			<div class="flex items-center justify-center gap-1">
 				<Button href="/projects/editor" data-sveltekit-reload>{m.createProject()}</Button>

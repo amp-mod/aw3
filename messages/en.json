@@ -70,5 +70,7 @@
 	"logOut": "Log out",
 	"joinAmpMod": "Join AmpMod",
 	"join": "Join",
-	"logIn": "Log in"
+	"logIn": "Log in",
+	"follow": "Follow",
+	"unfollow": "Unfollow"
 }

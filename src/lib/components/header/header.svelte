@@ -2,9 +2,20 @@
 	import { NavigationMenu, Tooltip } from 'bits-ui'
 	import logo from './logo.svg'
 	import { modals } from '$lib/modals.svelte'
-	import { MenuIcon, X, Search, ChevronDown, Mail, FolderClosed, Settings, ChevronLeft, Wrench } from '@lucide/svelte'
+	import {
+		MenuIcon,
+		X,
+		Search,
+		ChevronDown,
+		Mail,
+		FolderClosed,
+		Settings,
+		ChevronLeft,
+		Wrench,
+	} from '@lucide/svelte'
 	import { m } from '$lib/paraglide/messages'
 	import { invalidateAll } from '$app/navigation'
+	import { getPfpPath } from '$lib/storage-helpers'
 
 	let { admin = false, data } = $props()
 	let menuOpen = $state(false)
@@ -44,7 +55,7 @@
 			<nav class="hidden items-center md:flex">
 				{#if admin}
 					<a href="/" class="header-link"><ChevronLeft /></a>
-					<a href="/admin" class="text-xl header-link">Admin Panel</a>
+					<a href="/admin" class="header-link text-xl">Admin Panel</a>
 				{:else}
 					<a href="/projects/editor" data-sveltekit-reload class="header-link"
 						>{m.createProject()}</a
@@ -133,24 +144,24 @@
 							</NavigationMenu.Item>
 
 							{#if data.user.rank === 3}
-							<NavigationMenu.Item class="hidden md:block" aria-label={'Admin Panel'}>
-								<Tooltip.Root>
-									<Tooltip.Trigger>
-										<NavigationMenu.Link href="/admin">
-											{#snippet child({ props })}
-												<a {...props} class="header-link"><Wrench class="h-5 w-5" /></a>
-											{/snippet}
-										</NavigationMenu.Link>
-									</Tooltip.Trigger>
-									<Tooltip.Content
-										sideOffset={8}
-										class="z-50 rounded-lg border border-accent-secondary bg-accent px-4 py-1.5 text-sm font-bold text-white"
-									>
-										Admin Panel
-										<Tooltip.Arrow class="text-accent-secondary" />
-									</Tooltip.Content>
-								</Tooltip.Root>
-							</NavigationMenu.Item>
+								<NavigationMenu.Item class="hidden md:block" aria-label={'Admin Panel'}>
+									<Tooltip.Root>
+										<Tooltip.Trigger>
+											<NavigationMenu.Link href="/admin">
+												{#snippet child({ props })}
+													<a {...props} class="header-link"><Wrench class="h-5 w-5" /></a>
+												{/snippet}
+											</NavigationMenu.Link>
+										</Tooltip.Trigger>
+										<Tooltip.Content
+											sideOffset={8}
+											class="z-50 rounded-lg border border-accent-secondary bg-accent px-4 py-1.5 text-sm font-bold text-white"
+										>
+											Admin Panel
+											<Tooltip.Arrow class="text-accent-secondary" />
+										</Tooltip.Content>
+									</Tooltip.Root>
+								</NavigationMenu.Item>
 							{/if}
 						</Tooltip.Provider>
 
@@ -159,7 +170,7 @@
 								{#snippet child({ props })}
 									<button {...props} class="header-link flex items-center gap-2">
 										<img
-											src={data.userPfp}
+											src={getPfpPath(data.user)['16']}
 											class="h-6 w-6 rounded border border-black/10 bg-white object-cover"
 											alt="User icon"
 										/>
@@ -209,15 +220,11 @@
 								<Tooltip.Provider delayDuration={650} disableHoverableContent>
 									<Tooltip.Root>
 										<Tooltip.Trigger>
-								{#snippet child({ props })}
-									<a
-										{...props}
-										href="/settings"
-										class="header-link"
-									>
-										<Settings size={18} />
-										</a>
-								{/snippet}
+											{#snippet child({ props })}
+												<a {...props} href="/settings" class="header-link">
+													<Settings size={18} />
+												</a>
+											{/snippet}
 										</Tooltip.Trigger>
 										<Tooltip.Content
 											sideOffset={8}
@@ -232,11 +239,7 @@
 
 							<NavigationMenu.Item>
 								{#snippet child({ props })}
-									<button
-										{...props}
-										onclick={() => (modals.login = true)}
-										class="header-link"
-									>
+									<button {...props} onclick={() => (modals.login = true)} class="header-link">
 										{m.logIn()}
 									</button>
 								{/snippet}
@@ -247,10 +250,10 @@
 									<a
 										{...props}
 										href="/auth/register"
-										class="header-link bg-accent hover:bg-accent-secondary! dark:bg-white dark:text-accent hover:dark:bg-neutral-200! text-white"
+										class="header-link bg-accent text-white hover:bg-accent-secondary! dark:bg-white dark:text-accent hover:dark:bg-neutral-200!"
 									>
 										{m.join()}
-							</a>
+									</a>
 								{/snippet}
 							</NavigationMenu.Item>
 						</NavigationMenu.List>

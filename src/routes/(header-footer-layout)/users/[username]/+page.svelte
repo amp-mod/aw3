@@ -7,13 +7,20 @@
 	import { m } from '$lib/paraglide/messages'
 	import Button from '$lib/components/Button.svelte'
 	import Tiptap from '$lib/components/Tiptap.svelte'
+	import Row from '$lib/components/Row.svelte'
+	import UserList from '$lib/components/UserList.svelte'
 	import { getLocale } from '$lib/paraglide/runtime.js'
 	import DOMPurify from 'isomorphic-dompurify'
+	import { getPfpPath } from '$lib/storage-helpers.js'
 
 	let { data } = $props()
 
-	// Local state sync
-	let userProfile = $state(data.userProfile)
+	const userProfile = $derived(data.userProfile)
+	const isFollowing = $derived(data.isFollowing ?? false)
+	const followerCount = $derived(data.followerCount ?? 0)
+	const followingCount = $derived(data.followingCount ?? 0)
+	const { isOwnProfile, isViewerStaff } = $derived(data)
+
 	let userStatus = $state(data.userProfile.status)
 	let isEditingBio = $state(false)
 	let editedBio = $state(data.userProfile.bio ?? '')
@@ -22,15 +29,12 @@
 	let pfpInput: HTMLInputElement | undefined = $state()
 
 	$effect(() => {
-		const newUser = data.userProfile
-		userProfile = newUser
-		userStatus = newUser.status
-		editedBio = newUser.bio ?? ''
+		userStatus = data.userProfile.status
+		editedBio = data.userProfile.bio ?? ''
 		isEditingBio = false
 		isBanModalOpen = false
 	})
 
-	const { isOwnProfile, isViewerStaff } = $derived(data)
 	const md = new MarkdownIt({ html: false, linkify: true, breaks: true, typographer: true })
 
 	let joinedDate = $derived(
@@ -136,17 +140,11 @@
 
 		<header class={styles.header}>
 			<div class={styles.pfpWrapper}>
-				{#if userProfile.pfp}
-					<img
-						src={userProfile.pfp}
-						alt={userProfile.username}
-						class="h-full w-full object-cover"
-					/>
-				{:else}
-					<div class="flex h-full w-full items-center justify-center text-neutral-400">
-						<UserRound size={56} />
-					</div>
-				{/if}
+				<img
+					src={getPfpPath(userProfile).full}
+					alt={userProfile.username}
+					class="h-full w-full object-cover"
+				/>
 
 				{#if canEdit}
 					<button
@@ -154,11 +152,9 @@
 						class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
 						disabled={isUploadingPfp}
 					>
-						{#if isUploadingPfp}
-							<Loader class="animate-spin" size={24} />
-						{:else}
-							<Pencil size={24} />
-						{/if}
+						{#if isUploadingPfp}<Loader class="animate-spin" size={24} />{:else}<Pencil
+								size={24}
+							/>{/if}
 					</button>
 					<form
 						method="POST"
@@ -166,9 +162,10 @@
 						enctype="multipart/form-data"
 						use:enhance={() => {
 							isUploadingPfp = true
-							return async ({ update }) => {
+							return async () => {
 								isUploadingPfp = false
-								await update()
+								// We cannot do a normal update, because images need to be reloaded
+								location.reload()
 							}
 						}}
 						class="hidden"
@@ -190,6 +187,32 @@
 					<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">
 						{userProfile.username}{#if userProfile.rank === 3}*{/if}
 					</h1>
+
+					{#if !isOwnProfile && data.user}
+						<form
+							method="POST"
+							action="?/toggleFollow"
+							use:enhance={() => {
+								return async ({ update }) => {
+									await update()
+								}
+							}}
+						>
+							<input type="hidden" name="targetUserId" value={userProfile.id} />
+							<button
+								type="submit"
+								class={[
+									'rounded-full px-4 py-1 text-xs font-bold transition-all',
+									isFollowing
+										? 'bg-neutral-200 text-neutral-700 hover:bg-red-100 hover:text-red-600 dark:bg-neutral-700 dark:text-neutral-200'
+										: 'bg-accent text-white hover:bg-accent-secondary',
+								]}
+							>
+								{isFollowing ? 'Unfollow' : 'Follow'}
+							</button>
+						</form>
+					{/if}
+
 					{#if userStatus === 'banned'}
 						<span
 							class="rounded border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-xs font-bold text-red-500"
@@ -197,42 +220,35 @@
 						>
 					{/if}
 				</div>
+
 				<div class="flex items-center gap-2 text-sm opacity-50">
-					<span>{rankMap[userProfile.rank ?? 0]}</span>
+					<span class="font-medium text-neutral-900 dark:text-neutral-100"
+						>{rankMap[userProfile.rank ?? 0]}</span
+					>
 					<span>•</span>
 					<span>{m.joinedDate({ joinedDate })}</span>
 				</div>
 			</div>
 
 			{#if isViewerStaff && !isOwnProfile}
-				<div class="flex gap-2">
-					<button
-						onclick={() => (isBanModalOpen = true)}
-						class="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-red-700"
-					>
-						<Gavel size={16} />
-						{m.adminBan()}
-					</button>
-				</div>
+				<button
+					onclick={() => (isBanModalOpen = true)}
+					class="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-red-700"
+				>
+					<Gavel size={16} />
+					{m.adminBan()}
+				</button>
 			{/if}
 		</header>
 
-		<div
-			class={[
-				'grid grid-cols-1 items-start gap-6',
-				userProfile.isPrivate ? [] : ['lg:grid-cols-[1.5fr_1fr]'],
-			]}
-		>
+		<div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.5fr_1fr]">
 			<section class={styles.sectionCard}>
 				<div class="mb-2 flex items-center justify-between border-b pb-2 dark:border-neutral-700">
 					<span class={styles.label}>{m.aboutMe()}</span>
 					{#if canEdit && !isEditingBio}
-						<button
-							onclick={() => (isEditingBio = true)}
-							class="text-neutral-400 hover:text-accent"
+						<button onclick={() => (isEditingBio = true)} class="text-neutral-400 hover:text-accent"
+							><Pencil size={16} /></button
 						>
-							<Pencil size={16} />
-						</button>
 					{/if}
 				</div>
 
@@ -242,10 +258,7 @@
 						action="?/updateBio"
 						use:enhance={() => {
 							return async ({ result, update }) => {
-								if (result.type === 'success') {
-									userProfile.bio = editedBio
-									isEditingBio = false
-								}
+								if (result.type === 'success') isEditingBio = false
 								await update()
 							}
 						}}
@@ -253,9 +266,7 @@
 					>
 						<input type="hidden" name="targetUserId" value={userProfile.id} />
 						<input type="hidden" name="bio" value={editedBio} />
-
 						<Tiptap bind:value={editedBio} placeholder={m.aboutMePlaceholderEdit()} />
-
 						<div class="mt-4 flex gap-2">
 							<button
 								type="submit"
@@ -273,10 +284,9 @@
 					</form>
 				{:else}
 					<div
-						class="prose max-h-100 min-h-50 max-w-none overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert prose-a:text-accent prose-a:not-hover:no-underline dark:prose-a:text-accent-light"
+						class="prose max-h-100 min-h-50 max-w-none overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert"
 					>
 						{#if userProfile.bio}
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							{@html DOMPurify.sanitize(md.render(userProfile.bio))}
 						{:else}
 							<i class="opacity-50"
@@ -287,21 +297,27 @@
 				{/if}
 			</section>
 
-			{#if !userProfile.isPrivate}
-				<section
-					class={`${styles.sectionCard} flex aspect-4/3 w-full flex-col self-start lg:w-[480px]`}
+			<section class={`${styles.sectionCard} flex aspect-4/3 flex-col`}>
+				<div class="mb-4"><span class={styles.label}>{m.featuredProject()}</span></div>
+				<div
+					class="flex grow items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700"
 				>
-					<div class="mb-4"><span class={styles.label}>{m.featuredProject()}</span></div>
-					<div
-						class="flex grow items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700"
-					>
-						<div class="text-center text-neutral-400">
-							<FolderOpen class="mx-auto mb-2 opacity-20" size={32} />
-							<p class="text-xs">{m.noFeaturedProject()}</p>
-						</div>
+					<div class="text-center text-neutral-400">
+						<FolderOpen class="mx-auto mb-2 opacity-20" size={32} />
+						<p class="text-xs">{m.noFeaturedProject()}</p>
 					</div>
-				</section>
-			{/if}
+				</div>
+			</section>
+		</div>
+
+		<div class="flex flex-col gap-2">
+			<Row title="Following ({followingCount})" seeMore="/users/{userProfile.username}/following">
+				<UserList users={data.following} emptyMessage="Not following anyone yet." />
+			</Row>
+
+			<Row title="Followers ({followerCount})" seeMore="/users/{userProfile.username}/followers">
+				<UserList users={data.followers} emptyMessage="No followers yet." />
+			</Row>
 		</div>
 	</div>
 {:else}
