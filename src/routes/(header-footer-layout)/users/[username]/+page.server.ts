@@ -87,19 +87,23 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.select({
 			username: table.user.username,
 			id: table.user.id,
+			hasPFP: table.user.hasPFP,
 		})
 		.from(table.follow)
 		.leftJoin(table.user, eq(table.follow.followerId, table.user.id))
 		.where(eq(table.follow.followingId, userProfile.id))
+		.limit(20)
 
 	const following = await db
 		.select({
 			username: table.user.username,
 			id: table.user.id,
+			hasPFP: table.user.hasPFP,
 		})
 		.from(table.follow)
 		.leftJoin(table.user, eq(table.follow.followingId, table.user.id))
 		.where(eq(table.follow.followerId, userProfile.id))
+		.limit(20)
 
 	return {
 		userProfile,

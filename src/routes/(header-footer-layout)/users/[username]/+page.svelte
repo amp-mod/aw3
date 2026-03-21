@@ -1,5 +1,14 @@
 <script lang="ts">
-	import { UserRound, Pencil, FolderOpen, Gavel, Lock, Save, Loader } from '@lucide/svelte'
+	import {
+		UserRound,
+		Pencil,
+		FolderOpen,
+		Gavel,
+		Lock,
+		Save,
+		Loader,
+		UsersRound,
+	} from '@lucide/svelte'
 	import { enhance } from '$app/forms'
 	import { rankMap, isStaff } from '$lib/ranks'
 	import MarkdownIt from 'markdown-it'
@@ -184,34 +193,37 @@
 
 			<div class="flex grow flex-col justify-center">
 				<div class="flex items-center gap-3">
-					<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">
-						{userProfile.username}{#if userProfile.rank === 3}*{/if}
-					</h1>
+					<div class="flex w-full items-center">
+						<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">
+							{userProfile.username}{#if userProfile.rank === 3}*{/if}
+						</h1>
 
-					{#if !isOwnProfile && data.user}
-						<form
-							method="POST"
-							action="?/toggleFollow"
-							use:enhance={() => {
-								return async ({ update }) => {
-									await update()
-								}
-							}}
-						>
-							<input type="hidden" name="targetUserId" value={userProfile.id} />
-							<button
-								type="submit"
-								class={[
-									'rounded-full px-4 py-1 text-xs font-bold transition-all',
-									isFollowing
-										? 'bg-neutral-200 text-neutral-700 hover:bg-red-100 hover:text-red-600 dark:bg-neutral-700 dark:text-neutral-200'
-										: 'bg-accent text-white hover:bg-accent-secondary',
-								]}
+						<div class="grow"></div>
+
+						{#if !isOwnProfile && data.user}
+							<form
+								method="POST"
+								action="?/toggleFollow"
+								use:enhance={() => {
+									return async ({ update }) => {
+										await update()
+									}
+								}}
 							>
-								{isFollowing ? 'Unfollow' : 'Follow'}
-							</button>
-						</form>
-					{/if}
+								<input type="hidden" name="targetUserId" value={userProfile.id} />
+								<Button
+									type="submit"
+									class={[
+										'flex items-center gap-2',
+										isFollowing && 'bg-neutral-500 hover:bg-neutral-600!',
+									]}
+								>
+									<UsersRound />
+									{isFollowing ? 'Unfollow' : 'Follow'}
+								</Button>
+							</form>
+						{/if}
+					</div>
 
 					{#if userStatus === 'banned'}
 						<span
