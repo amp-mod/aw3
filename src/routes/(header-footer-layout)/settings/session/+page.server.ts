@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
-import { eq, desc, and } from 'drizzle-orm'
+import { eq, desc } from 'drizzle-orm'
 import { error, fail, redirect } from '@sveltejs/kit'
 import type { PageServerLoad, Actions } from './$types'
 import { invalidateSession, deleteSessionTokenCookie } from '$lib/server/auth'

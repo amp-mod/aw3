@@ -44,7 +44,7 @@
 		<div class="flex items-center gap-1">
 			{#if !admin}
 				<a
-					href={'/'}
+					href="/"
 					aria-label="AmpMod homepage"
 					class="transform px-3 transition-transform hover:scale-110"
 				>
@@ -144,7 +144,7 @@
 							</NavigationMenu.Item>
 
 							{#if data.user.rank === 3}
-								<NavigationMenu.Item class="hidden md:block" aria-label={'Admin Panel'}>
+								<NavigationMenu.Item class="hidden md:block" aria-label="Admin Panel">
 									<Tooltip.Root>
 										<Tooltip.Trigger>
 											<NavigationMenu.Link href="/admin">

@@ -6,7 +6,6 @@ import type { PageServerLoad } from './$types'
 import { Filter } from 'bad-words'
 import MarkdownIt from 'markdown-it'
 import { storage } from '$lib/storage'
-import { eq } from 'drizzle-orm'
 import sharp from 'sharp'
 
 /**
