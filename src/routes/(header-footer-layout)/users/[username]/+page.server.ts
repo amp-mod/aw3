@@ -6,7 +6,7 @@ import type { PageServerLoad } from './$types'
 import { Filter } from 'bad-words'
 import MarkdownIt from 'markdown-it'
 import { storage } from '$lib/storage'
-import { getPfpPath } from '$lib/storage-helpers'
+import { eq } from 'drizzle-orm'
 import sharp from 'sharp'
 
 /**
@@ -269,7 +269,11 @@ export const actions: Actions = {
 		const formData = await request.formData()
 		const targetUserId = Number(formData.get('targetUserId'))
 		const reason = (formData.get('reason') as string) || 'No reason provided'
-		const durationHours = formData.get('duration') ? Number(formData.get('duration')) : null
+
+		// Get raw value first to check for "permanent" string
+		const rawDuration = formData.get('duration')
+		const isPermanent = rawDuration === 'permanent'
+		const durationHours = isPermanent ? null : Number(rawDuration)
 
 		if (isNaN(targetUserId)) return fail(400, { message: 'Invalid target user' })
 
@@ -284,8 +288,11 @@ export const actions: Actions = {
 			return fail(403, { message: 'Rank hierarchy violation' })
 
 		let expiryDate: Date | null = null
-		if (durationHours === 0) {
-			expiryDate = new Date()
+
+		if (isPermanent) {
+			expiryDate = null
+		} else if (durationHours === 0) {
+			expiryDate = new Date(0)
 		} else if (durationHours && durationHours > 0) {
 			expiryDate = new Date()
 			expiryDate.setHours(expiryDate.getHours() + durationHours)
@@ -294,9 +301,9 @@ export const actions: Actions = {
 		await db
 			.update(table.user)
 			.set({
-				status: durationHours === 0 ? 'normal' : 'banned',
+				status: durationHours === 0 && !isPermanent ? 'normal' : 'banned',
 				bannedExpiry: expiryDate,
-				banReason: durationHours === 0 ? null : reason,
+				banReason: durationHours === 0 && !isPermanent ? null : reason,
 			})
 			.where(eq(table.user.id, targetUserId))
 

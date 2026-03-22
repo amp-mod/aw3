@@ -3,7 +3,6 @@
 	import { modals } from '$lib/modals.svelte'
 	import favicon from '$lib/assets/favicon.ico'
 	import LoginModal from '$lib/components/LoginModal.svelte'
-	import { getLocale } from '$lib/paraglide/runtime'
 	import SessionRevoked from '$lib/components/SessionRevoked.svelte'
 	import { invalidateAll } from '$app/navigation'
 	import { onMount } from 'svelte'

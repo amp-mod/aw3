@@ -8,6 +8,10 @@ import {
 	isLocale,
 	cookieName as langCookieName,
 } from '$lib/paraglide/runtime'
+import bannedPermittedPaths from '$lib/banned-permitted-paths'
+import { db } from '$lib/server/db'
+import * as table from '$lib/server/db/schema'
+import { eq } from 'drizzle-orm'
 
 const handleParaglide: Handle = async ({ event, resolve }) => {
 	const cookieLang = event.cookies.get(langCookieName)
@@ -84,20 +88,37 @@ export const handleGuard: Handle = async ({ event, resolve }) => {
 
 	return resolve(event)
 }
+
 const handleBanned: Handle = async ({ event, resolve }) => {
 	const user = event.locals.user
-	const isBannedPage = event.url.pathname === '/banned'
-	const isLogoutAction = event.url.pathname === '/auth/logout'
+	if (!user) return resolve(event)
 
-	if (user?.status === 'banned' && !isBannedPage && !isLogoutAction) {
-		throw redirect(307, '/banned')
-	}
+	const isPermittedPath = bannedPermittedPaths.includes(event.url.pathname)
 
-	if (user?.status !== 'banned' && isBannedPage) {
-		throw redirect(307, '/')
+	if (user.status === 'banned' && !isPermittedPath) {
+		if (user.bannedExpiry && new Date().getTime() >= user.bannedExpiry.getTime()) {
+			await db
+				.update(table.user)
+				.set({
+					status: 'normal',
+					bannedExpiry: null,
+					banReason: null,
+				})
+				.where(eq(table.user.id, user.id))
+
+			event.locals.user!.status = 'normal'
+			event.locals.user!.bannedExpiry = null
+			event.locals.user!.banReason = null
+
+			return resolve(event)
+		} else if (!isPermittedPath && event.request.method !== 'GET') {
+			error(403, 'Account banned')
+		} else if (!isPermittedPath && !event.url.pathname.startsWith('/uploads/')) {
+			redirect(307, '/banned')
+		}
 	}
 
 	return resolve(event)
 }
 
-export const handle: Handle = sequence(handleParaglide, handleAuth, handleBanned, handleGuard)
+export const handle: Handle = sequence(handleAuth, handleBanned, handleGuard, handleParaglide)
