@@ -55,7 +55,7 @@
 				alt="Your user icon"
 				height={72}
 				width={72}
-				class="rounded-lg border border-neutral-500/20"
+				class="h-18 w-18 rounded-lg border border-neutral-500/20 object-cover"
 			/>
 			<h1 class="text-2xl font-bold">Hello, {data.user.username}!</h1>
 			<div class="flex items-center justify-center gap-1">

@@ -21,9 +21,9 @@ export const getPfpPath = (user: User) => {
 		}
 
 	return {
-		'16': getPublicUrl(`${base}_16.png`),
-		'32': getPublicUrl(`${base}_32.png`),
-		'64': getPublicUrl(`${base}_64.png`),
-		full: getPublicUrl(`${base}_full.png`),
+		'16': getPublicUrl(`${base}_16.webp`),
+		'32': getPublicUrl(`${base}_32.webp`),
+		'64': getPublicUrl(`${base}_64.webp`),
+		full: getPublicUrl(`${base}_full.webp`),
 	}
 }

@@ -198,7 +198,7 @@ export const actions: Actions = {
 			// Process all sizes in parallel using Sharp
 			await Promise.all(
 				sizes.map(async ({ suffix, dim }) => {
-					let pipeline = sharp(buffer)
+					let pipeline = sharp(buffer, { animated: true })
 
 					if (suffix === 'full') {
 						if (originalWidth > dim || originalHeight > dim) {
@@ -211,9 +211,11 @@ export const actions: Actions = {
 						})
 					}
 
-					const processed = await pipeline.png({ quality: 85 }).toBuffer()
+					const processed = await pipeline
+						.webp({ quality: dim < 32 ? 30 : dim > 64 ? 100 : 85, loop: 0, force: true })
+						.toBuffer()
 
-					await storage.write(`${baseDir}_${suffix}.png`, processed)
+					await storage.write(`${baseDir}_${suffix}.webp`, processed)
 				}),
 			)
 
