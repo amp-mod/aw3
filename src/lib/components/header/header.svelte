@@ -170,7 +170,7 @@
 								{#snippet child({ props })}
 									<button {...props} class="header-link flex items-center gap-2">
 										<img
-											src={getPfpPath(data.user)['16']}
+											src={getPfpPath(data.user)['24']}
 											class="h-6 w-6 rounded border border-black/10 bg-white object-cover"
 											alt="User icon"
 										/>

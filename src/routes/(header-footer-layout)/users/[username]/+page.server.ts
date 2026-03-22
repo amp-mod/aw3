@@ -8,11 +8,12 @@ import MarkdownIt from 'markdown-it'
 import { storage } from '$lib/storage'
 import sharp from 'sharp'
 
+const md = new MarkdownIt()
+
 /**
  * Utility to strip Markdown for profanity checking
  */
 function stripMarkdown(text: string): string {
-	const md = new MarkdownIt()
 	const tokens = md.parse(text, {})
 	let plainText = ''
 
@@ -186,9 +187,11 @@ export const actions: Actions = {
 
 			const sizes = [
 				{ suffix: '16', dim: 16 },
+				{ suffix: '24', dim: 24 },
 				{ suffix: '32', dim: 32 },
+				{ suffix: '48', dim: 48 },
 				{ suffix: '64', dim: 64 },
-				{ suffix: 'full', dim: 1024 },
+				{ suffix: 'full', dim: 728 },
 			]
 			const metadata = await sharp(buffer).metadata()
 			const originalWidth = metadata.width ?? 0
@@ -197,17 +200,10 @@ export const actions: Actions = {
 			// Process all sizes in parallel using Sharp
 			await Promise.all(
 				sizes.map(async ({ suffix, dim }) => {
-					let pipeline = sharp(buffer, { animated: true })
+					let pipeline = sharp(buffer, { animated: true }).rotate()
 
-					if (suffix === 'full') {
-						if (originalWidth > dim || originalHeight > dim) {
-							pipeline = pipeline.resize(dim, dim, { fit: 'inside' })
-						}
-					} else {
-						pipeline = pipeline.resize(dim, dim, {
-							fit: 'inside',
-							withoutEnlargement: true,
-						})
+					if (originalWidth > dim || originalHeight > dim) {
+						pipeline = pipeline.resize(dim, dim, { fit: 'inside' })
 					}
 
 					const processed = await pipeline

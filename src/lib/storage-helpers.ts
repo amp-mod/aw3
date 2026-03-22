@@ -10,20 +10,12 @@ export const getPublicUrl = (path: string) => {
  * @param user - The user object
  */
 export const getPfpPath = (user: User) => {
+	const sizes = ['16', '24', '32', '64', 'full'] as const
+	if (!user.hasPFP || user.isPrivate) {
+		return Object.fromEntries(sizes.map((s) => [s, DefaultPFP]))
+	}
 	const base = `aw3-avatars/${user.id}`
-
-	if (!user.hasPFP || user.isPrivate)
-		return {
-			'16': DefaultPFP,
-			'32': DefaultPFP,
-			'64': DefaultPFP,
-			full: DefaultPFP,
-		}
-
 	return {
-		'16': getPublicUrl(`${base}_16.webp`),
-		'32': getPublicUrl(`${base}_32.webp`),
-		'64': getPublicUrl(`${base}_64.webp`),
-		full: getPublicUrl(`${base}_full.webp`),
+		...Object.fromEntries(sizes.map((s) => [s, getPublicUrl(`${base}_${s}.webp`)])),
 	}
 }
