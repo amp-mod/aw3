@@ -8,6 +8,7 @@ declare global {
 			user: import('$lib/server/auth').SessionValidationResult['user']
 			session: import('$lib/server/auth').SessionValidationResult['session']
 			sessionDeleted: boolean
+			isNewAw3: boolean | null
 		}
 	} // interface Error {}
 } // interface Locals {}

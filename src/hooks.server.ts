@@ -121,4 +121,25 @@ const handleBanned: Handle = async ({ event, resolve }) => {
 	return resolve(event)
 }
 
-export const handle: Handle = sequence(handleAuth, handleBanned, handleGuard, handleParaglide)
+let isInitialized = false
+const handleSetup: Handle = async ({ event, resolve }) => {
+	if (isInitialized) return resolve(event)
+	const isRegisterPath = event.url.pathname.startsWith('/auth/')
+	const userExists = await db.select({ id: table.user.id }).from(table.user).limit(1)
+
+	if (userExists.length === 0) {
+		if (!isRegisterPath) throw redirect(307, '/auth/register')
+		else event.locals.isNewAw3 = true
+	} else {
+		isInitialized = true
+	}
+	if (isRegisterPath) return resolve(event)
+}
+
+export const handle: Handle = sequence(
+	handleSetup,
+	handleAuth,
+	handleBanned,
+	handleGuard,
+	handleParaglide,
+)

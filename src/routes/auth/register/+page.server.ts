@@ -6,20 +6,20 @@ import * as table from '$lib/server/db/schema'
 import type { Actions, PageServerLoad } from './$types'
 import { verifySolution } from 'altcha-lib'
 import { hmacKey } from '$lib/server/hmac'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { isProfane } from '$lib/server/bad-word-checker'
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
 		return redirect(302, '/')
 	}
-	return {}
+	return { isNew: event.locals.isNewAw3 }
 }
 
 export const actions: Actions = {
 	register: async (event) => {
 		const formData = await event.request.formData()
-		const username = formData.get('username') as string
+		const username = (formData.get('username') as string) ?? ''
 		const password = formData.get('password')
 
 		if (!validateUsername(username) || isProfane(username, true)) {
@@ -28,56 +28,77 @@ export const actions: Actions = {
 		if (!validatePassword(password)) {
 			return fail(400, { message: 'Invalid password' })
 		}
-		const altchaPayload = formData.get('altcha')
 
+		const altchaPayload = formData.get('altcha')
 		if (!altchaPayload || typeof altchaPayload !== 'string') {
-			return { success: false, error: 'Missing payload' }
+			return fail(400, { message: 'Missing CAPTCHA payload' })
 		}
 
 		const ok = await verifySolution(altchaPayload, hmacKey)
 		if (!ok) {
-			return { success: false, error: 'CAPTCHA failed' }
+			return fail(400, { message: 'CAPTCHA failed' })
 		}
-		const passwordHash = await hash(password, {
-			// recommended minimum parameters
+
+		const passwordHash = await hash(password as string, {
 			memoryCost: 19456,
 			timeCost: 2,
 			outputLen: 32,
 			parallelism: 1,
 		})
-		const existingUser = (
-			await db
-				.select({ id: table.user.id })
-				.from(table.user)
-				.where(eq(table.user.username, username.toLowerCase()))
-				.limit(1)
-		)[0]
-		if (existingUser) {
-			return fail(409, { message: 'Username already exists' })
-		}
 
 		try {
-			const [newUser] = await db
-				.insert(table.user)
-				.values({ username, passwordHash })
-				.returning({ id: table.user.id })
+			const result = await db.transaction(async (tx) => {
+				const existingUser = await tx
+					.select({ id: table.user.id })
+					.from(table.user)
+					.where(eq(table.user.username, username.toLowerCase()))
+					.limit(1)
 
+				if (existingUser.length > 0) {
+					return { error: 'Username already exists', status: 409 }
+				}
+
+				const userCount = await tx.select({ count: sql<number>`count(*)` }).from(table.user)
+
+				const isFirstUser = Number(userCount[0].count) === 0
+				const assignedRank = isFirstUser ? 3 : 0
+
+				const [newUser] = await tx
+					.insert(table.user)
+					.values({
+						username: username.toLowerCase(),
+						passwordHash,
+						rank: assignedRank,
+					})
+					.returning({ id: table.user.id })
+
+				return { newUser, status: 200 }
+			})
+
+			if ('error' in result) {
+				return fail(result.status, { message: result.error })
+			}
+
+			// 4. Create Session
 			const sessionToken = auth.generateSessionToken()
 			const session = await auth.createSession(
 				sessionToken,
-				newUser.id,
+				result.newUser.id,
 				event.getClientAddress(),
 				event.request.headers.get('user-agent'),
 			)
 			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt)
-		} catch {
-			return fail(500, { message: 'An error has occurred' })
+		} catch (e) {
+			console.error(e)
+			return fail(500, { message: 'An error occurred during registration' })
 		}
-		return { success: true }
+
+		return redirect(302, '/')
 	},
+
 	checkUsername: async ({ request }) => {
 		const formData = await request.formData()
-		const username = formData.get('username') as string
+		const username = (formData.get('username') as string) ?? ''
 
 		if (isProfane(username, true)) {
 			return { available: false, message: 'Username is profane.' }
@@ -85,20 +106,17 @@ export const actions: Actions = {
 		if (!validateUsername(username)) {
 			return {
 				available: false,
-				message:
-					'Usernames must only consist of lowercase alphanumeric characters, underscores and dashes. They must also be 3-20 characters long.',
+				message: 'Usernames must be 3-20 characters (lowercase, numbers, underscores, dashes).',
 			}
 		}
 
-		const existingUser = (
-			await db
-				.select({ id: table.user.id })
-				.from(table.user)
-				.where(eq(table.user.username, username.toLowerCase()))
-				.limit(1)
-		)[0]
+		const existingUser = await db
+			.select({ id: table.user.id })
+			.from(table.user)
+			.where(eq(table.user.username, username.toLowerCase()))
+			.limit(1)
 
-		if (existingUser) {
+		if (existingUser.length > 0) {
 			return { available: false, message: 'Username already taken.' }
 		}
 

@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { browser } from '$app/environment'
-	import { Loader, ArrowLeft, Check, TriangleAlert } from '@lucide/svelte'
+	import { Loader, ArrowLeft, TriangleAlert } from '@lucide/svelte'
 	import TwAdvanced from './tw-advanced.svelte'
-	import type { ActionData } from './$types'
+	import type { ActionData, PageData } from './$types'
 	import { enhance } from '$app/forms'
 	import { deserialize } from '$app/forms'
 	import Button from '$lib/components/Button.svelte'
 
-	let { form = $bindable() }: { form: ActionData } = $props()
+	let { form = $bindable(), data }: { form: ActionData; data: PageData } = $props()
 
 	let step = $state(0)
 	let loadingWidget = $state(true)
@@ -27,7 +27,12 @@
 	const isStep2Valid = $derived(password.length >= 8 && password === password2)
 
 	const stepContent = [
-		{ title: 'Join AmpMod', sub: 'Start making projects with an AmpMod account!' },
+		{
+			title: 'Join AmpMod',
+			sub: data.isNew
+				? 'No account currently exists on this server. This page will create the first account.'
+				: 'Start making projects with an AmpMod account!',
+		},
 		{
 			title: 'Set your password',
 			sub: "Treat your password like a toothbrush. Don't let other people have it, and get a new one every few months.",
