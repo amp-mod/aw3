@@ -3,16 +3,21 @@
 	import { modals } from '$lib/modals.svelte'
 	import favicon from '$lib/assets/favicon.ico'
 	import LoginModal from '$lib/components/LoginModal.svelte'
-	import SessionRevoked from '$lib/components/SessionRevoked.svelte'
 	import { invalidateAll } from '$app/navigation'
 	import { onMount } from 'svelte'
+	import ToastContainer from '$lib/components/ToastContainer.svelte'
+	import { addToast } from '$lib/toast.svelte'
 
 	let { children, data } = $props()
 
 	onMount(() => {
 		if (data.sessionDeleted) {
 			console.warn('Session has been deleted!')
-			invalidateAll().then(() => (modals.sessionRevoked = true))
+			invalidateAll().then(() =>
+				addToast({
+					text: 'Your session has been revoked. This could be because it has expired, or another user on thisaccount has revoked the session.',
+				}),
+			)
 		}
 		console.warn(
 			'%cSTOP NOW!%cPasting code here can allow an attacker to LOG IN to your account. Read the AmpMod FAQ for more information.',
@@ -30,7 +35,7 @@
 {@render children?.()}
 
 <LoginModal bind:open={modals.login} />
-<SessionRevoked bind:open={modals.sessionRevoked} />
+<ToastContainer />
 
 {#if data?.isDangerousMode}
 	<div

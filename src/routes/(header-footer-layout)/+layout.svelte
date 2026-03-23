@@ -8,7 +8,7 @@
 <div class="flex h-screen flex-col">
 	<Header {data} />
 
-	<div class="flex flex-1 flex-col overflow-auto shadow-inner">
+	<div class="relative flex flex-1 flex-col overflow-auto shadow-inner">
 		<main class="flex flex-1 flex-col">
 			<div>
 				{#if data.isDangerousMode}
