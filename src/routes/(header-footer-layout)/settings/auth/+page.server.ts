@@ -1,22 +1,21 @@
 import { fail, type Actions } from '@sveltejs/kit'
 import { db } from '$lib/server/db'
-import { user, authenticator } from '$lib/server/db/schema'
+import * as table from '$lib/server/db/schema'
 import { eq, and } from 'drizzle-orm'
-import { verifyPassword, hashPassword } from '$lib/server/auth' // Your argon2/bcrypt wrappers
+import { hash, verify } from '@node-rs/argon2'
 
 export const actions: Actions = {
 	updatePassword: async ({ request, locals }) => {
-		const session = await locals.auth()
-		if (!session?.user?.id) {
+		if (!locals.session || !locals.user) {
 			return fail(401, { message: 'Unauthorized' })
 		}
 
 		const data = await request.formData()
-		const currentPassword = data.get('currentPassword') as string
-		const newPassword = data.get('newPassword') as string
+		const currentPassword = data.get('currentPassword')
+		const newPassword = data.get('newPassword')
 
-		if (!currentPassword || !newPassword) {
-			return fail(400, { message: 'Missing fields.' })
+		if (typeof currentPassword !== 'string' || typeof newPassword !== 'string') {
+			return fail(400, { message: 'Invalid input.' })
 		}
 
 		if (newPassword.length < 8) {
@@ -24,43 +23,50 @@ export const actions: Actions = {
 		}
 
 		try {
-			// 1. Get the user from the DB
-			const currentUser = await db.query.user.findFirst({
-				where: eq(user.id, session.user.id),
-			})
+			const [currentUser] = await db
+				.select()
+				.from(table.user)
+				.where(eq(table.user.id, locals.user.id))
+				.limit(1)
 
-			if (!currentUser) return fail(404, { message: 'User not found.' })
+			if (!currentUser || !currentUser.passwordHash) {
+				return fail(404, { message: 'User or password record not found.' })
+			}
 
-			// 2. Verify current password
-			const isValid = await verifyPassword(currentUser.passwordHash, currentPassword)
+			const isValid = await verify(currentUser.passwordHash, currentPassword)
 			if (!isValid) {
 				return fail(400, { message: 'Incorrect current password.' })
 			}
 
-			// 3. Update with new hash
-			const passwordHash = await hashPassword(newPassword)
-			await db.update(user).set({ passwordHash }).where(eq(user.id, currentUser.id))
+			const passwordHash = await hash(newPassword)
+			await db.update(table.user).set({ passwordHash }).where(eq(table.user.id, currentUser.id))
 
 			return { passwordSuccess: true }
 		} catch (err) {
-			return fail(500, { message: 'Database error occurred.' })
+			console.error('Password update error:', err)
+			return fail(500, { message: 'An internal error occurred.' })
 		}
 	},
 
 	deletePasskey: async ({ request, locals }) => {
-		const session = await locals.auth()
-		if (!session?.user?.id) return fail(401)
+		if (!locals.session || !locals.user) {
+			return fail(401, { message: 'Unauthorized' })
+		}
 
 		const data = await request.formData()
 		const passkeyId = data.get('id') as string
 
-		if (!passkeyId) return fail(400, { message: 'No ID provided' })
+		if (!passkeyId) return fail(400, { message: 'No ID provided.' })
 
 		try {
-			// Ensure the passkey belongs to the user before deleting
 			await db
-				.delete(authenticator)
-				.where(and(eq(authenticator.id, passkeyId), eq(authenticator.userId, session.user.id)))
+				.delete(table.authenticator)
+				.where(
+					and(
+						eq(table.authenticator.id, passkeyId),
+						eq(table.authenticator.userId, locals.user.id),
+					),
+				)
 
 			return { success: true }
 		} catch (err) {
@@ -69,6 +75,9 @@ export const actions: Actions = {
 	},
 
 	disable2FA: async ({ locals }) => {
+		if (!locals.session || !locals.user) return fail(401)
+
+		// WIP
 		return { success: true }
 	},
 }
