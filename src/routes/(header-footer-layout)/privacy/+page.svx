@@ -2,43 +2,20 @@
 title: AmpMod Privacy Policy
 ---
 
-The AmpMod project respects your privacy. In the interest of full transparency, this document lists
-every place where your data might be collected or shared:
-
-## Main website
-
-This website may store cookies in your browser for the sole purposes of:
-
-* Logging you in
-* Storing what language you use on the website
-* Other technical purposes
-
-Your IP address will be stored on our servers until you log out or your session expires (after 30 days
-of inactivity). This data is only used to prevent severe abuse of the website, such as ban evasion or
-illegal activity regarding minors.
-
-When registering for AmpMod, we will only ask for a username, password, and an optional email. Your
-username must not contain your real name.
-
-AmpMod stores a hash of your password so you can login. Since your password is hashed, we can't see
-it after you register.
-
 The AmpMod project does not sell your personal information to third parties, use it to personalise ads,
 or train artificial intelligence or large language models on it. We do not have any interest in your
-personal data. Companies often treat personal data like gold. We don't. If you are a company and want
-to harvest everyone's data, go ask Big Tech.
+personal data. Please read on for more information about how your data is handled here.
 
-This website is free software. You can view its source code [here](https://codeberg.org/ampmod/aw3).
-
-## Projects uploaded to the website
-
-Projects that contain custom extensions outside of our servers will be hidden until we review such custom
-extensions. After that, we will either approve the extension, storing a SHA-256 checksum of that extension
-so future projects with that extension will be automatically approved.
-
-We will not approve extensions that use geolocation or transmit recordings or camera images to a server.
 
 ## AmpMod IDE
+
+The AmpMod IDE and Website are completely separate (they don't even go to the same backend, which is why it loads
+so fast). You can program in AmpMod without any data being collected from you. However, it will still access the
+AmpMod API to check if you are logged in.
+
+If you don't want the IDE to authenticate to AmpMod at all, block requests to `https://ampmod.org/scratch_gui_connection`
+on your network. Please note that you will not be able to upload projects from the editor if this is done;
+that must be done manually through the upload form.
 
 The AmpMod IDE may store settings in your browser. These settings will never reach our servers.
 
@@ -47,6 +24,39 @@ Such data will never reach any servers unless the extension is malicious.
 
 Simply loading an extension into the IDE does not mean we have to audit it. That only happens if you uploaded
 your project here. You are responsible for what extensions you use in your projects.
+
+## Website
+
+This website may store cookies in your browser for the sole purposes of:
+
+* Logging you in
+* Storing what language you use on the website
+* Other technical purposes
+
+Your IP address will be stored on our servers until you log out or your session expires (after 30 days
+of inactivity). This data is only used to prevent users from evading blocks.
+
+When registering for AmpMod, we will only ask for a username, password, and an optional email. Your
+username must not contain your real name. Your email will not be used to send marketing messages.
+
+AmpMod stores a hash of your password so you can login. Since your password is hashed, we can't see
+it after you register.
+
+### For users under 13
+
+AmpMod does not knowingly collect personal information from users under 13. If you are under 13, you should
+enter a parent or guardian's email on signup instead of your own.
+
+If you live in a country where the age required for us to legally collect personal information is over 13,
+"13" in this section should be replaced with that age.
+
+## Projects uploaded to the website
+
+Projects that contain custom extensions outside of our servers will be hidden until we review such custom
+extensions. After that, we will either approve the extension, storing a checksum of that extension
+so future projects with that extension will be automatically approved.
+
+We will not approve extensions that use geolocation or transmit recordings or camera images to a server.
 
 ## AmpMod app for desktop
 
@@ -63,4 +73,4 @@ per day.
 ## Contact
 
 Contact <ampelectrecuted@gmail.com> if you have any questions or want to delete or export any data stored on our
-servers.
+servers that you or your children own.
