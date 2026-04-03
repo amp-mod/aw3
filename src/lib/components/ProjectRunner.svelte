@@ -5,15 +5,6 @@
 	import { SecurityManagerImplementation } from '$lib/security-manager.svelte'
 	import SecurityUI from './SecurityUI.svelte'
 	import type { User } from '$lib/server/db/schema'
-	import { slide } from 'svelte/transition'
-
-	interface ExtensionMetadata {
-		id: string
-		name: string
-		icon: string | null
-		color1: string | null
-		color2: string | null
-	}
 
 	let {
 		project,
@@ -30,6 +21,7 @@
 	let progress = $state('Loading project...')
 	let progressNumber = $state(0)
 	let container: HTMLDivElement | undefined = $state()
+	let rootElement: HTMLDivElement | undefined = $state()
 	let scaffolding: any = null
 	let isLoading = $state(true)
 	let isStarted = $state(false)
@@ -38,87 +30,40 @@
 	let isPaused = $state(false)
 	const PauseButtonIcon = $derived(isPaused ? Play : Pause)
 
-	// --- Ported Scaling Logic State ---
-	let playerWidth = $state(480)
-	let playerHeight = $state(360)
-	const FIXED_HEIGHT = 360
+	// Only track height; width stays 100% via CSS
+	let playerHeight = $state(0)
 
 	function handleExtensionAdded(categoryInfo: any) {
 		if (!categoryInfo || !categoryInfo.id || categoryInfo.id === 'pen') return
 		if (extensions.some((ext) => ext.id === categoryInfo.id)) return
-
-		const newExt: ExtensionMetadata = {
-			id: categoryInfo.id,
-			name: categoryInfo.name || categoryInfo.id,
-			icon: categoryInfo.blockIconURI || categoryInfo.menuIconURI || null,
-			color1: categoryInfo.color1 || null,
-			color2: categoryInfo.color2 || null,
-		}
-		extensions = [...extensions, newExt]
+		extensions = [
+			...extensions,
+			{
+				id: categoryInfo.id,
+				name: categoryInfo.name || categoryInfo.id,
+				icon: categoryInfo.blockIconURI || categoryInfo.menuIconURI || null,
+				color1: categoryInfo.color1 || null,
+				color2: categoryInfo.color2 || null,
+			},
+		]
 	}
 
 	function syncScaling() {
+		if (!rootElement || !container) return
 		const isFS = isEmbed || !!document.fullscreenElement
-
-		if (!container) return
 		const canvas = container.querySelector('canvas') as HTMLCanvasElement
-		if (!canvas) {
-			if (isFS) {
-				// Force 4:3 Fit-to-Window immediately
-				const screenRatio = window.innerWidth / window.innerHeight
-				const targetRatio = 4 / 3
 
-				if (targetRatio > screenRatio) {
-					playerWidth = window.innerWidth
-					playerHeight = playerWidth / targetRatio
-				} else {
-					playerHeight = window.innerHeight
-					playerWidth = playerHeight * targetRatio
-				}
-			} else {
-				// Default windowed 4:3
-				playerWidth = 480
-				playerHeight = 360
-			}
-			if (scaffolding) scaffolding.relayout()
-			return // Exit early to prevent the "jump"
-		}
-		if (!canvas) return
-
-		const aspectRatio = canvas.width / canvas.height || 4 / 3
-
-		let targetWidth: number
-		let targetHeight: number
+		// Use canvas ratio or default to 4:3
+		const ratio = canvas ? canvas.width / canvas.height : 4 / 3
 
 		if (isFS) {
-			// In Fullscreen: Use the actual screen dimensions
 			const screenRatio = window.innerWidth / window.innerHeight
-
-			if (aspectRatio > screenRatio) {
-				// Project is wider than the screen (letterbox top/bottom)
-				targetWidth = window.innerWidth
-				targetHeight = targetWidth / aspectRatio
-			} else {
-				// Project is taller than the screen (pillarbox sides)
-				targetHeight = window.innerHeight
-				targetWidth = targetHeight * aspectRatio
-			}
+			playerHeight = ratio > screenRatio ? window.innerWidth / ratio : window.innerHeight
 		} else {
-			// In Windowed Mode: Original logic
-			if (canvas.height >= canvas.width) {
-				targetHeight = FIXED_HEIGHT
-				targetWidth = FIXED_HEIGHT * aspectRatio
-			} else {
-				const padding = 24
-				const maxWidth = Math.min(480, window.innerWidth - padding)
-				targetWidth = maxWidth
-				targetHeight = targetWidth / aspectRatio
-			}
-		}
-
-		if (Math.abs(playerWidth - targetWidth) > 0.1 || Math.abs(playerHeight - targetHeight) > 0.1) {
-			playerWidth = targetWidth
-			playerHeight = targetHeight
+			// FIX: Measure the parent's width, but ensure the parent has a constrained max-width
+			// or measure a reference element that doesn't grow based on this playerHeight.
+			const rect = rootElement.getBoundingClientRect()
+			playerHeight = rect.width / ratio
 		}
 
 		if (scaffolding) scaffolding.relayout()
@@ -127,27 +72,24 @@
 	onMount(async () => {
 		syncScaling()
 		window.process = { env: { AMPMOD_VERSION: 'aw3' } }
+
 		try {
-			if (!window.Scaffolding) {
-				await import('$lib/vendor/scaffolding-min')
-			}
+			if (!window.Scaffolding) await import('$lib/vendor/scaffolding-min')
 
 			scaffolding = new window.Scaffolding.Scaffolding()
 			scaffolding.usePackagedRuntime = true
 			scaffolding.setup()
-			scaffolding.setUsername()
 			scaffolding.appendTo(container)
 
-			const storage = scaffolding.storage
 			const vm = scaffolding.vm
 			window.vm = vm
 
-			storage.addWebStore(
+			scaffolding.storage.addWebStore(
 				[
-					storage.AssetType.ImageVector,
-					storage.AssetType.ImageBitmap,
-					storage.AssetType.Sound,
-					storage.AssetType.Font,
+					scaffolding.storage.AssetType.ImageVector,
+					scaffolding.storage.AssetType.ImageBitmap,
+					scaffolding.storage.AssetType.Sound,
+					scaffolding.storage.AssetType.Font,
 				],
 				(asset: any) =>
 					`${location.origin}/uploads/projects/${project.id}/${asset.assetId}.${asset.dataFormat}`,
@@ -160,25 +102,15 @@
 
 			Object.assign(vm.extensionManager.securityManager, SecurityManagerImplementation)
 			vm.on('EXTENSION_ADDED', handleExtensionAdded)
-
 			await scaffolding.loadProject(project.json)
 
-			if (vm.runtime?._blockInfo) {
-				for (const category of vm.runtime._blockInfo) {
-					handleExtensionAdded(category)
-				}
-			}
-
 			isLoading = false
-
 			vm.runtime.on('PROJECT_RUN_START', () => (isRunning = true))
 			vm.runtime.on('PROJECT_RUN_STOP', () => (isRunning = false))
 			vm.runtime.on('RUNTIME_PAUSED', () => (isPaused = true))
 			vm.runtime.on('RUNTIME_UNPAUSED', () => (isPaused = false))
 
-			// Ported Interval
 			const scalingInterval = setInterval(syncScaling, 100)
-
 			const fsChange = () => (isFullscreen = !!document.fullscreenElement)
 			document.addEventListener('fullscreenchange', fsChange)
 
@@ -187,48 +119,35 @@
 				document.removeEventListener('fullscreenchange', fsChange)
 			}
 		} catch (e) {
-			console.error('Failed to boot Scaffolding:', e)
+			console.error(e)
 			progress = e.message
 		}
 	})
 
-	onDestroy(() => {
-		if (browser && scaffolding) {
-			scaffolding.vm.removeListener('EXTENSION_ADDED', handleExtensionAdded)
-			location.reload()
-		}
-	})
-
 	function startProject() {
-		if (scaffolding?.vm) {
-			scaffolding.vm.start()
-			scaffolding.vm.greenFlag()
-			isStarted = true
-		}
+		scaffolding?.vm?.start()
+		scaffolding?.vm?.greenFlag()
+		isStarted = true
 	}
-
 	function stopAll() {
-		if (scaffolding?.vm) scaffolding.vm.stopAll()
+		scaffolding?.vm?.stopAll()
 	}
-
 	function togglePause() {
 		if (scaffolding?.vm) scaffolding.vm.runtime.isPaused = !scaffolding.vm.runtime.isPaused
 	}
-
 	function toggleFullscreen() {
-		const wrapper = container?.closest('.player-root')
-		if (!wrapper) return
-		if (!document.fullscreenElement) {
-			wrapper.requestFullscreen().catch(() => {})
-		} else {
-			document.exitFullscreen()
-		}
+		if (!rootElement) return
+		!document.fullscreenElement ? rootElement.requestFullscreen() : document.exitFullscreen()
 	}
 </script>
 
 <SecurityUI />
-<div class="player-root fullscreen:bg-black relative flex h-full flex-col overflow-hidden">
-	<div class="mx-auto flex items-center justify-between px-2 py-1" style="width: {playerWidth}px;">
+
+<div
+	bind:this={rootElement}
+	class="player-root fullscreen:bg-black relative flex h-full w-full flex-col overflow-hidden"
+>
+	<div class="flex w-full items-center justify-between px-2 py-1">
 		<div class="flex items-center gap-1">
 			<button
 				class="cursor-pointer rounded p-2 {isRunning ? 'bg-[#59C059]/20' : 'hover:bg-[#59C059]/5'}"
@@ -262,8 +181,8 @@
 	</div>
 
 	<div
-		class="relative mx-auto overflow-hidden rounded border border-black/10 dark:border-white/10"
-		style="width: {playerWidth}px; height: {playerHeight}px;"
+		class="relative w-full overflow-hidden rounded border border-black/10 dark:border-white/10"
+		style={`height: ${playerHeight || 'auto'}px; ${!playerHeight && 'aspect-ratio: 4/3;'}`}
 	>
 		{#if isLoading}
 			<div
@@ -271,9 +190,8 @@
 			>
 				<h2 class="text-2xl font-bold">Loading Project</h2>
 				<div class="text-lg">{progress}</div>
-
 				<div class="h-3 w-70 border border-white">
-					<div class="h-full bg-white" style={`width: ${progressNumber * 100}%;`}></div>
+					<div class="h-full bg-white" style="width: {progressNumber * 100}%;"></div>
 				</div>
 			</div>
 		{/if}
