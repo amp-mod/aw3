@@ -4,10 +4,9 @@ title: AmpMod Terms of Service
 
 *Last updated: 31 March 2026*
 
-**Thank you for choosing the AmpMod programming language and community!** AmpMod is a block-based programming language
-that lets you create projects. AmpMod's editor is built on Scratch 3.0, a simpler programming language
-created at the Lifelong Kindergarten Group and now developed at the Scratch Foundation.
-Just like the original platform, AmpMod welcomes users of all ages, cultures, ethnicities, etc.
+*   This document applies to https://ampmod.org and all of its subdomains, including https://forums.ampmod.org,
+    https://wiki.ampmod.org, https://extensions.ampmod.org, https://commons.ampmod.org, and https://blog.ampmod.org,
+    including any future subdomains.
 
 *   By creating an Account, you agree to be bound by these Terms. If you do not agree to these Terms, do not use AmpMod.
 
@@ -85,6 +84,7 @@ affiliates.
 
 **To the maximum extent provided by applicable laws, "AmpMod" (redefined to include the AmpMod IDE for the purposes
 of this section) is provided as is, without any warranty of any kind. We are not responsible for any losses or damages
-caused by any malfunction in AmpMod.**
+caused by any malfunction in AmpMod. YOU MAY ONLY USE AMPMOD AT YOUR OWN RISK.**
 
-*TL;DR: If a bug in AmpMod causes you to lose your account, we won't give you any money.*
+*TL;DR: If a bug in AmpMod causes you to lose your account, we won't give you any money. All your responsibility are
+belong to you.*

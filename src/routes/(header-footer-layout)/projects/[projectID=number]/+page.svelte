@@ -54,6 +54,11 @@
 		inputBase:
 			'w-full bg-transparent border border-dashed border-neutral-500/50 focus:border-solid focus:border-accent focus:outline-none dark:text-white text-neutral-800',
 	}
+
+	beforeNavigate(({ to, cancel }) => {
+		cancel()
+		location.href = to?.url.href
+	})
 </script>
 
 <svelte:head>

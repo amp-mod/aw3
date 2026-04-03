@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { NavigationMenu, Tooltip } from 'bits-ui'
-	import logo from './logo.svg'
+	import logo from '$lib/assets/logo.svg'
 	import { modals } from '$lib/modals.svelte'
 	import {
 		MenuIcon,
@@ -265,7 +265,7 @@
 </header>
 
 <style>
-	@reference '../../../app.css';
+	@reference '../../app.css';
 
 	.header-link {
 		@apply flex h-10 cursor-pointer items-center rounded-lg px-3 font-bold whitespace-nowrap outline-none;

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Header from '$lib/components/header/header.svelte'
-	import Footer from '$lib/components/footer/footer.svelte'
+	import Header from '$lib/components/header.svelte'
+	import Footer from '$lib/components/footer.svelte'
 
 	let { children, data } = $props()
 </script>

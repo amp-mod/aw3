@@ -56,7 +56,7 @@
 			contentType: 'markdown',
 			editorProps: {
 				attributes: {
-					class: `prose prose-sm dark:prose-invert focus:outline-none min-h-[200px] p-4 max-w-none ${className}`,
+					class: `prose prose-sm dark:prose-invert focus:outline-none h-44 p-4 max-w-none overflow-auto ${className}`,
 				},
 				handleClick: (view, pos, event) => {
 					const target = event.target as HTMLElement

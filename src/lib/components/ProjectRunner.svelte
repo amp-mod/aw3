@@ -5,6 +5,7 @@
 	import { SecurityManagerImplementation } from '$lib/security-manager.svelte'
 	import SecurityUI from './SecurityUI.svelte'
 	import type { User } from '$lib/server/db/schema'
+	import ampmodLogo from '$lib/assets/logo.svg'
 
 	let {
 		project,
@@ -51,7 +52,7 @@
 	function syncScaling() {
 		if (!rootElement || !container) return
 		const isFS = isEmbed || !!document.fullscreenElement
-		const canvas = container.querySelector('canvas') as HTMLCanvasElement
+		const canvas = container.querySelector('.sc-canvas') as HTMLCanvasElement
 
 		// Use canvas ratio or default to 4:3
 		const ratio = canvas ? canvas.width / canvas.height : 4 / 3
@@ -110,7 +111,9 @@
 			vm.runtime.on('RUNTIME_PAUSED', () => (isPaused = true))
 			vm.runtime.on('RUNTIME_UNPAUSED', () => (isPaused = false))
 
-			const scalingInterval = setInterval(syncScaling, 100)
+			if (!isEmbed) {
+				const scalingInterval = setInterval(syncScaling, 100)
+			}
 			const fsChange = () => (isFullscreen = !!document.fullscreenElement)
 			document.addEventListener('fullscreenchange', fsChange)
 
@@ -171,13 +174,24 @@
 				<Octagon size={24} fill="#ff4c4c" color="#d94040" strokeWidth={1.5} />
 			</button>
 		</div>
-		<button
-			class="cursor-pointer rounded border border-neutral-500/40 p-2 text-zinc-600 dark:text-zinc-400"
-			onclick={toggleFullscreen}
-			title="Toggle fullscreen"
-		>
-			{#if isFullscreen}<Minimize size={20} />{:else}<Maximize size={20} />{/if}
-		</button>
+		<div class="flex items-center gap-1">
+			{#if isEmbed}
+				<a
+					class="px-3 opacity-80"
+					href="/projects/{project.id}?utm_source=aw3embed"
+					target="_blank"
+				>
+					<img src={ampmodLogo} class="h-6" alt="AmpMod" />
+				</a>
+			{/if}
+			<button
+				class="cursor-pointer rounded border border-neutral-500/40 p-2 text-zinc-600 dark:text-zinc-400"
+				onclick={toggleFullscreen}
+				title="Toggle fullscreen"
+			>
+				{#if isFullscreen}<Minimize size={20} />{:else}<Maximize size={20} />{/if}
+			</button>
+		</div>
 	</div>
 
 	<div

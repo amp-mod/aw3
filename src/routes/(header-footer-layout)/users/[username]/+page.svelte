@@ -85,6 +85,33 @@
 	const viewerIsOp = $derived(isStaff(data.user?.rank))
 	const canEdit = $derived(isOwnProfile || viewerIsOp)
 
+	let displayedProjects = $state([...data.projects]) // Initialize with first batch
+	let isLoadingMore = $state(false)
+	let hasMore = $state(data.projects.length >= 10)
+
+	async function loadMoreProjects() {
+		if (isLoadingMore || !hasMore) return
+		isLoadingMore = true
+
+		try {
+			const offset = displayedProjects.length
+			const response = await fetch(
+				`/users/${userProfile.username}/_moreProjects?offset=${offset}&limit=10`,
+			)
+			const newProjects = await response.json()
+
+			if (newProjects.length < 10) {
+				hasMore = false
+			}
+
+			displayedProjects = [...displayedProjects, ...newProjects]
+		} catch (e) {
+			console.error('Failed to load more projects', e)
+		} finally {
+			isLoadingMore = false
+		}
+	}
+
 	const styles = {
 		sectionCard: 'border border-neutral-300 dark:border-neutral-700 rounded-xl p-3',
 		header: 'flex items-center gap-6 my-3',
@@ -108,15 +135,13 @@
 		</label>
 		<select id="titleSelect" class={styles.modalInput} bind:value={pickedFeaturedTitle}>
 			{#each FEATURED_TITLES as title, i}
-				<option value={i}>
-					{title}
-				</option>
+				<option value={i}>{title}</option>
 			{/each}
 		</select>
 	</div>
 
 	<div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-		{#each data.projects as project}
+		{#each displayedProjects as project}
 			<form
 				method="POST"
 				action="?/featureProject"
@@ -128,7 +153,6 @@
 				}}
 			>
 				<input type="hidden" name="projectId" value={project.id} />
-
 				<input type="hidden" name="titleIndex" value={pickedFeaturedTitle} />
 
 				<button
@@ -152,6 +176,21 @@
 			</form>
 		{/each}
 	</div>
+
+	{#if hasMore}
+		<button
+			type="button"
+			onclick={loadMoreProjects}
+			disabled={isLoadingMore}
+			class="mt-4 w-full rounded-lg py-2 text-xs font-bold text-accent transition-colors hover:bg-accent/5 disabled:opacity-50"
+		>
+			{#if isLoadingMore}
+				<Loader class="mr-1 inline animate-spin" size={14} /> Loading...
+			{:else}
+				View More Projects
+			{/if}
+		</button>
+	{/if}
 
 	{#if featuredProject}
 		<form
@@ -393,7 +432,7 @@
 					</form>
 				{:else}
 					<div
-						class="prose min-h-0 max-w-none flex-1 overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert"
+						class="prose max-h-70 min-h-0 max-w-none flex-1 overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert prose-a:font-bold prose-a:text-accent prose-a:no-underline prose-a:hover:underline dark:prose-a:text-accent-light"
 					>
 						{#if userProfile.bio}
 							{@html DOMPurify.sanitize(md.render(userProfile.bio))}

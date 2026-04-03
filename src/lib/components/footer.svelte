@@ -1,5 +1,5 @@
 <script>
-	import LangSwitcher from '../LangSwitcher.svelte'
+	import LangSwitcher from './LangSwitcher.svelte'
 	import { m } from '$lib/paraglide/messages'
 	let { noJS } = $props()
 
