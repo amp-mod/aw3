@@ -60,7 +60,7 @@
 	<title>{project.title} on AmpMod</title>
 </svelte:head>
 
-<div class="m-auto flex max-w-6xl flex-col gap-6 lg:p-8">
+<div class="m-auto flex max-w-6xl flex-col gap-2 lg:p-8">
 	<header class="flex flex-col gap-1 border-neutral-200 pb-6 dark:border-neutral-800">
 		<div class="flex items-center justify-between gap-4">
 			{#if canEdit}
@@ -108,7 +108,7 @@
 		</div>
 	</header>
 
-	<div class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_400px]">
+	<div class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_480px]">
 		<main class="relative flex flex-col gap-6">
 			<ProjectRunner {project} bind:extensions={loadedExtensions} />
 		</main>
@@ -145,17 +145,15 @@
 			</section>
 
 			<div class="flex flex-col gap-2 px-1">
-				<p class="text-xs text-neutral-500">
+				<p>
 					Copyright &copy; {new Date(project.createdAt).toLocaleDateString('en-GB', {
 						day: 'numeric',
 						month: 'short',
 						year: 'numeric',
 					})}
 					{author.username}.
+					<a href="/terms" class="link"> This project is licensed under CC-BY-SA 4.0. </a>
 				</p>
-				<a href="/terms" class="text-xs text-accent hover:underline">
-					This project is licensed under CC-BY-SA 4.0.
-				</a>
 			</div>
 		</aside>
 	</div>
