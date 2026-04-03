@@ -6,6 +6,7 @@
 	import JSZip from 'jszip'
 	import Button from '$lib/components/Button.svelte'
 	import { Image as ImageIcon, Upload } from '@lucide/svelte'
+	import { addToast } from '$lib/toast.svelte'
 
 	let loading = $state(false)
 	let isMessageImport = $state(false)
@@ -180,9 +181,13 @@
 	use:enhance={() => {
 		loading = true
 		error = ''
-		return async ({ update }) => {
+		return async ({ update, result }) => {
 			loading = false
 			await update()
+			console.log(result)
+			if (!result.success) {
+				addToast({ type: 'failure', text: result.data.message })
+			}
 		}
 	}}
 	class="m-auto my-16 flex max-w-3xl flex-col gap-6 px-4"

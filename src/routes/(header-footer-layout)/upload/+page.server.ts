@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm'
 import JSZip from 'jszip'
 import sharp from 'sharp'
 import { storage } from '$lib/storage'
+import { acceptablePrefixes } from '$lib/security-manager.svelte'
 
 const MAX_TOTAL_UNCOMPRESSED_SIZE = 100 * 1024 * 1024
 
@@ -44,6 +45,42 @@ export const actions: Actions = {
 			const jsonFile = contents.file('project.json')
 			if (!jsonFile) return fail(400, { message: 'Invalid project: project.json missing' })
 			const projectJson = JSON.parse(await jsonFile.async('string'))
+
+			if (locals.user.rank === 0) {
+				const extensions = projectJson.extensions
+				const restrictedExtensions = [
+					// These all could be used to do one of these:
+					// * create an HTTP request
+					// * steal data
+					// * execute arbritary code
+					// * or be plain out annoying
+					'fetch',
+					'iframe',
+					'gsaHTTPRequests',
+					'gsaWebsocket',
+					'clouddataping',
+					'GameJoltAPI',
+					'steamworks',
+					'itch',
+					'NGIO',
+					'truefantomnetwork',
+					'truefantomnetworkm',
+					'lmsVideo',
+					'images',
+					'notSound',
+				]
+				const notUploadableForNoobs =
+					extensions.filter((x) => restrictedExtensions.includes(x)).length !== 0 ||
+					Object.values(projectJson.extensionURLs).filter(
+						(x) => !acceptablePrefixes.some((prefix) => x.startsWith(prefix)),
+					).length !== 0
+
+				if (notUploadableForNoobs)
+					return fail(500, {
+						message:
+							'Your account has not ranked up yet and cannot use some extensions in this project.',
+					})
+			}
 
 			// --- 2. DATABASE RECORD CREATION ---
 			const [newProject] = await db
@@ -90,7 +127,7 @@ export const actions: Actions = {
 			if (thumbBuffer) {
 				const processedThumb = await sharp(thumbBuffer)
 					.rotate()
-					.resize(480, 360, { fit: 'cover' }) // Standard Scratch Aspect Ratio
+					.resize(480, 360, { fit: 'cover' })
 					.webp({ quality: 85 })
 					.toBuffer()
 

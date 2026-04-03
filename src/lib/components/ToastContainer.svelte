@@ -13,7 +13,7 @@
 </script>
 
 <div
-	class="pointer-events-auto fixed right-4 bottom-4 z-999 flex w-full max-w-sm flex-col gap-2 select-text"
+	class="pointer-events-auto fixed right-4 bottom-4 z-1000 flex w-full max-w-sm flex-col gap-2 select-text"
 >
 	{#each toasts as toast (toast.id)}
 		{@const Icon = icons[toast.type]}
@@ -23,8 +23,8 @@
 			out:fade={{ duration: 200 }}
 			class="flex items-center gap-3 rounded-lg border p-2 shadow-lg
             {toast.type === 'failure'
-				? 'border-red-500/50 bg-red-50 text-red-900 dark:bg-red-950/20 dark:text-red-200'
-				: 'border-neutral-300 bg-white/90 dark:border-white/20 dark:bg-accent/90 dark:text-white'}"
+				? 'border-red-500/50 bg-red-50 text-red-900 dark:bg-red-950 dark:text-red-200'
+				: 'border-neutral-300 bg-white/90 dark:border-white/20 dark:bg-accent dark:text-white'}"
 		>
 			<div class="mt-0.5">
 				<Icon class="h-5 w-5 {toast.type === 'loading' ? 'animate-spin' : ''}" />

@@ -80,6 +80,7 @@
 			scaffolding = new window.Scaffolding.Scaffolding()
 			scaffolding.usePackagedRuntime = true
 			scaffolding.setup()
+			scaffolding.setUsername(user?.username || '')
 			scaffolding.appendTo(container)
 
 			const vm = scaffolding.vm

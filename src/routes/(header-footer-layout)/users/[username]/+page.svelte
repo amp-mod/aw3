@@ -54,6 +54,7 @@
 	let isUploadingPfp = $state(false)
 	let isBanModalOpen = $state(false)
 	let pickedFeaturedTitle = $state(0)
+	let isRankUpModalOpen = $state(false)
 	let pfpInput: HTMLInputElement | undefined = $state()
 
 	$effect(() => {
@@ -127,6 +128,43 @@
 <svelte:head>
 	<title>{data.private ? 'Private profile' : userProfile.username} - AmpMod</title>
 </svelte:head>
+
+<Modal bind:open={isRankUpModalOpen} title="Rank Up!">
+	<div class="flex flex-col gap-4">
+		<h2 class="text-xl font-bold">Ready to become an AmpModder?</h2>
+		<p>Gain access to:</p>
+
+		<ul class="ml-3 list-inside list-disc">
+			<li>More extensions on uploaded projects</li>
+			<li>Creating galleries</li>
+			<li>Uploading larger and more complex projects</li>
+		</ul>
+		<p>Your New AmpModder rank will be revoked permanently.</p>
+
+		<form
+			method="POST"
+			action="?/rankUp"
+			use:enhance={() => {
+				return async ({ result, update }) => {
+					if (result.type === 'success') {
+						isRankUpModalOpen = false
+					}
+					await update()
+				}
+			}}
+			class="mt-2 flex flex-col gap-2"
+		>
+			<Button type="submit" class="py-2 text-lg">Rank Up Now</Button>
+			<button
+				type="button"
+				onclick={() => (isRankUpModalOpen = false)}
+				class="text-sm text-neutral-500 hover:text-neutral-700"
+			>
+				{m.cancel()}
+			</button>
+		</form>
+	</div>
+</Modal>
 
 <Modal bind:open={isProjectPickerOpen} title="Feature a project">
 	<div class="mb-6 flex flex-col gap-2">
@@ -364,10 +402,13 @@
 					{/if}
 				</div>
 
-				<div class="flex items-center gap-2 text-sm opacity-50">
-					<span class="font-medium text-neutral-900 dark:text-neutral-100"
-						>{rankMap[userProfile.rank ?? 0]}</span
-					>
+				<div class="flex items-center gap-2 text-sm text-neutral-500/80">
+					<span class="font-medium">{rankMap[userProfile.rank ?? 0]}</span>
+					{#if data.canRankUp}
+						<button onclick={() => (isRankUpModalOpen = true)} class="link cursor-pointer">
+							(Rank up)
+						</button>
+					{/if}
 					<span>•</span>
 					<span>{m.joinedDate({ joinedDate })}</span>
 				</div>
