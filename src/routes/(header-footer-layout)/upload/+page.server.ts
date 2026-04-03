@@ -2,12 +2,17 @@ import { error, fail, type Actions, redirect } from '@sveltejs/kit'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import { eq } from 'drizzle-orm'
-import JSZip from 'jszip'
+import yauzl from 'yauzl'
 import sharp from 'sharp'
 import { storage } from '$lib/storage'
 import { acceptablePrefixes } from '$lib/security-manager.svelte'
 
 const MAX_TOTAL_UNCOMPRESSED_SIZE = 100 * 1024 * 1024
+
+const openZipFromBuffer = (buffer: Buffer): Promise<yauzl.ZipFile> =>
+	new Promise((res, rej) =>
+		yauzl.fromBuffer(buffer, { lazyEntries: true }, (err, zip) => (err ? rej(err) : res(zip!))),
+	)
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
@@ -16,7 +21,7 @@ export const actions: Actions = {
 
 		const formData = await request.formData()
 		const file = formData.get('projectFile') as File
-		const customThumb = formData.get('thumbnail') as File // New manual thumb field
+		const customThumb = formData.get('thumbnail') as File
 		const title = (formData.get('title') as string) || 'Untitled'
 		const notes = (formData.get('notes') as string) || ''
 
@@ -25,29 +30,62 @@ export const actions: Actions = {
 		try {
 			const arrayBuffer = await file.arrayBuffer()
 			const buffer = Buffer.from(arrayBuffer)
-			const zip = new JSZip()
-			const contents = await zip.loadAsync(buffer)
+			const zip = await openZipFromBuffer(buffer)
 
-			// --- 1. ZIP BOMB & FOLDER PREVENTIONS ---
 			let totalUncompressedSize = 0
-			for (const [relativePath, zipEntry] of Object.entries(contents.files)) {
-				if (zipEntry.dir || relativePath.includes('/')) {
-					return fail(400, { message: 'Invalid project: Nested directories are not allowed.' })
-				}
-				const entrySize = (zipEntry as any)._data.uncompressedSize || 0
-				totalUncompressedSize += entrySize
+			let projectJson: any = null
+			let internalThumbBuffer: Buffer | null = null
+			const assetUploads: Promise<void>[] = []
 
-				if (totalUncompressedSize > MAX_TOTAL_UNCOMPRESSED_SIZE) {
-					return fail(400, { message: 'Project exceeds uncompressed size limit.' })
-				}
-			}
+			await new Promise<void>((resolve, reject) => {
+				zip.readEntry()
+				zip.on('entry', (entry: yauzl.Entry) => {
+					if (/\/$/.test(entry.fileName) || entry.fileName.includes('/')) {
+						return reject(new Error('Invalid project: Nested directories are not allowed.'))
+					}
 
-			const jsonFile = contents.file('project.json')
-			if (!jsonFile) return fail(400, { message: 'Invalid project: project.json missing' })
-			const projectJson = JSON.parse(await jsonFile.async('string'))
+					totalUncompressedSize += entry.uncompressedSize
+					if (totalUncompressedSize > MAX_TOTAL_UNCOMPRESSED_SIZE) {
+						return reject(new Error('Project exceeds uncompressed size limit.'))
+					}
+
+					zip.openReadStream(entry, async (err, readStream) => {
+						if (err) return reject(err)
+
+						const chunks: Buffer[] = []
+						for await (const chunk of readStream) {
+							chunks.push(Buffer.from(chunk))
+						}
+						const fileData = Buffer.concat(chunks)
+
+						if (entry.fileName === 'project.json') {
+							try {
+								projectJson = JSON.parse(fileData.toString())
+							} catch (e) {
+								return reject(new Error('Invalid project.json format'))
+							}
+						} else if (entry.fileName === 'thumbnail.png' || entry.fileName === 'thumbnail.jpg') {
+							internalThumbBuffer = fileData
+						} else {
+							// We will handle specific storage writes after we have the project ID
+							// But we store the data in memory for now during the stream
+							// For very large individual assets, you'd stream directly to storage.
+						}
+
+						// Store the non-config files in a temporary map or process later
+						// For this implementation, we'll collect them to upload once we have the ID
+						zip.readEntry()
+					})
+				})
+
+				zip.on('end', () => resolve())
+				zip.on('error', (err) => reject(err))
+			})
+
+			if (!projectJson) return fail(400, { message: 'Invalid project: project.json missing' })
 
 			if (locals.user.rank === 0) {
-				const extensions = projectJson.extensions
+				const extensions = projectJson.extensions || []
 				const restrictedExtensions = [
 					// These all could be used to do one of these:
 					// * create an HTTP request
@@ -69,20 +107,22 @@ export const actions: Actions = {
 					'images',
 					'notSound',
 				]
-				const notUploadableForNoobs =
-					extensions.filter((x) => restrictedExtensions.includes(x)).length !== 0 ||
-					Object.values(projectJson.extensionURLs).filter(
-						(x) => !acceptablePrefixes.some((prefix) => x.startsWith(prefix)),
-					).length !== 0
 
-				if (notUploadableForNoobs)
-					return fail(500, {
+				const extensionURLs = projectJson.extensionURLs || {}
+				const notUploadableForNoobs =
+					extensions.some((x: string) => restrictedExtensions.includes(x)) ||
+					Object.values(extensionURLs).some(
+						(x: any) => !acceptablePrefixes.some((prefix) => String(x).startsWith(prefix)),
+					)
+
+				if (notUploadableForNoobs) {
+					return fail(403, {
 						message:
 							'Your account has not ranked up yet and cannot use some extensions in this project.',
 					})
+				}
 			}
 
-			// --- 2. DATABASE RECORD CREATION ---
 			const [newProject] = await db
 				.insert(table.project)
 				.values({
@@ -98,30 +138,35 @@ export const actions: Actions = {
 			const projectId = newProject.id
 			const projectBaseDir = `projects/${projectId}`
 
-			// --- 3. ASSET UPLOADS ---
-			const assetUploads: Promise<void>[] = []
-			contents.forEach((relativePath, zipEntry) => {
-				if (relativePath === 'project.json') return
-				const uploadTask = async () => {
-					const fileData = await zipEntry.async('nodebuffer')
-					await storage.write(`${projectBaseDir}/${relativePath}`, fileData)
-				}
-				assetUploads.push(uploadTask())
+			await new Promise<void>((resolve, reject) => {
+				yauzl.fromBuffer(buffer, { lazyEntries: true }, (err, zip2) => {
+					if (err) return reject(err)
+					zip2!.readEntry()
+					zip2!.on('entry', (entry) => {
+						if (entry.fileName === 'project.json' || /\/$/.test(entry.fileName)) {
+							zip2!.readEntry()
+							return
+						}
+						zip2!.openReadStream(entry, async (err, readStream) => {
+							if (err) return reject(err)
+							const chunks: Buffer[] = []
+							for await (const chunk of readStream) {
+								chunks.push(Buffer.from(chunk))
+							}
+							await storage.write(`${projectBaseDir}/${entry.fileName}`, Buffer.concat(chunks))
+							zip2!.readEntry()
+						})
+					})
+					zip2!.on('end', () => resolve())
+				})
 			})
 
-			// --- 4. THUMBNAIL LOGIC (Sharp Integration) ---
 			let thumbBuffer: Buffer | null = null
 
-			// Priority 1: User uploaded a custom thumbnail
 			if (customThumb && customThumb.size > 0 && customThumb.type.startsWith('image/')) {
 				thumbBuffer = Buffer.from(await customThumb.arrayBuffer())
-			}
-			// Priority 2: Fallback to internal zip thumbnail
-			else {
-				const internalThumb = contents.file('thumbnail.png') || contents.file('thumbnail.jpg')
-				if (internalThumb) {
-					thumbBuffer = await internalThumb.async('nodebuffer')
-				}
+			} else if (internalThumbBuffer) {
+				thumbBuffer = internalThumbBuffer
 			}
 
 			if (thumbBuffer) {
@@ -140,13 +185,11 @@ export const actions: Actions = {
 					.where(eq(table.project.id, projectId))
 			}
 
-			await Promise.all(assetUploads)
-
 			throw redirect(303, `/projects/${projectId}`)
 		} catch (err: any) {
 			if (err.status === 303) throw err
 			console.error('Upload Error:', err)
-			return fail(500, { message: 'Failed to process project' })
+			return fail(500, { message: err.message || 'Failed to process project' })
 		}
 	},
 }
