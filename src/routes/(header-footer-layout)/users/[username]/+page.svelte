@@ -8,6 +8,7 @@
 		Save,
 		Loader,
 		UsersRound,
+		X,
 	} from '@lucide/svelte'
 	import { enhance } from '$app/forms'
 	import { rankMap, isStaff } from '$lib/ranks'
@@ -20,21 +21,39 @@
 	import UserList from '$lib/components/UserList.svelte'
 	import { getLocale } from '$lib/paraglide/runtime.js'
 	import DOMPurify from 'isomorphic-dompurify'
-	import { getPfpPath } from '$lib/storage-helpers.js'
+	import { getPfpPath, getPublicUrl } from '$lib/storage-helpers.js'
+	import ProjectList from '$lib/components/ProjectList.svelte'
+
+	export const FEATURED_TITLES = [
+		'Featured Project', // Index 0
+		'Featured Tutorial', // Index 1
+		'Work in Progress', // Index 2
+		'Remix This!', // Index 3
+		'My Favourite Things', // Index 4
+		"Why I'm an AmpModder", // Index 5
+		'More About Me', // Index 6
+		'Play my game!', // Index 7
+		'My Collaboration', // Index 8
+		'Join the contest!', // Index 9
+		'My best work', // Index 10
+	]
 
 	let { data } = $props()
 
 	const userProfile = $derived(data.userProfile)
+	const featuredProject = $derived(data.featuredProject)
 	const isFollowing = $derived(data.isFollowing ?? false)
 	const followerCount = $derived(data.followerCount ?? 0)
 	const followingCount = $derived(data.followingCount ?? 0)
 	const { isOwnProfile, isViewerStaff } = $derived(data)
 
-	let userStatus = $state(data.userProfile.status)
+	let userStatus = $state(data.userProfile?.status)
 	let isEditingBio = $state(false)
+	let isProjectPickerOpen = $state(false)
 	let editedBio = $state(data.userProfile.bio ?? '')
 	let isUploadingPfp = $state(false)
 	let isBanModalOpen = $state(false)
+	let pickedFeaturedTitle = $state(0)
 	let pfpInput: HTMLInputElement | undefined = $state()
 
 	$effect(() => {
@@ -67,21 +86,95 @@
 	const canEdit = $derived(isOwnProfile || viewerIsOp)
 
 	const styles = {
-		sectionCard:
-			'bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-5 shadow-sm',
+		sectionCard: 'border border-neutral-300 dark:border-neutral-700 rounded-xl p-3',
 		header: 'flex items-center gap-6 my-3',
-		label: 'text-sm font-bold text-accent-secondary dark:text-neutral-300 mb-2 block',
+		label: 'text-sm font-bold text-accent-secondary dark:text-neutral-300 block',
 		pfpWrapper:
 			'relative group h-24 w-24 shrink-0 overflow-hidden rounded-xl border-2 border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900',
-		modalLabel: 'mb-1 block text-xs font-bold uppercase text-neutral-500',
+		modalLabel: 'mb-1 block text-xs font-bold text-neutral-500',
 		modalInput:
-			'w-full rounded-lg border border-neutral-300 bg-neutral-50 p-2.5 text-sm outline-none focus:ring-2 focus:ring-red-500 dark:border-neutral-700 dark:bg-neutral-900',
+			'w-full rounded-lg border border-neutral-300 bg-neutral-50 p-2.5 text-sm outline-none focus:ring-2 focus:ring-accent dark:border-neutral-700 dark:bg-neutral-900',
 	}
 </script>
 
 <svelte:head>
 	<title>{data.private ? 'Private profile' : userProfile.username} - AmpMod</title>
 </svelte:head>
+
+<Modal bind:open={isProjectPickerOpen} title="Feature a project">
+	<div class="mb-6 flex flex-col gap-2">
+		<label class={styles.modalLabel} for="titleSelect">
+			Choose title for featured project section:
+		</label>
+		<select id="titleSelect" class={styles.modalInput} bind:value={pickedFeaturedTitle}>
+			{#each FEATURED_TITLES as title, i}
+				<option value={i}>
+					{title}
+				</option>
+			{/each}
+		</select>
+	</div>
+
+	<div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+		{#each data.projects as project}
+			<form
+				method="POST"
+				action="?/featureProject"
+				use:enhance={() => {
+					return async ({ update }) => {
+						isProjectPickerOpen = false
+						await update()
+					}
+				}}
+			>
+				<input type="hidden" name="projectId" value={project.id} />
+
+				<input type="hidden" name="titleIndex" value={pickedFeaturedTitle} />
+
+				<button
+					type="submit"
+					class="group flex w-full flex-col text-left transition-all hover:scale-95"
+				>
+					<div
+						class="aspect-[4/3] overflow-hidden rounded-lg border-2 {featuredProject?.id ===
+						project.id
+							? 'border-accent'
+							: 'border-neutral-200 dark:border-neutral-700'}"
+					>
+						<img
+							src={getPublicUrl(`projects/${project.id}/thumbnail.webp`)}
+							alt={project.title}
+							class="h-full w-full object-cover"
+						/>
+					</div>
+					<span class="mt-1 truncate text-xs font-bold dark:text-neutral-200">{project.title}</span>
+				</button>
+			</form>
+		{/each}
+	</div>
+
+	{#if featuredProject}
+		<form
+			method="POST"
+			action="?/featureProject"
+			use:enhance={() => {
+				return async ({ update }) => {
+					isProjectPickerOpen = false
+					await update()
+				}
+			}}
+			class="mt-6 border-t pt-4 dark:border-neutral-700"
+		>
+			<input type="hidden" name="projectId" value="" />
+			<Button
+				type="submit"
+				class="flex w-full items-center justify-center gap-4 bg-neutral-200! text-neutral-700! dark:bg-neutral-800! dark:text-neutral-200!"
+			>
+				<X size={20} /> Remove Featured Project
+			</Button>
+		</form>
+	{/if}
+</Modal>
 
 <Modal bind:open={isBanModalOpen} title={m.adminBan()}>
 	<div class="flex flex-col gap-2">
@@ -173,7 +266,6 @@
 							isUploadingPfp = true
 							return async () => {
 								isUploadingPfp = false
-								// We cannot do a normal update, because images need to be reloaded
 								location.reload()
 							}
 						}}
@@ -253,14 +345,19 @@
 			{/if}
 		</header>
 
-		<div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.5fr_1fr]">
-			<section class={styles.sectionCard}>
-				<div class="mb-2 flex items-center justify-between border-b pb-2 dark:border-neutral-700">
+		<div class="flex flex-col gap-6 lg:flex-row lg:items-stretch">
+			<section class="{styles.sectionCard} flex-1">
+				<div
+					class="mb-2 flex items-center justify-between border-b border-neutral-500/50 pb-2 dark:border-neutral-700"
+				>
 					<span class={styles.label}>{m.aboutMe()}</span>
 					{#if canEdit && !isEditingBio}
-						<button onclick={() => (isEditingBio = true)} class="text-neutral-400 hover:text-accent"
-							><Pencil size={16} /></button
+						<button
+							onclick={() => (isEditingBio = true)}
+							class="text-neutral-400 hover:text-accent"
 						>
+							<Pencil size={16} />
+						</button>
 					{/if}
 				</div>
 
@@ -296,33 +393,80 @@
 					</form>
 				{:else}
 					<div
-						class="prose max-h-100 min-h-50 max-w-none overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert"
+						class="prose min-h-0 max-w-none flex-1 overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert"
 					>
 						{#if userProfile.bio}
 							{@html DOMPurify.sanitize(md.render(userProfile.bio))}
 						{:else}
-							<i class="opacity-50"
-								>{isOwnProfile ? m.aboutMePlaceholderEdit() : m.aboutMePlaceholder()}</i
-							>
+							<i class="opacity-50">
+								{isOwnProfile ? m.aboutMePlaceholderEdit() : m.aboutMePlaceholder()}
+							</i>
 						{/if}
 					</div>
 				{/if}
 			</section>
 
-			<section class={`${styles.sectionCard} flex aspect-4/3 flex-col`}>
-				<div class="mb-4"><span class={styles.label}>{m.featuredProject()}</span></div>
-				<div
-					class="flex grow items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700"
-				>
-					<div class="text-center text-neutral-400">
-						<FolderOpen class="mx-auto mb-2 opacity-20" size={32} />
-						<p class="text-xs">{m.noFeaturedProject()}</p>
-					</div>
+			<section
+				class="{styles.sectionCard} relative flex w-full shrink-0 flex-col overflow-hidden lg:w-100"
+			>
+				<div class="mb-4 flex items-center justify-between">
+					<span class={styles.label}
+						><span class={styles.label}>
+							{FEATURED_TITLES[userProfile.featuredProjectTitleIndex ?? 0]}
+						</span></span
+					>
+					{#if isOwnProfile}
+						<button
+							onclick={() => (isProjectPickerOpen = true)}
+							class="text-neutral-400 transition-colors hover:text-accent"
+						>
+							<Pencil size={16} />
+						</button>
+					{/if}
 				</div>
+
+				{#if featuredProject}
+					<a
+						href="/projects/{featuredProject.id}"
+						class="group relative aspect-4/3 overflow-hidden rounded border border-neutral-200 dark:border-neutral-800"
+					>
+						<img
+							src={getPublicUrl(`projects/${featuredProject.id}/thumbnail.webp`)}
+							alt={featuredProject.title}
+							class="h-full w-full object-cover"
+						/>
+						<div
+							class="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent"
+						></div>
+						<div class="absolute bottom-0 p-4">
+							<h3 class="line-clamp-1 text-lg font-bold text-white">{featuredProject.title}</h3>
+						</div>
+					</a>
+				{:else}
+					<div
+						class="flex min-h-[200px] grow items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700"
+					>
+						<div class="text-center text-neutral-400">
+							<FolderOpen class="mx-auto mb-2 opacity-20" size={32} />
+							<p class="text-xs">{m.noFeaturedProject()}</p>
+							{#if isOwnProfile}
+								<button
+									onclick={() => (isProjectPickerOpen = true)}
+									class="mt-2 text-xs font-bold text-accent hover:underline"
+								>
+									Choose a project
+								</button>
+							{/if}
+						</div>
+					</div>
+				{/if}
 			</section>
 		</div>
-
 		<div class="flex flex-col gap-2">
+			<Row title="Shared Projects" seeMore="/users/{userProfile.username}/projects">
+				<ProjectList projects={data.projects} emptyMessage="No projects yet." />
+			</Row>
+
 			<Row title="Following ({followingCount})" seeMore="/users/{userProfile.username}/following">
 				<UserList users={data.following} emptyMessage="Not following anyone yet." />
 			</Row>

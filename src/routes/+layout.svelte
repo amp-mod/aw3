@@ -3,7 +3,7 @@
 	import { modals } from '$lib/modals.svelte'
 	import favicon from '$lib/assets/favicon.ico'
 	import LoginModal from '$lib/components/LoginModal.svelte'
-	import { invalidateAll } from '$app/navigation'
+	import { afterNavigate, invalidateAll } from '$app/navigation'
 	import { onMount } from 'svelte'
 	import ToastContainer from '$lib/components/ToastContainer.svelte'
 	import { addToast } from '$lib/toast.svelte'

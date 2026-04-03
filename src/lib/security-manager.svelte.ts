@@ -5,10 +5,13 @@
  * https://github.com/TurboWarp/scratch-vm/blob/develop/src/extension-support/tw-security-manager.js
  */
 
+import { addToast, toasts } from './toast.svelte'
+
 interface ModalState {
 	show: boolean
 	type: string | null
 	url?: string
+	code?: string
 	name?: string
 	resolve: (value: boolean) => void
 	reject: (reason?: never) => void
@@ -19,11 +22,12 @@ export const modals = $state<ModalState>({
 	type: null,
 	url: '',
 	name: '',
+	code: '',
 	resolve: () => {},
 	reject: () => {},
 })
 
-const acceptablePrefixes = [
+export const acceptablePrefixes = [
 	'https://ampmod.codeberg.page/extensions/',
 	'https://raw.codeberg.page/ampmod/extensions/@pages/',
 	'https://extensions.turbowarp.org/',
@@ -54,6 +58,7 @@ const requestPermission = (
 		modals.type = type
 		modals.url = data.url || ''
 		modals.name = data.name || ''
+		modals.code = data.code || ''
 		modals.resolve = (val) => {
 			modals.show = false
 			resolve(val)
@@ -66,15 +71,14 @@ const requestPermission = (
 	})
 }
 
-export const functions = {
+export const SecurityManagerImplementation = {
 	/**
 	 * Determine the type of sandbox to use for a certain custom extension.
 	 * @param {string} extensionURL The URL of the custom extension.
 	 * @returns {'worker'|'iframe'|'unsandboxed'|Promise<'worker'|'iframe'|'unsandboxed'>}
 	 */
 	getSandboxMode(extensionURL: string) {
-		if (isTrustedURL(extensionURL)) return 'unsandboxed'
-		return 'iframe'
+		return 'unsandboxed'
 	},
 
 	/**
@@ -83,8 +87,20 @@ export const functions = {
 	 * @param {string} extensionURL The URL of the custom extension.
 	 * @returns {boolean}
 	 */
-	canLoadExtensionFromProject(extensionURL: string) {
-		return isTrustedURL(extensionURL)
+	async canLoadExtensionFromProject(extensionURL: string) {
+		if (isTrustedURL(extensionURL)) return true
+
+		try {
+			const response = await fetch(extensionURL)
+			const code = await response.text()
+
+			return await requestPermission('loadExtension', {
+				code: code,
+			})
+		} catch (e) {
+			console.error('Failed to fetch extension code for security review:', e)
+			return false
+		}
 	},
 
 	/**

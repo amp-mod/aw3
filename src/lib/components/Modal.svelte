@@ -13,9 +13,10 @@
 		/>
 
 		<Dialog.Content
-			class="fixed top-[120px] left-[50%] z-50 w-full max-w-[600px] translate-x-[-50%] overflow-hidden rounded bg-white shadow-[0px_0px_0px_4px_rgba(0,0,0,0.05)] outline-none dark:bg-neutral-900 dark:shadow-[0px_0px_0px_4px_rgba(255,255,255,0.1)]"
+			class="not-xl:h-[calc(100% - 12px)] fixed top-[50%] left-[50%] z-50 w-full max-w-150 translate-x-[-50%] overflow-auto rounded bg-white shadow-[0px_0px_0px_4px_rgba(0,0,0,0.05)] outline-none not-xl:translate-x-[-50%] not-xl:translate-y-[-50%] xl:top-20 dark:bg-neutral-900 dark:shadow-[0px_0px_0px_4px_rgba(255,255,255,0.1)]"
 			escapeKeydownBehavior={canClose ? 'close' : 'ignore'}
 			interactOutsideBehavior={canClose ? 'close' : 'ignore'}
+			onOpenAutoFocus={(e) => e.preventDefault()}
 			{forceMount}
 		>
 			<div

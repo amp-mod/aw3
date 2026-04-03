@@ -34,6 +34,11 @@ const handleParaglide: Handle = async ({ event, resolve }) => {
 }
 
 const handleAuth: Handle = async ({ event, resolve }) => {
+	if (event.url.pathname.match(/^\/projects\/[^/]+\/embed/)) {
+		event.locals.user = null
+		event.locals.session = null
+		return resolve(event)
+	}
 	const sessionToken = event.cookies.get(auth.sessionCookieName)?.split('..')[1]
 
 	if (!sessionToken) {
@@ -90,6 +95,11 @@ export const handleGuard: Handle = async ({ event, resolve }) => {
 }
 
 const handleBanned: Handle = async ({ event, resolve }) => {
+	if (event.url.pathname.match(/^\/projects\/[^/]+\/embed/)) {
+		event.locals.user = null
+		event.locals.session = null
+		return resolve(event)
+	}
 	const user = event.locals.user
 	if (!user) return resolve(event)
 

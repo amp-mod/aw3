@@ -42,6 +42,10 @@ export const user = pgTable(
 		hasPFP: boolean().default(false).notNull(),
 		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
 		isPrivate: boolean().default(false),
+		featuredProjectId: integer('featured_project_id').references(() => project.id, {
+			onDelete: 'set null',
+		}),
+		featuredProjectTitleIndex: smallint('featured_project_title_index').default(0),
 
 		// passkeys
 		passkeys: jsonb(),

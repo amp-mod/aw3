@@ -51,4 +51,10 @@
 		If you packaged your project, these messages are hidden, so there is no need to worry about
 		this.
 	</p>
+	<h2>Projects</h2>
+	<h3>Why does my project look weird on the website, but not in the editor?</h3>
+	<p>
+		The website uses a different version of AmpMod from the editor. It doesn't render everything the
+		exact same way. The full AmpMod player can be accessed in the Editor.
+	</p>
 </div>

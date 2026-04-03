@@ -7,27 +7,19 @@ import { Filter } from 'bad-words'
 import MarkdownIt from 'markdown-it'
 import { storage } from '$lib/storage'
 import sharp from 'sharp'
+import { desc } from 'drizzle-orm'
 
 const md = new MarkdownIt()
 
-/**
- * Utility to strip Markdown for profanity checking
- */
 function stripMarkdown(text: string): string {
 	const tokens = md.parse(text, {})
 	let plainText = ''
-
 	const extractText = (tokens: any[]) => {
 		tokens.forEach((token) => {
-			if (token.type === 'text' || token.type === 'code_inline') {
-				plainText += token.content
-			}
-			if (token.children) {
-				extractText(token.children)
-			}
+			if (token.type === 'text' || token.type === 'code_inline') plainText += token.content
+			if (token.children) extractText(token.children)
 		})
 	}
-
 	extractText(tokens)
 	return plainText
 }
@@ -39,33 +31,57 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const isStaffMember = viewerRank >= 2
 
 	const [userProfile] = await db
-		.select({
-			id: table.user.id,
-			username: table.user.username,
-			rank: table.user.rank,
-			bio: table.user.bio,
-			hasPFP: table.user.hasPFP,
-			createdAt: table.user.createdAt,
-			isPrivate: table.user.isPrivate,
-			...(isStaffMember
-				? {
-						status: table.user.status,
-						bannedExpiry: table.user.bannedExpiry,
-						banReason: table.user.banReason,
-					}
-				: {}),
-		})
+		.select()
 		.from(table.user)
 		.where(eq(table.user.username, username))
 		.limit(1)
 
 	if (!userProfile) throw error(404, { message: 'User not found' })
 
-	if (userProfile.isPrivate && !isStaffMember && userProfile.id !== viewer?.id) {
-		return { private: true, userProfile: {} }
+	const isOwnProfile = viewer?.id === userProfile.id
+
+	if (userProfile.isPrivate && !isStaffMember && !isOwnProfile) {
+		return { private: true, userProfile: { username: userProfile.username }, projects: [] }
 	}
 
-	const isOwnProfile = viewer?.id === userProfile.id
+	let featuredProject = null
+	if (userProfile.featuredProjectId) {
+		const [fp] = await db
+			.select({
+				id: table.project.id,
+				title: table.project.title,
+			})
+			.from(table.project)
+			.where(eq(table.project.id, userProfile.featuredProjectId))
+			.limit(1)
+		featuredProject = fp
+	}
+
+	const projects = await db
+		.select({
+			id: table.project.id,
+			title: table.project.title,
+		})
+		.from(table.project)
+		.where(eq(table.project.userId, userProfile.id))
+		.orderBy(desc(table.project.createdAt))
+		.limit(10)
+
+	let canRankUp = false
+	if (isOwnProfile && (userProfile.rank ?? 0) === 0) {
+		const projectCountResult = await db
+			.select({ count: sql<number>`count(*)` })
+			.from(table.project)
+			.where(eq(table.project.userId, userProfile.id))
+
+		const projectCount = Number(projectCountResult[0]?.count ?? 0)
+		const accountAgeDays =
+			(Date.now() - new Date(userProfile.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+
+		if (accountAgeDays >= 5 && projectCount >= 2) {
+			canRankUp = true
+		}
+	}
 
 	const [followingStatus] = viewer
 		? await db
@@ -84,22 +100,14 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.from(table.follow)
 
 	const followers = await db
-		.select({
-			username: table.user.username,
-			id: table.user.id,
-			hasPFP: table.user.hasPFP,
-		})
+		.select({ username: table.user.username, id: table.user.id, hasPFP: table.user.hasPFP })
 		.from(table.follow)
 		.leftJoin(table.user, eq(table.follow.followerId, table.user.id))
 		.where(eq(table.follow.followingId, userProfile.id))
 		.limit(20)
 
 	const following = await db
-		.select({
-			username: table.user.username,
-			id: table.user.id,
-			hasPFP: table.user.hasPFP,
-		})
+		.select({ username: table.user.username, id: table.user.id, hasPFP: table.user.hasPFP })
 		.from(table.follow)
 		.leftJoin(table.user, eq(table.follow.followingId, table.user.id))
 		.where(eq(table.follow.followerId, userProfile.id))
@@ -107,7 +115,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	return {
 		userProfile,
+		featuredProject,
 		isOwnProfile,
+		projects,
+		canRankUp,
 		isPrivate: userProfile.isPrivate,
 		isViewerStaff: isStaffMember,
 		isFollowing: !!followingStatus,
@@ -119,176 +130,150 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 }
 
 export const actions: Actions = {
-	toggleFollow: async ({ request, locals }) => {
-		const viewer = locals.user
-		if (!viewer) return fail(401, { message: 'You must be logged in to follow users' })
+	rankUp: async ({ locals }) => {
+		const user = locals.user
+		if (!user) return fail(401, { message: 'Unauthorized' })
+		if ((user.rank ?? 0) !== 0) return fail(400, { message: 'Already ranked up' })
 
-		const formData = await request.formData()
-		const targetUserId = Number(formData.get('targetUserId'))
+		// Re-verify requirements on server side for security
+		const projectCountResult = await db
+			.select({ count: sql<number>`count(*)` })
+			.from(table.project)
+			.where(eq(table.project.userId, user.id))
 
-		if (isNaN(targetUserId)) return fail(400, { message: 'Invalid user ID' })
-		if (viewer.id === targetUserId) return fail(400, { message: 'You cannot follow yourself' })
+		const projectCount = Number(projectCountResult[0]?.count ?? 0)
+		const accountAgeDays = (Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+
+		if (accountAgeDays < 5 || projectCount < 2) {
+			return fail(400, { message: 'Requirements not met (5 days + 2 projects)' })
+		}
 
 		try {
-			const [existingFollow] = await db
-				.select()
-				.from(table.follow)
+			await db.update(table.user).set({ rank: 1 }).where(eq(table.user.id, user.id))
+			return { success: true }
+		} catch (e) {
+			return fail(500, { message: 'Database error' })
+		}
+	},
+
+	toggleFollow: async ({ request, locals }) => {
+		const viewer = locals.user
+		if (!viewer) return fail(401, { message: 'Unauthorized' })
+		const formData = await request.formData()
+		const targetUserId = Number(formData.get('targetUserId'))
+		if (isNaN(targetUserId) || viewer.id === targetUserId)
+			return fail(400, { message: 'Invalid action' })
+
+		const [existingFollow] = await db
+			.select()
+			.from(table.follow)
+			.where(
+				and(eq(table.follow.followerId, viewer.id), eq(table.follow.followingId, targetUserId)),
+			)
+		if (existingFollow) {
+			await db
+				.delete(table.follow)
 				.where(
 					and(eq(table.follow.followerId, viewer.id), eq(table.follow.followingId, targetUserId)),
 				)
-
-			if (existingFollow) {
-				await db
-					.delete(table.follow)
-					.where(
-						and(eq(table.follow.followerId, viewer.id), eq(table.follow.followingId, targetUserId)),
-					)
-				return { success: true, followed: false }
-			} else {
-				await db.insert(table.follow).values({
-					followerId: viewer.id,
-					followingId: targetUserId,
-				})
-
-				await db.insert(table.notification).values({
-					recipientId: targetUserId,
-					issuerId: viewer.id,
-					type: 'follow',
-				})
-
-				return { success: true, followed: true }
-			}
-		} catch (e) {
-			console.error('Follow Error:', e)
-			return fail(500, { message: 'Database error' })
+			return { success: true, followed: false }
+		} else {
+			await db.insert(table.follow).values({ followerId: viewer.id, followingId: targetUserId })
+			await db
+				.insert(table.notification)
+				.values({ recipientId: targetUserId, issuerId: viewer.id, type: 'follow' })
+			return { success: true, followed: true }
 		}
 	},
 
 	updatePfp: async ({ request, locals }) => {
 		const viewer = locals.user
 		if (!viewer) return fail(401, { message: 'Unauthorized' })
-
 		const formData = await request.formData()
 		const file = formData.get('avatar') as File
 		const targetUserId = Number(formData.get('targetUserId'))
-
-		if (isNaN(targetUserId)) return fail(400, { message: 'Invalid target user' })
-
-		const isOwner = viewer.id === targetUserId
-		const isStaff = (viewer.rank ?? 0) >= 2
-		if (!isOwner && !isStaff) return fail(403, { message: 'Forbidden' })
-
-		if (!file || file.size === 0) return fail(400, { message: 'No file uploaded' })
-		if (!file.type.startsWith('image/')) return fail(400, { message: 'Must be an image' })
+		if (isNaN(targetUserId) || (viewer.id !== targetUserId && (viewer.rank ?? 0) < 2))
+			return fail(403, { message: 'Forbidden' })
+		if (!file || file.size === 0 || !file.type.startsWith('image/'))
+			return fail(400, { message: 'Invalid image' })
 
 		try {
 			const buffer = Buffer.from(await file.arrayBuffer())
 			const baseDir = `aw3-avatars/${targetUserId}`
-
 			const sizes = [
-				{ suffix: '16', dim: 16 },
-				{ suffix: '24', dim: 24 },
-				{ suffix: '32', dim: 32 },
-				{ suffix: '48', dim: 48 },
-				{ suffix: '64', dim: 64 },
-				{ suffix: 'full', dim: 728 },
+				{ s: '16', d: 16 },
+				{ s: '24', d: 24 },
+				{ s: '32', d: 32 },
+				{ s: '48', d: 48 },
+				{ s: '64', d: 64 },
+				{ s: 'full', d: 728 },
 			]
 			const metadata = await sharp(buffer).metadata()
-			const originalWidth = metadata.width ?? 0
-			const originalHeight = metadata.height ?? 0
 
-			// Process all sizes in parallel using Sharp
 			await Promise.all(
-				sizes.map(async ({ suffix, dim }) => {
-					let pipeline = sharp(buffer, { animated: true }).rotate()
-
-					if (originalWidth > dim || originalHeight > dim) {
-						pipeline = pipeline.resize(dim, dim, { fit: 'inside' })
-					}
-
-					const processed = await pipeline
-						.webp({ quality: dim < 32 ? 30 : dim > 64 ? 100 : 85, loop: 0, force: true })
+				sizes.map(async ({ s, d }) => {
+					let p = sharp(buffer, { animated: true }).rotate()
+					if ((metadata.width ?? 0) > d || (metadata.height ?? 0) > d)
+						p = p.resize(d, d, { fit: 'inside' })
+					const res = await p
+						.webp({ quality: d < 32 ? 30 : d > 64 ? 100 : 85, loop: 0, force: true })
 						.toBuffer()
-
-					await storage.write(`${baseDir}_${suffix}.webp`, processed)
+					await storage.write(`${baseDir}_${s}.webp`, res)
 				}),
 			)
-
 			await db.update(table.user).set({ hasPFP: true }).where(eq(table.user.id, targetUserId))
-
 			return { success: true }
 		} catch (e) {
-			console.error('PFP Processing Error:', e)
-			return fail(500, { message: 'Internal Server Error processing image' })
+			return fail(500, { message: 'PFP Error' })
 		}
 	},
 
 	updateBio: async ({ request, locals }) => {
 		const viewer = locals.user
 		if (!viewer) return fail(401, { message: 'Unauthorized' })
-
 		const formData = await request.formData()
 		const newBio = formData.get('bio') as string
 		const targetUserId = Number(formData.get('targetUserId'))
-
-		if (isNaN(targetUserId)) return fail(400, { message: 'Invalid target user' })
-		if (newBio.length > 2000) return fail(400, { message: 'Bio is too long' })
+		if (isNaN(targetUserId) || newBio.length > 2000) return fail(400, { message: 'Invalid data' })
 
 		const [targetUser] = await db
 			.select()
 			.from(table.user)
 			.where(eq(table.user.id, targetUserId))
 			.limit(1)
-
-		if (!targetUser) return fail(404, { message: 'Target user not found' })
-
-		const isOwner = viewer.id === targetUser.id
-		const isOp = (viewer.rank ?? 0) >= 2
-
-		if (!isOwner && !isOp) return fail(403, { message: 'Forbidden' })
+		if (!targetUser || (viewer.id !== targetUser.id && (viewer.rank ?? 0) < 2))
+			return fail(403, { message: 'Forbidden' })
 
 		const filter = new Filter()
-		if (filter.isProfane(stripMarkdown(newBio)) || filter.isProfane(newBio)) {
-			return fail(400, { message: 'Bio contains prohibited language' })
-		}
+		if (filter.isProfane(stripMarkdown(newBio)) || filter.isProfane(newBio))
+			return fail(400, { message: 'Profanity detected' })
 
 		await db.update(table.user).set({ bio: newBio }).where(eq(table.user.id, targetUserId))
-
 		return { success: true }
 	},
 
 	banUser: async ({ request, locals }) => {
 		const viewerRank = locals.user?.rank ?? 0
 		if (!locals.user || viewerRank < 2) return fail(403, { message: 'Insufficient permissions' })
-
 		const formData = await request.formData()
 		const targetUserId = Number(formData.get('targetUserId'))
 		const reason = (formData.get('reason') as string) || 'No reason provided'
-
-		// Get raw value first to check for "permanent" string
 		const rawDuration = formData.get('duration')
 		const isPermanent = rawDuration === 'permanent'
 		const durationHours = isPermanent ? null : Number(rawDuration)
-
-		if (isNaN(targetUserId)) return fail(400, { message: 'Invalid target user' })
 
 		const [targetUser] = await db
 			.select()
 			.from(table.user)
 			.where(eq(table.user.id, targetUserId))
 			.limit(1)
-
-		if (!targetUser) return fail(404, { message: 'User not found' })
-		if (viewerRank <= (targetUser.rank ?? 0))
-			return fail(403, { message: 'Rank hierarchy violation' })
+		if (!targetUser || viewerRank <= (targetUser.rank ?? 0))
+			return fail(403, { message: 'Hierarchy violation' })
 
 		let expiryDate: Date | null = null
-
-		if (isPermanent) {
-			expiryDate = null
-		} else if (durationHours === 0) {
-			expiryDate = new Date(0)
-		} else if (durationHours && durationHours > 0) {
+		if (isPermanent) expiryDate = null
+		else if (durationHours === 0) expiryDate = new Date(0)
+		else if (durationHours) {
 			expiryDate = new Date()
 			expiryDate.setHours(expiryDate.getHours() + durationHours)
 		}
@@ -303,5 +288,40 @@ export const actions: Actions = {
 			.where(eq(table.user.id, targetUserId))
 
 		return { success: true }
+	},
+	featureProject: async ({ request, locals }) => {
+		const viewer = locals.user
+		if (!viewer) return fail(401, { message: 'Unauthorized' })
+
+		const formData = await request.formData()
+		const projectId = formData.get('projectId')
+		const titleIndex = formData.get('titleIndex')
+
+		const targetProjectId = projectId ? Number(projectId) : null
+		const targetTitleIndex = titleIndex !== null ? Number(titleIndex) : 0
+
+		if (targetProjectId !== null) {
+			const [project] = await db
+				.select()
+				.from(table.project)
+				.where(and(eq(table.project.id, targetProjectId), eq(table.project.userId, viewer.id)))
+				.limit(1)
+
+			if (!project) return fail(403, { message: 'Project not found' })
+		}
+
+		try {
+			await db
+				.update(table.user)
+				.set({
+					featuredProjectId: targetProjectId,
+					featuredProjectTitleIndex: targetTitleIndex, // Save the index
+				})
+				.where(eq(table.user.id, viewer.id))
+
+			return { success: true }
+		} catch (e) {
+			return fail(500, { message: 'Database error' })
+		}
 	},
 }
