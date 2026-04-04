@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16
+    image: postgres:18
     environment:
       POSTGRES_USER: aw3
       POSTGRES_PASSWORD: aw3 # we don't want to use this on deployment
