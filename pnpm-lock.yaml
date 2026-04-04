@@ -121,7 +121,7 @@ importers:
         version: 0.10.1
       yauzl:
         specifier: ^3.2.1
-        version: 3.2.1
+        version: 3.3.0
       yazl:
         specifier: ^3.3.1
         version: 3.3.1
@@ -4459,8 +4459,8 @@ packages:
     resolution: {integrity: sha512-vIYeF1u3CjlhAFekPPAk2h/Kv4T3mAkMox5OymRiJQB0spDP10LHvt+K7G9Ny6NuuMAb25/6n1qyUjAcGNf/AA==}
     engines: {node: '>= 6'}
 
-  yauzl@3.2.1:
-    resolution: {integrity: sha512-k1isifdbpNSFEHFJ1ZY4YDewv0IH9FR61lDetaRMD3j2ae3bIXGV+7c+LHCqtQGofSd8PIyV4X6+dHMAnSr60A==}
+  yauzl@3.3.0:
+    resolution: {integrity: sha512-PtGEvEP30p7sbIBJKUBjUnqgTVOyMURc4dLo9iNyAJnNIEz9pm88cCXF21w94Kg3k6RXkeZh5DHOGS0qEONvNQ==}
     engines: {node: '>=12'}
 
   yazl@3.3.1:
@@ -7565,7 +7565,7 @@ snapshots:
       iconv-lite: 0.6.3
       ip-address: 5.9.4
       lazy: 1.0.11
-      yauzl: 3.2.1
+      yauzl: 3.3.0
 
   get-tsconfig@4.13.7:
     dependencies:
@@ -8726,7 +8726,7 @@ snapshots:
 
   yaml@1.10.3: {}
 
-  yauzl@3.2.1:
+  yauzl@3.3.0:
     dependencies:
       buffer-crc32: 0.2.13
       pend: 1.2.0
