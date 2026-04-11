@@ -6,6 +6,7 @@
 	import { enhance } from '$app/forms'
 	import { beforeNavigate } from '$app/navigation'
 	import { acceptablePrefixes } from '$lib/security-manager.svelte.js'
+	import { getPfpPath } from '$lib/storage-helpers'
 
 	let { data } = $props()
 
@@ -66,35 +67,53 @@
 </svelte:head>
 
 <div class="m-auto flex max-w-6xl flex-col gap-2 lg:p-8">
-	<header class="flex flex-col gap-1 border-neutral-200 pb-6 dark:border-neutral-800">
-		<div class="flex items-center justify-between gap-4">
-			{#if canEdit}
-				<form
-					method="POST"
-					action="?/renameProject"
-					use:enhance={() => {
-						return async ({ update }) => {
-							await update({ reset: false })
-						}
-					}}
-					bind:this={titleFormElement}
-					class="flex flex-1 items-center gap-2"
-				>
-					<input
-						name="title"
-						type="text"
-						bind:value={titleValue}
-						placeholder="Project Title"
-						class="{styles.inputBase} rounded p-2 text-2xl font-semibold"
-					/>
-				</form>
-			{:else}
-				<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">
-					{project.title}
-				</h1>
-			{/if}
+	<header class="flex flex-col items-center gap-1 border-neutral-200 pb-6 dark:border-neutral-800">
+		<div class="flex w-full gap-4">
+			<a href="/users/{author.username}" title={author.username} class="shrink-0">
+				<img
+					src={getPfpPath(author)['64']}
+					class="h-12 w-12 rounded border border-black/10 object-fill dark:border-white/20"
+					alt={author.username}
+				/></a
+			>
 
-			<div class="flex shrink-0 gap-1">
+			<div class="flex w-full flex-col gap-2">
+				{#if canEdit}
+					<form
+						method="POST"
+						action="?/renameProject"
+						use:enhance={() => {
+							return async ({ update }) => {
+								await update({ reset: false })
+							}
+						}}
+						bind:this={titleFormElement}
+						class="flex flex-1 items-center gap-2"
+					>
+						<input
+							name="title"
+							type="text"
+							bind:value={titleValue}
+							placeholder="Project Title"
+							class="{styles.inputBase} w-full rounded p-2 text-2xl font-semibold"
+						/>
+					</form>
+				{:else}
+					<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">
+						{project.title}
+					</h1>
+				{/if}
+				<div class="flex items-center gap-2 text-sm">
+					by
+					<a href="/users/{author.username}" class="font-bold text-accent hover:underline">
+						{author.username}
+					</a>
+				</div>
+			</div>
+
+			<div class="grow"></div>
+
+			<div class="shrink-0 gap-1">
 				<Button
 					href="/projects/{project.id}/editor"
 					variant="secondary"
@@ -104,12 +123,6 @@
 					Edit in AmpMod
 				</Button>
 			</div>
-		</div>
-
-		<div class="flex items-center gap-2 text-sm">
-			<a href="/users/{author.username}" class="font-bold text-accent hover:underline">
-				{author.username}
-			</a>
 		</div>
 	</header>
 
@@ -122,7 +135,7 @@
 			<section class={styles.sectionCard}>
 				<span class={styles.label}>Notes and Credits</span>
 
-				<div class="max-h-[200px] overflow-y-auto">
+				<div class="max-h-100 overflow-y-auto">
 					{#if canEdit}
 						<form
 							method="POST"
@@ -138,7 +151,7 @@
 								name="notes"
 								bind:value={notesValue}
 								placeholder="Add notes or credits..."
-								class="{styles.inputBase} min-h-[100px] resize-none rounded p-2 text-sm"
+								class="{styles.inputBase} h-80 resize-none rounded p-2 text-sm"
 							></textarea>
 						</form>
 					{:else}
@@ -164,27 +177,25 @@
 	</div>
 
 	{#if loadedExtensions.length > 0}
-		<section class="mt-4 flex flex-col gap-3">
-			<div class="flex flex-wrap gap-2">
-				{#each loadedExtensions as ext}
-					<div class="inline-flex items-center gap-2 rounded bg-blue-500/10 p-3">
-						{#if ext.icon}
-							<img src={ext.icon} alt="" class="h-5 w-5" />
-						{:else}
-							<div
-								class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[8px] font-bold"
-								class:bg-accent={!ext.color1}
-								class:text-white={!ext.color1}
-								style:background-color={ext.color1}
-								style:border-color={ext.color2}
-							></div>
-						{/if}
-						<span class="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-							{ext.name}
-						</span>
-					</div>
-				{/each}
-			</div>
+		<section class="flex flex-wrap gap-2">
+			{#each loadedExtensions as ext}
+				<div class="inline-flex items-center gap-2 rounded bg-blue-500/10 p-3">
+					{#if ext.icon}
+						<img src={ext.icon} alt="" class="h-5 w-5" />
+					{:else}
+						<div
+							class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[8px] font-bold"
+							class:bg-accent={!ext.color1}
+							class:text-white={!ext.color1}
+							style:background-color={ext.color1}
+							style:border-color={ext.color2}
+						></div>
+					{/if}
+					<span class="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+						{ext.name}
+					</span>
+				</div>
+			{/each}
 		</section>
 	{/if}
 </div>

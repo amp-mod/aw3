@@ -28,6 +28,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		author: {
 			username: author?.username ?? 'Unknown User',
 			id: author?.id,
+			hasPFP: author?.hasPFP,
 		},
 	}
 }
