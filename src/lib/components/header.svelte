@@ -110,7 +110,19 @@
 									<Tooltip.Trigger>
 										<NavigationMenu.Link href="/messages">
 											{#snippet child({ props })}
-												<a {...props} class="header-link"><Mail class="h-5 w-5" /></a>
+												<a {...props} class="header-link relative">
+													<Mail class="h-5 w-5" />
+
+													{#if data.unreadNotificationsCount > 0}
+														<span
+															class="absolute top-1.5 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white ring-2 ring-white dark:ring-accent"
+														>
+															{data.unreadNotificationsCount > 99
+																? '99+'
+																: data.unreadNotificationsCount}
+														</span>
+													{/if}
+												</a>
 											{/snippet}
 										</NavigationMenu.Link>
 									</Tooltip.Trigger>

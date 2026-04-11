@@ -13,6 +13,7 @@ import {
 	primaryKey,
 	bigint,
 } from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
 
 export const user = pgTable(
 	'user',
@@ -242,6 +243,22 @@ export const notification = pgTable(
 	},
 	(t) => [index('recipient_idx').on(t.recipientId), index('is_read_idx').on(t.isRead)],
 )
+export const notificationRelations = relations(notification, ({ one }) => ({
+	recipient: one(user, {
+		fields: [notification.recipientId],
+		references: [user.id],
+		relationName: 'recipient',
+	}),
+	issuer: one(user, {
+		fields: [notification.issuerId],
+		references: [user.id],
+		relationName: 'issuer',
+	}),
+}))
+
+export const userRelations = relations(user, ({ many }) => ({
+	notifications: many(notification),
+}))
 
 export type Authenticator = typeof authenticator.$inferSelect
 export type User = typeof user.$inferSelect
