@@ -1,50 +1,81 @@
 <script lang="ts">
-	import { page } from '$app/state'
-	import { Pencil, Info, Puzzle } from '@lucide/svelte'
+	import { Pencil, Star } from '@lucide/svelte'
 	import Button from '$lib/components/Button.svelte'
 	import ProjectRunner from '$lib/components/ProjectRunner.svelte'
 	import { enhance } from '$app/forms'
 	import { beforeNavigate } from '$app/navigation'
-	import { acceptablePrefixes } from '$lib/security-manager.svelte.js'
 	import { getPfpPath } from '$lib/storage-helpers'
+	import { CATEGORIES } from '$lib/categories'
 
 	let { data } = $props()
 
 	const project = $derived(data.project)
 	const author = $derived(data.author)
 
-	// Permission check
 	const canEdit = $derived(data.user && (data.user.id === project.userId || data.user.rank >= 2))
+	const isMod = $derived(data.user && data.user.rank >= 2)
 
 	let loadedExtensions = $state([])
-	let titleValue = $state(project.title)
-	let notesValue = $state(project.notes || '')
+
+	// UI State
+	let titleValue = $state(data.project.title)
+	let notesValue = $state(data.project.notes || '')
 
 	let titleFormElement: HTMLFormElement | undefined = $state()
 	let notesFormElement: HTMLFormElement | undefined = $state()
 
-	// Sync values if the project data changes from the server
-	$effect(() => {
-		titleValue = project.title
-		notesValue = project.notes || ''
+	// Timers for manual debouncing (non-reactive)
+	let titleTimer: ReturnType<typeof setTimeout>
+	let notesTimer: ReturnType<typeof setTimeout>
+
+	// Tag Warning logic
+	const tagWarning = $derived.by(() => {
+		if (!notesValue || !canEdit) return null
+		const presentTags = Object.entries(CATEGORIES).filter(([_, tag]) => {
+			const regex = new RegExp(`(?<![a-zA-Z0-9])${tag}(?![a-zA-Z0-9])`, 'gi')
+			return regex.test(notesValue)
+		})
+		const activeTitles = presentTags.map(([title]) => title)
+		if (activeTitles.length <= 1) return null
+		const has = (t: string) => activeTitles.includes(t)
+		if (has('Contest')) return null
+		if ((has('Online') || has('3D')) && has('Music'))
+			return 'Online or 3D projects containing #music are hidden from Home Page categories.'
+		if (has('Story')) {
+			const allowed = ['Story', 'Art', 'Animation', 'Game']
+			const invalid = activeTitles.filter((t) => !allowed.includes(t))
+			if (invalid.length > 0)
+				return `#story cannot be combined with #${invalid[0].toLowerCase()} on the Home Page.`
+		}
+		if (has('Game')) {
+			const allowed = ['Game', '3D', 'Platformer', 'Story']
+			const invalid = activeTitles.filter((t) => !allowed.includes(t))
+			if (invalid.length > 0)
+				return `#game cannot be combined with #${invalid[0].toLowerCase()} on the Home Page.`
+		}
+		return null
 	})
 
-	// Auto-save Title (600ms debounce)
-	$effect(() => {
-		if (titleValue === project.title) return
-		const timer = setTimeout(() => {
-			titleFormElement?.requestSubmit()
-		}, 600)
-		return () => clearTimeout(timer)
-	})
+	// Manual Save Handlers
+	function handleTitleInput() {
+		clearTimeout(titleTimer)
+		titleTimer = setTimeout(() => {
+			if (titleValue !== project.title) titleFormElement?.requestSubmit()
+		}, 1000)
+	}
 
-	// Auto-save Notes (600ms debounce)
+	function handleNotesInput() {
+		clearTimeout(notesTimer)
+		notesTimer = setTimeout(() => {
+			if (notesValue !== (project.notes || '')) notesFormElement?.requestSubmit()
+		}, 1500) // Longer delay to let you finish a thought
+	}
+
+	// Still keep this to update local state if the server changes (e.g. external edit)
+	// but only if the user is NOT the one currently typing (handled by the value check)
 	$effect(() => {
-		if (notesValue === (project.notes || '')) return
-		const timer = setTimeout(() => {
-			notesFormElement?.requestSubmit()
-		}, 600)
-		return () => clearTimeout(timer)
+		if (document.activeElement?.name !== 'title') titleValue = project.title
+		if (document.activeElement?.name !== 'notes') notesValue = project.notes || ''
 	})
 
 	const styles = {
@@ -67,6 +98,15 @@
 </svelte:head>
 
 <div class="m-auto flex max-w-6xl flex-col gap-2 lg:p-8">
+	{#if tagWarning}
+		<div
+			class="mt-2 rounded border border-amber-500/20 bg-amber-500/5 p-2 leading-tight font-medium text-amber-600 dark:text-amber-400"
+		>
+			<span class="font-bold tracking-tight uppercase">Warning!</span>
+			{tagWarning} Your project will not appear on the front page's randomised topic row.
+		</div>
+	{/if}
+
 	<header class="flex flex-col items-center gap-1 border-neutral-200 pb-6 dark:border-neutral-800">
 		<div class="flex w-full gap-4">
 			<a href="/users/{author.username}" title={author.username} class="shrink-0">
@@ -74,19 +114,17 @@
 					src={getPfpPath(author)['64']}
 					class="h-12 w-12 rounded border border-black/10 object-fill dark:border-white/20"
 					alt={author.username}
-				/></a
-			>
+				/>
+			</a>
 
 			<div class="flex w-full flex-col gap-2">
 				{#if canEdit}
 					<form
 						method="POST"
 						action="?/renameProject"
-						use:enhance={() => {
-							return async ({ update }) => {
-								await update({ reset: false })
-							}
-						}}
+						use:enhance={() =>
+							({ update }) =>
+								update({ reset: false })}
 						bind:this={titleFormElement}
 						class="flex flex-1 items-center gap-2"
 					>
@@ -94,33 +132,29 @@
 							name="title"
 							type="text"
 							bind:value={titleValue}
+							oninput={handleTitleInput}
 							placeholder="Project Title"
 							class="{styles.inputBase} w-full rounded p-2 text-2xl font-semibold"
 						/>
 					</form>
 				{:else}
-					<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">
-						{project.title}
-					</h1>
+					<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">{project.title}</h1>
 				{/if}
 				<div class="flex items-center gap-2 text-sm">
-					by
-					<a href="/users/{author.username}" class="font-bold text-accent hover:underline">
-						{author.username}
-					</a>
+					by <a href="/users/{author.username}" class="font-bold text-accent hover:underline"
+						>{author.username}</a
+					>
 				</div>
 			</div>
 
 			<div class="grow"></div>
-
 			<div class="shrink-0 gap-1">
 				<Button
 					href="/projects/{project.id}/editor"
 					variant="secondary"
 					class="flex items-center gap-2"
 				>
-					<Pencil size={18} />
-					Edit in AmpMod
+					<Pencil size={18} /> Edit in AmpMod
 				</Button>
 			</div>
 		</div>
@@ -134,22 +168,20 @@
 		<aside class="flex flex-col gap-4">
 			<section class={styles.sectionCard}>
 				<span class={styles.label}>Notes and Credits</span>
-
 				<div class="max-h-100 overflow-y-auto">
 					{#if canEdit}
 						<form
 							method="POST"
 							action="?/editNotes"
-							use:enhance={() => {
-								return async ({ update }) => {
-									await update({ reset: false })
-								}
-							}}
+							use:enhance={() =>
+								({ update }) =>
+									update({ reset: false })}
 							bind:this={notesFormElement}
 						>
 							<textarea
 								name="notes"
 								bind:value={notesValue}
+								oninput={handleNotesInput}
 								placeholder="Add notes or credits..."
 								class="{styles.inputBase} h-80 resize-none rounded p-2 text-sm"
 							></textarea>
@@ -161,6 +193,38 @@
 					{/if}
 				</div>
 			</section>
+
+			{#if isMod}
+				<section class="{styles.sectionCard} border-dashed border-accent/50 bg-accent/5">
+					<span class={styles.label}>
+						<Star size={14} class="text-accent {data.isFeatured ? 'fill-accent' : ''}" />
+						Moderator Tools
+					</span>
+
+					{#if data.isFeatured}
+						<form method="POST" action="?/unfeatureProject" use:enhance>
+							<Button
+								type="submit"
+								variant="secondary"
+								class="w-full border-red-500/20 text-xs text-red-500 hover:bg-red-500/10"
+							>
+								Remove from Featured
+							</Button>
+						</form>
+					{:else}
+						<form method="POST" action="?/featureProject" use:enhance class="flex flex-col gap-2">
+							<input
+								name="why"
+								type="text"
+								placeholder="Why feature this?"
+								class="{styles.inputBase} rounded p-2 text-xs"
+							/>
+							<Button type="submit" variant="primary" class="w-full text-xs">Feature on Home</Button
+							>
+						</form>
+					{/if}
+				</section>
+			{/if}
 
 			<div class="flex flex-col gap-2 px-1">
 				<p>

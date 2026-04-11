@@ -5,8 +5,11 @@
 	import HeroImg from '$lib/assets/apple-cat-programming.svg'
 	import ExploreProjectsIcon from '$lib/assets/exploreprojects.svg'
 	import Button from '$lib/components/Button.svelte'
+	import ProjectList from '$lib/components/ProjectList.svelte' // Added this import
 	import { m } from '$lib/paraglide/messages'
 	import { getPfpPath } from '$lib/storage-helpers.js'
+	import Row from '$lib/components/Row.svelte'
+
 	let { data } = $props()
 
 	const styles = {
@@ -83,20 +86,11 @@
 						<h1 class="text-2xl font-bold">Welcome to AmpMod!</h1>
 						<div class="grid w-full grid-cols-2 gap-4">
 							<a href="/projects/editor" class={styles.card} data-sveltekit-reload>
-								<img
-									src={CreateCardIcon}
-									class="h-28 object-contain"
-									alt="An illustration of AmpMod's mascot, Apple Cat."
-								/>
+								<img src={CreateCardIcon} class="h-28 object-contain" alt="Mascot" />
 								<span class="font-bold">Make a Project</span>
 							</a>
-
 							<a href="/projects/explore" class={styles.card}>
-								<img
-									src={ExploreProjectsIcon}
-									class="h-28 object-contain"
-									alt="An illustration of 2 rounded squares on top of each other."
-								/>
+								<img src={ExploreProjectsIcon} class="h-28 object-contain" alt="Explore" />
 								<span class="font-bold">Explore</span>
 							</a>
 						</div>
@@ -129,16 +123,10 @@
 					<a href="/auth/register" class={styles.button_normal}><UserRound /> Join</a>
 				</div>
 			</div>
-
 			<div class="flex items-center justify-center">
-				<img
-					src={HeroImg}
-					alt="An illustration of AmpMod's mascot, Apple Cat."
-					class="h-38 w-full object-fill"
-				/>
+				<img src={HeroImg} alt="Mascot" class="h-38 w-full object-fill" />
 			</div>
 		</div>
-
 		<div
 			style="clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);"
 			class="pointer-events-none absolute -bottom-6 left-36 h-6 w-24 -translate-x-1/2 bg-accent"
@@ -155,3 +143,23 @@
 		</div>
 	</div>
 {/if}
+
+<div class="m-auto flex max-w-6xl flex-col gap-8 p-8">
+	<Row title="Featured Projects">
+		<ProjectList projects={data.featuredProjects} />
+	</Row>
+
+	{#if data.followedProjects}
+		<Row title="Projects by AmpModders you're following">
+			<ProjectList projects={data.followedProjects} />
+		</Row>
+	{/if}
+
+	<Row title="Random {data.categorySection.title} Projects">
+		<ProjectList projects={data.categorySection.projects} />
+	</Row>
+
+	<Row title="Latest Projects">
+		<ProjectList projects={data.latestProjects} />
+	</Row>
+</div>
