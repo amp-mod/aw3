@@ -137,7 +137,7 @@
 		class="bg-accent-light/30 p-4 text-accent-secondary dark:bg-accent-tertiary/80 dark:text-white"
 	>
 		<div class="flex justify-center gap-4">
-			<a href="https://ampmod.codeberg.org/manual" class={styles.button_small}>Manual</a>
+			<a href="https://ampmod.codeberg.page/manual" class={styles.button_small}>Manual</a>
 			<a href="https://ampmod.miraheze.org" class={styles.button_small}>AmpMod Wiki</a>
 			<a href="https://codeberg.org/ampmod" class={styles.button_small}>Source Code</a>
 		</div>
