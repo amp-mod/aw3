@@ -1,22 +1,25 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte'
-	import { browser } from '$app/environment'
-	import { Flag, Octagon, Maximize, Minimize, Pause, Play } from '@lucide/svelte'
+	import { onMount } from 'svelte'
+	import { Flag, Octagon, Maximize, Minimize, Pause, Play, ShieldAlert } from '@lucide/svelte'
 	import { SecurityManagerImplementation } from '$lib/security-manager.svelte'
 	import SecurityUI from './SecurityUI.svelte'
 	import type { User } from '$lib/server/db/schema'
 	import ampmodLogo from '$lib/assets/logo.svg'
+	import Button from '$lib/components/Button.svelte'
+	import { fade } from 'svelte/transition'
 
 	let {
 		project,
 		extensions = $bindable([]),
 		isEmbed = false,
 		user,
+		flashingLights = false,
 	} = $props<{
 		project: any
-		extensions: ExtensionMetadata[]
+		extensions: any
 		user: User
 		isEmbed: boolean
+		flashingLights: boolean
 	}>()
 
 	let progress = $state('Loading project...')
@@ -29,6 +32,11 @@
 	let isRunning = $state(false)
 	let isFullscreen = $state(false)
 	let isPaused = $state(false)
+
+	// Safety States
+	let isBlockedBySafety = $state(false)
+	let safeModeActive = $state(false)
+
 	const PauseButtonIcon = $derived(isPaused ? Play : Pause)
 
 	// Only track height; width stays 100% via CSS
@@ -61,8 +69,6 @@
 			const screenRatio = window.innerWidth / window.innerHeight
 			playerHeight = ratio > screenRatio ? window.innerWidth / ratio : window.innerHeight
 		} else {
-			// FIX: Measure the parent's width, but ensure the parent has a constrained max-width
-			// or measure a reference element that doesn't grow based on this playerHeight.
 			const rect = rootElement.getBoundingClientRect()
 			playerHeight = rect.width / ratio
 		}
@@ -71,6 +77,17 @@
 	}
 
 	onMount(async () => {
+		// --- SAFETY LOGIC ---
+		const blockDangerous = localStorage.getItem('BlockDangerous') === 'true'
+		safeModeActive = localStorage.getItem('Epileptic') === 'true'
+
+		if (flashingLights && blockDangerous) {
+			isBlockedBySafety = true
+			isLoading = false
+			return
+		}
+		// --------------------
+
 		syncScaling()
 		window.process = { env: { AMPMOD_VERSION: 'aw3' } }
 
@@ -85,6 +102,9 @@
 
 			const vm = scaffolding.vm
 			window.vm = vm
+
+			// Global flag for SecurityManagerImplementation to check
+			window.safeModeActive = safeModeActive
 
 			scaffolding.storage.addWebStore(
 				[
@@ -112,14 +132,15 @@
 			vm.runtime.on('RUNTIME_PAUSED', () => (isPaused = true))
 			vm.runtime.on('RUNTIME_UNPAUSED', () => (isPaused = false))
 
+			let scalingInterval: any
 			if (!isEmbed) {
-				const scalingInterval = setInterval(syncScaling, 100)
+				scalingInterval = setInterval(syncScaling, 100)
 			}
 			const fsChange = () => (isFullscreen = !!document.fullscreenElement)
 			document.addEventListener('fullscreenchange', fsChange)
 
 			return () => {
-				clearInterval(scalingInterval)
+				if (scalingInterval) clearInterval(scalingInterval)
 				document.removeEventListener('fullscreenchange', fsChange)
 			}
 		} catch (e) {
@@ -199,6 +220,18 @@
 		class="relative w-full overflow-hidden rounded border border-black/10 dark:border-white/10"
 		style={`height: ${playerHeight || 'auto'}px; ${!playerHeight && 'aspect-ratio: 4/3;'}`}
 	>
+		{#if isBlockedBySafety}
+			<div
+				class="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-black p-8 text-center text-white"
+				in:fade
+			>
+				<p class="max-w-md text-zinc-400">
+					This project contains flashing lights. Your safety settings are set to block dangerous
+					content.
+				</p>
+			</div>
+		{/if}
+
 		{#if isLoading}
 			<div
 				class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-1 bg-accent text-white"
@@ -210,12 +243,22 @@
 				</div>
 			</div>
 		{/if}
-		{#if !isStarted && !isLoading}
+
+		{#if !isStarted && !isLoading && !isBlockedBySafety}
 			<button
 				class="absolute inset-0 z-20 flex cursor-pointer items-center justify-center bg-black/40"
 				onclick={startProject}
 				title="Click to start the project"
 			>
+				{#if flashingLights}
+					<p
+						class="absolute top-0 w-full bg-red-900 p-4 text-center font-sans text-xl leading-tight font-bold text-white"
+						aria-live="assertive"
+					>
+						This project contains flashing lights. If you are photosensitive, please avoid playing
+						this project without prior medical advice.
+					</p>
+				{/if}
 				<div
 					class="flex h-20 w-20 items-center justify-center rounded-full border-2 border-white bg-white/80"
 				>
@@ -223,6 +266,11 @@
 				</div>
 			</button>
 		{/if}
-		<div bind:this={container} class="z-10 h-full w-full outline-none"></div>
+
+		<div
+			bind:this={container}
+			class="z-10 h-full w-full outline-none"
+			style:filter={safeModeActive ? 'contrast(0.8) brightness(0.9) saturate(0.8)' : 'none'}
+		></div>
 	</div>
 </div>

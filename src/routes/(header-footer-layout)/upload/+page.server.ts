@@ -24,6 +24,7 @@ export const actions: Actions = {
 		const customThumb = formData.get('thumbnail') as File
 		const title = (formData.get('title') as string) || 'Untitled'
 		const notes = (formData.get('notes') as string) || ''
+		const flashingLights = formData.get('flashingLights') == 'true'
 
 		if (!file || file.size === 0) return fail(400, { message: 'No project file provided' })
 
@@ -132,6 +133,7 @@ export const actions: Actions = {
 					json: projectJson,
 					createdAt: new Date(),
 					updatedAt: new Date(),
+					flashingLights,
 				})
 				.returning()
 

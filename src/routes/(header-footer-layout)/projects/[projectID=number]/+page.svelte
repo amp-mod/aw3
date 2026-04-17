@@ -162,7 +162,12 @@
 
 	<div class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_480px]">
 		<main class="relative flex flex-col gap-6">
-			<ProjectRunner {project} bind:extensions={loadedExtensions} user={data.user} />
+			<ProjectRunner
+				{project}
+				bind:extensions={loadedExtensions}
+				user={data.user}
+				flashingLights={project.flashingLights}
+			/>
 		</main>
 
 		<aside class="flex flex-col gap-4">

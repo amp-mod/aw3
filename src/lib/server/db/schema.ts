@@ -91,6 +91,7 @@ export const project = pgTable(
 		image: text(),
 		hidden: boolean('hidden').default(false),
 		ccVersion: smallint('cc_version').default(4),
+		flashingLights: boolean().default(false).notNull(),
 	},
 	(table) => [index('project_id_idx').on(table.id), index('project_user_id_idx').on(table.userId)],
 )

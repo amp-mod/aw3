@@ -16,6 +16,7 @@
 	let title = $state('')
 	let notesAndCredits = $state('')
 	let projectJson = $state<any>(null)
+	let needsEpilepsyWarning = $state<boolean | null>(false)
 
 	// Thumbnail state
 	let thumbnails = $state<{ name: string; url: string; priority: number; mimeType: string }[]>([])
@@ -173,6 +174,8 @@
 			URL.revokeObjectURL(selectedThumbnailUrl)
 		if (browser) window.removeEventListener('message', handleMessage)
 	})
+
+	let isFormValid = $derived(title.trim().length > 0 && needsEpilepsyWarning !== null)
 </script>
 
 <form
@@ -286,8 +289,8 @@
 			{/if}
 
 			<div class="flex flex-col gap-3">
-				<label class="text-sm font-semibold text-zinc-700 dark:text-zinc-300"
-					>Thumbnail Selection</label
+				<span class="text-sm font-semibold text-zinc-700 dark:text-zinc-300"
+					>Thumbnail Selection</span
 				>
 				<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<div
@@ -368,9 +371,52 @@
 				></textarea>
 			</div>
 
+			<div
+				class="flex flex-col gap-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900/50 dark:bg-yellow-900/20"
+			>
+				<div class="flex flex-col gap-1">
+					<span class="font-bold text-yellow-900 dark:text-yellow-200">
+						Does this project contain flashing lights?
+					</span>
+					<p class="text-sm text-yellow-800 dark:text-yellow-300">
+						A small percentage of individuals may experience epileptic seizures when exposed to
+						certain light patterns. Once set to Yes, you cannot change this back without moderator
+						support. Intentionally inaccurate answers will lead to a ban.
+					</p>
+				</div>
+
+				<div class="flex flex-col gap-6">
+					<label class="flex cursor-pointer items-center gap-2">
+						<input
+							type="radio"
+							name="flashingLights"
+							bind:group={needsEpilepsyWarning}
+							value={true}
+							class="h-4 w-4 border-gray-300 text-accent focus:ring-accent"
+						/>
+						<span class="text-sm font-medium text-yellow-900 dark:text-yellow-200"
+							>This project contains flashing lights</span
+						>
+					</label>
+
+					<label class="flex cursor-pointer items-center gap-2">
+						<input
+							type="radio"
+							name="flashingLights"
+							bind:group={needsEpilepsyWarning}
+							value={false}
+							class="h-4 w-4 border-gray-300 text-accent focus:ring-accent"
+						/>
+						<span class="text-sm font-medium text-yellow-900 dark:text-yellow-200"
+							>This project does not contain flashing lights</span
+						>
+					</label>
+				</div>
+			</div>
+
 			<div class="flex justify-end">
-				<Button type="submit" disabled={loading}>
-					{loading ? 'Uploading...' : 'Upload Project'}
+				<Button type="submit" disabled={loading || !isFormValid}>
+					{loading ? 'Uploading...' : !isFormValid ? 'Complete form to upload' : 'Upload Project'}
 				</Button>
 			</div>
 		</div>
