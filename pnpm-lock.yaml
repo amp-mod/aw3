@@ -32,6 +32,9 @@ importers:
       '@fontsource/geist':
         specifier: ^5.2.8
         version: 5.2.8
+      '@fontsource/pixelify-sans':
+        specifier: ^5.2.7
+        version: 5.2.7
       '@fontsource/source-sans-3':
         specifier: ^5.2.9
         version: 5.2.9
@@ -1084,6 +1087,9 @@ packages:
 
   '@fontsource/geist@5.2.8':
     resolution: {integrity: sha512-pI54klK6vz8fVpAVyV+iODGLEzw73cs1XJqV9PIXgW8MYMmBcwK6lKKaWqJrNHwEx8ppz9cuhussb6arXQ/PVQ==}
+
+  '@fontsource/pixelify-sans@5.2.7':
+    resolution: {integrity: sha512-F/UuV2M9poAj/BJ5/6u95mOy6ptp8/+dpfnxh4TFzKeAB+vdanAjQ8fLJcS0q+WHYgesRRxPwNFr2Pqm18CVGg==}
 
   '@fontsource/source-sans-3@5.2.9':
     resolution: {integrity: sha512-u3ymIq4rfmCCyB9MEw/sFR5lPVJ1yTNXmIMbUz+9kVCFIHvNtfzXOEBuvkg3Tk0zhmioPeJ28ZK5smZ7TurezQ==}
@@ -5388,6 +5394,8 @@ snapshots:
   '@fontsource-variable/source-sans-3@5.2.9': {}
 
   '@fontsource/geist@5.2.8': {}
+
+  '@fontsource/pixelify-sans@5.2.7': {}
 
   '@fontsource/source-sans-3@5.2.9': {}
 

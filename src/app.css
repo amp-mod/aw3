@@ -3,8 +3,10 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/geist';
 @plugin '@tailwindcss/typography';
+@import '@fontsource/pixelify-sans';
 
 @theme {
+	--font-pixelify: 'Pixelify Sans';
 	--font-sans: 'Geist Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
 	/* Primary: Desaturated Forest Green. 4.5:1 against neutral-50 (#fafafa) */
