@@ -3,7 +3,7 @@
 	import { Flag, Octagon, Maximize, Minimize, Pause, Play, ShieldAlert } from '@lucide/svelte'
 	import { SecurityManagerImplementation } from '$lib/security-manager.svelte'
 	import SecurityUI from './SecurityUI.svelte'
-	import type { User } from '$lib/server/db/schema'
+	import { type User } from '$lib/server/db/schema'
 	import ampmodLogo from '$lib/assets/logo.svg'
 	import Button from '$lib/components/Button.svelte'
 	import { fade } from 'svelte/transition'
@@ -194,15 +194,15 @@
 		<div class="flex items-center gap-1">
 			{#if isEmbed}
 				<a
-					class="px-3 opacity-80"
+					class="flex h-9 cursor-pointer items-center gap-2 rounded bg-accent p-2 leading-tight font-bold text-white"
 					href="/projects/{project.id}?utm_source=aw3embed"
 					target="_blank"
 				>
-					<img src={ampmodLogo} class="h-6" alt="AmpMod" />
+					View on <img src={ampmodLogo} class="h-6" alt="AmpMod" />
 				</a>
 			{/if}
 			<button
-				class="cursor-pointer rounded border border-neutral-500/40 p-2 text-zinc-600 dark:text-zinc-400"
+				class="h-9 cursor-pointer rounded border border-neutral-500/40 p-2 text-zinc-600 dark:text-zinc-400"
 				onclick={toggleFullscreen}
 				title="Toggle fullscreen"
 			>
@@ -245,14 +245,24 @@
 				onclick={startProject}
 				title="Click to start the project"
 			>
-				{#if flashingLights}
-					<p
-						class="absolute top-0 m-4 rounded-lg border border-red-900 bg-red-600 p-2 text-center font-sans text-2xl leading-tight font-bold text-white"
-						aria-live="assertive"
-					>
-						This project contains flashing lights which may induce seizures in some people.
-					</p>
-				{/if}
+				<div class="pointer-events-none absolute inset-x-0 top-0 flex flex-col gap-2">
+					{#if isEmbed}
+						<p
+							class="pointer-events-auto bg-accent p-2 text-left font-sans text-2xl leading-tight font-bold text-white"
+							aria-live="assertive"
+						>
+							{project.title}
+						</p>
+					{/if}
+					{#if flashingLights}
+						<p
+							class="pointer-events-auto m-2 rounded-lg border border-red-900 bg-red-600 p-2 text-center font-sans text-2xl leading-tight font-bold text-white"
+							aria-live="assertive"
+						>
+							This project contains flashing lights which may induce seizures in some people.
+						</p>
+					{/if}
+				</div>
 				<div
 					class="flex h-20 w-20 items-center justify-center rounded-full border-2 border-white bg-white/80"
 				>
