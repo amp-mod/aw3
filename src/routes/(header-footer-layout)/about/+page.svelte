@@ -17,6 +17,9 @@
 		TriangleAlert,
 		Palette,
 		Info,
+		Check,
+		XIcon,
+		Minus,
 	} from '@lucide/svelte'
 	import HeroImg from '$lib/assets/apple-cat-programming.svg'
 
@@ -100,11 +103,11 @@
 			title: 'Rounded rectangle',
 			desc: 'Native support for rounded rectangles in the vector editor.',
 		},
-		{
+		/*{
 			icon: Palette,
 			title: 'Advanced Gradients',
 			desc: 'Create complex linear and radial gradients with multiple color stops.',
-		},
+		},*/ // we don't have it yet but we'd love to add it eventually.
 	]
 
 	const communityFeatures = [
@@ -125,18 +128,26 @@
 		},
 	]
 
-	const YES = CircleCheck
-	const NO = CircleX
-	const PARTIAL = TriangleAlert
+	const YES = Check
+	const NO = XIcon
+	const PARTIAL = Minus
 
 	const comparisonFeatures = [
 		{
-			name: 'Core Engine',
-			desc: 'The fundamental block-based logic system.',
-			scratch: { icon: YES },
-			tw: { icon: YES },
-			pmod: { icon: YES },
-			ampmod: { icon: YES },
+			name: 'First-class lists',
+			desc: 'Allows lists to be stored inside variables or other lists.',
+			scratch: { icon: NO },
+			tw: { icon: NO },
+			pmod: { icon: PARTIAL, note: 'Via Arrays extension' },
+			ampmod: { icon: YES, note: 'Built-in' },
+		},
+		{
+			name: 'Case sensitivity',
+			desc: 'Distinguishes between "A" and "a" in string logic.',
+			scratch: { icon: NO },
+			tw: { icon: PARTIAL, note: 'Via extensions' },
+			pmod: { icon: PARTIAL, note: 'Via extensions' },
+			ampmod: { icon: YES, note: 'Via danger zone setting' },
 		},
 		{
 			name: 'Compiler',
@@ -147,23 +158,7 @@
 			ampmod: { icon: YES },
 		},
 		{
-			name: 'First-class Lists',
-			desc: 'Allows lists to be stored inside variables or other lists.',
-			scratch: { icon: NO },
-			tw: { icon: NO },
-			pmod: { icon: PARTIAL, note: 'Via Arrays extension' },
-			ampmod: { icon: YES, note: 'Built-in' },
-		},
-		{
-			name: 'Case Sensitivity',
-			desc: 'Distinguishes between "A" and "a" in string logic.',
-			scratch: { icon: NO },
-			tw: { icon: PARTIAL, note: 'Via extensions' },
-			pmod: { icon: PARTIAL, note: 'Via extensions' },
-			ampmod: { icon: YES, note: 'Via danger zone setting' },
-		},
-		{
-			name: 'Custom Fonts',
+			name: 'Custom fonts',
 			desc: 'Support for external font files in the paint editor.',
 			scratch: { icon: NO },
 			tw: { icon: YES },
@@ -179,10 +174,10 @@
 			ampmod: { icon: YES },
 		},
 		{
-			name: 'Project Sharing',
+			name: 'Project sharing',
 			desc: 'Share your projects with the world.',
 			scratch: { icon: YES },
-			tw: { icon: PARTIAL, note: 'Service is obscure' },
+			tw: { icon: PARTIAL /* share.turbowarp.org */ },
 			pmod: { icon: YES },
 			ampmod: { icon: YES },
 		},
@@ -195,12 +190,28 @@
 			ampmod: { icon: YES },
 		},
 		{
-			name: 'Forum Support',
+			name: 'Forum support',
 			desc: 'Support from the community.',
 			scratch: { icon: YES },
 			tw: { icon: NO },
 			pmod: { icon: PARTIAL, note: 'Poorly moderated' },
 			ampmod: { icon: YES },
+		},
+		{
+			name: 'Wiki support',
+			desc: 'A website documenting the history of the community and how to program.',
+			scratch: { icon: PARTIAL, note: 'Semi-official' },
+			tw: { icon: NO },
+			pmod: { icon: YES },
+			ampmod: { icon: YES },
+		},
+		{
+			name: 'Customer support',
+			desc: 'Contact via email.',
+			scratch: { icon: YES },
+			tw: { icon: NO },
+			pmod: { icon: NO },
+			ampmod: { icon: NO },
 		},
 	]
 </script>
@@ -210,34 +221,31 @@
 </svelte:head>
 
 <div class="m-auto max-w-6xl px-8 py-16 text-neutral-900 dark:text-neutral-100">
-	<header class="mb-32 flex flex-col items-center justify-between gap-12 md:flex-row">
+	<header
+		class="mb-32 flex flex-col items-center justify-between gap-12 rounded-xl bg-accent p-6 text-white md:flex-row"
+	>
 		<div class="max-w-3xl">
-			<h1 class="mb-6 min-h-[140px] text-5xl leading-[1.1] md:min-h-0">
+			<h1 class="mb-6 min-h-[140px] text-5xl leading-tight md:min-h-0">
 				{displayText}<span class="animate-pulse border-r-4"></span><br />
-				<span class="font-pixelify font-bold text-accent dark:text-accent-light">Amplified.</span>
+				<span class="font-pixelify font-bold">Amplified.</span>
 			</h1>
-			<p class="mb-10 text-xl leading-relaxed text-neutral-600 dark:text-neutral-400">
-				AmpMod is a next-generation block programming platform built on TurboWarp technology. It
-				introduces key features designed for serious creators, including data handling improvements,
-				enhanced design tools, and a focus on community privacy.
-			</p>
 			<div class="flex gap-4">
 				<a
 					href="/projects/editor"
-					class="flex items-center gap-2 rounded-full bg-accent px-8 py-4 font-bold text-white transition-all hover:shadow-lg hover:shadow-accent/20 hover:brightness-110"
+					class="flex items-center gap-2 rounded-full bg-white px-6 py-2 font-bold text-accent"
 				>
-					Try the Editor <ArrowRight size={20} />
+					Try now <ArrowRight size={20} />
 				</a>
 				<a
-					href="https://ampmod.codeberg.page/manual"
-					class="flex items-center gap-2 rounded-full bg-neutral-100 px-8 py-4 font-bold transition-all hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+					href="/auth/register"
+					class="flex items-center gap-2 rounded-full border-2 border-white px-6 py-2 font-bold text-white"
 				>
-					Read the Manual
+					Join community
 				</a>
 			</div>
 		</div>
 		<div>
-			<img src={HeroImg} alt="Mascot" class="relative z-10 h-56 w-auto" />
+			<img src={HeroImg} alt="Mascot" class="relative z-10 h-48 w-auto" />
 		</div>
 	</header>
 
@@ -271,7 +279,7 @@
 		<h2 class="{styles.h2} bg-blue-600"><ListTree /> Feature Comparison</h2>
 
 		<div
-			class="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+			class="overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
 		>
 			<div class="overflow-x-auto">
 				<table class="w-full border-collapse text-left">
@@ -290,7 +298,7 @@
 							>
 							<th
 								class="border-b border-neutral-200 p-4 text-center font-bold dark:border-neutral-800"
-								>[flightless bird]</th
+								>[flightless bird] <!-- This is PenguinMod, but due to rules we can't mention the name on the site.--></th
 							>
 							<th
 								class="border-b border-neutral-200 p-4 text-center font-bold text-accent dark:border-neutral-800"
@@ -335,34 +343,20 @@
 
 		<div class="mt-6 flex flex-wrap gap-6 px-2 text-xs text-neutral-500">
 			<span class="flex items-center gap-1"
-				><CircleCheck size={14} class="text-green-500" /> Supported</span
+				><Check size={14} class="text-green-500" /> Supported</span
 			>
 			<span class="flex items-center gap-1"
-				><TriangleAlert size={14} class="text-yellow-500" /> Limited</span
+				><Minus size={14} class="text-yellow-500" /> Limited</span
 			>
 			<span class="flex items-center gap-1"
-				><CircleX size={14} class="text-red-500" /> No Support / requires extensions or complex workarounds</span
+				><XIcon size={14} class="text-red-500" /> No support</span
 			>
 		</div>
 	</section>
 
-	<section class="mb-24">
-		<h2 class="{styles.h2} bg-accent">Ready to Start?</h2>
-		<div
-			class="rounded-xl border bg-neutral-50 p-8 text-center dark:border-neutral-800 dark:bg-neutral-950"
+	<p class="mt-8 text-sm text-neutral-500 italic">
+		Are you an educator? <a href="/auth/register/teacher" class="text-accent hover:underline"
+			>Sign up for an AmpMod education account.</a
 		>
-			<p class="mb-6 text-lg">Experience the future of block-based programming with AmpMod.</p>
-			<a
-				href="/projects/editor"
-				class="inline-flex items-center gap-2 rounded-full bg-accent px-10 py-5 text-xl font-bold text-white transition-all hover:shadow-xl hover:brightness-110"
-			>
-				Create Project <ArrowRight size={24} />
-			</a>
-			<p class="mt-8 text-sm text-neutral-500 italic">
-				Are you an educator? <a href="/auth/register/teacher" class="text-accent hover:underline"
-					>Get a Teacher Account.</a
-				>
-			</p>
-		</div>
-	</section>
+	</p>
 </div>

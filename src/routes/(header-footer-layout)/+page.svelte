@@ -1,6 +1,14 @@
 <script>
 	import { Tabs } from 'bits-ui'
-	import { Clapperboard, Newspaper, Rss, UserRound, MapIcon } from '@lucide/svelte'
+	import {
+		Clapperboard,
+		Newspaper,
+		Rss,
+		UserRound,
+		MapIcon,
+		Sparkle,
+		Sparkles,
+	} from '@lucide/svelte'
 	import CreateCardIcon from '$lib/assets/apple-cat-programming-sm.svg'
 	import HeroImg from '$lib/assets/apple-cat-programming.svg'
 	import ExploreProjectsIcon from '$lib/assets/exploreprojects.svg'
@@ -15,22 +23,20 @@
 	const styles = {
 		button_normal: [
 			'inline-flex',
-			'rounded-lg',
-			'bg-accent',
+			'rounded-xl',
 			'px-5 py-2',
 			'items-center gap-2',
-			'text-2xl font-bold',
-			'bg-white text-accent',
-			'hover:scale-115',
-			'transition-all',
+			'text-2xl font-semibold',
+			'bg-green-100 text-accent',
 		].join(' '),
 		button_small: [
 			'inline-flex',
 			'rounded-full',
 			'bg-accent',
-			'px-4 py-2',
+			'px-4 py-2 min-w-32 sm:min-w-48',
 			'items-center justify-center gap-2',
 			'font-bold text-white',
+			'md:hover:min-w-52 transition-all',
 		].join(' '),
 		tab: [
 			'cursor-pointer rounded-t-lg border border-neutral-300 bg-neutral-100 px-3 h-8 text-neutral-600',
@@ -117,29 +123,32 @@
 	<div class="relative bg-accent p-9 text-white">
 		<div class="m-auto flex max-w-6xl items-center justify-between">
 			<div class="flex grow flex-col justify-center text-left">
-				<h1 class="text-4xl leading-tight font-bold">Block-based programming, amplified</h1>
+				<h1 class="text-4xl leading-tight font-semibold">
+					Block-based programming.<br />Amplified.
+				</h1>
 				<div class="mt-4 flex gap-6">
-					<a href="/projects/editor" class={styles.button_normal}><Clapperboard /> Try it out</a>
-					<a href="/auth/register" class={styles.button_normal}><UserRound /> Join</a>
+					<a href="/projects/editor" class={styles.button_normal}><Clapperboard /> Make a project</a
+					>
+					<a href="/auth/register" class={styles.button_normal}><Sparkles /> Join</a>
 				</div>
 			</div>
-			<div class="flex items-center justify-center">
+			<div class="hidden items-center justify-center lg:flex">
 				<img src={HeroImg} alt="Mascot" class="h-38 w-full object-fill" />
 			</div>
 		</div>
 		<div
 			style="clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);"
-			class="pointer-events-none absolute -bottom-6 left-36 h-6 w-24 -translate-x-1/2 bg-accent"
+			class="pointer-events-none absolute -bottom-6 left-16 h-6 w-24 -translate-x-1/2 bg-accent lg:left-36"
 		></div>
 	</div>
 
 	<div
-		class="bg-accent-light/30 p-4 text-accent-secondary dark:bg-accent-tertiary/80 dark:text-white"
+		class="bg-accent-light/30 p-4 text-accent-secondary not-sm:pt-10 dark:bg-accent-tertiary/80 dark:text-white"
 	>
 		<div class="flex justify-center gap-4">
 			<a href="https://ampmod.codeberg.page/manual" class={styles.button_small}>Manual</a>
-			<a href="https://ampmod.miraheze.org" class={styles.button_small}>AmpMod Wiki</a>
-			<a href="https://codeberg.org/ampmod" class={styles.button_small}>Source Code</a>
+			<a href="/about" class={styles.button_small}>About AmpMod</a>
+			<a href="/projects/explore" class={styles.button_small}>Explore Projects</a>
 		</div>
 	</div>
 {/if}
