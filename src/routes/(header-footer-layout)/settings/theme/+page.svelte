@@ -4,7 +4,7 @@
 
 	type Theme = {
 		accent: 'green' | 'green-old' | 'red' | 'purple' | 'blue' | 'grey' | 'rainbow'
-		gui: 'light' | 'light-classic' | 'dark' | 'amoled'
+		gui: 'light' | 'light-classic' | 'dark' | 'dark-classic' | 'amoled'
 		blocks: 'three' | 'high-contrast' | 'dark'
 	}
 
@@ -32,19 +32,20 @@
 	let blocksName: string | null = null
 
 	const ACCENT_NAMES: Record<Theme['accent'], string> = {
-		green: 'Green',
-		'green-old': 'Green (Classic)',
-		red: 'Red',
-		purple: 'Purple',
-		blue: 'Blue',
-		grey: 'Grey',
+		green: 'Green (AmpMod 0.3)',
+		'green-old': 'Green (Scratch Operators / AmpMod 0.2)',
+		red: 'Red (TurboWarp)',
+		purple: 'Purple (Scratch)',
+		blue: 'Blue (Scratch)',
+		grey: 'Grey (AmpMod)',
 		rainbow: 'Rainbow',
 	}
 
 	const GUI_NAMES: Record<Theme['gui'], string> = {
 		light: 'Light',
-		'light-classic': 'Light (Classic)',
+		'light-classic': 'Colourful',
 		dark: 'Dark',
+		'dark-classic': 'Dark Colourful',
 		amoled: 'AMOLED',
 		// 'high-contrast': 'High Contrast'
 	}
@@ -113,12 +114,11 @@
 
 <h2 class="mb-3 text-3xl font-bold">Themes</h2>
 
+<p class="mb-4">
+	The "Customizable editor colours" addon overrides these options. Refresh editors for the change to
+	take effect.
+</p>
 {#if theme}
-	<p class="mb-4">
-		The "Customizable editor colours" addon overrides these options. Refresh editors for the change
-		to take effect.
-	</p>
-
 	<div class="mb-4">
 		<label for="accent-select" class="mb-1 block font-bold text-gray-700 dark:text-gray-200"
 			>Accent:</label
