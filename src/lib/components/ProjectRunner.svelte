@@ -35,7 +35,6 @@
 
 	// Safety States
 	let isBlockedBySafety = $state(false)
-	let safeModeActive = $state(false)
 
 	const PauseButtonIcon = $derived(isPaused ? Play : Pause)
 
@@ -79,7 +78,6 @@
 	onMount(async () => {
 		// --- SAFETY LOGIC ---
 		const blockDangerous = localStorage.getItem('BlockDangerous') === 'true'
-		safeModeActive = localStorage.getItem('Epileptic') === 'true'
 
 		if (flashingLights && blockDangerous) {
 			isBlockedBySafety = true
@@ -102,9 +100,6 @@
 
 			const vm = scaffolding.vm
 			window.vm = vm
-
-			// Global flag for SecurityManagerImplementation to check
-			window.safeModeActive = safeModeActive
 
 			scaffolding.storage.addWebStore(
 				[
@@ -252,11 +247,10 @@
 			>
 				{#if flashingLights}
 					<p
-						class="absolute top-0 w-full bg-red-900 p-4 text-center font-sans text-xl leading-tight font-bold text-white"
+						class="absolute top-0 m-4 rounded-lg border border-red-900 bg-red-600 p-2 text-center font-sans text-2xl leading-tight font-bold text-white"
 						aria-live="assertive"
 					>
-						This project contains flashing lights. If you are photosensitive, please avoid playing
-						this project without prior medical advice.
+						This project contains flashing lights which may induce seizures in some people.
 					</p>
 				{/if}
 				<div
@@ -267,10 +261,6 @@
 			</button>
 		{/if}
 
-		<div
-			bind:this={container}
-			class="z-10 h-full w-full outline-none"
-			style:filter={safeModeActive ? 'contrast(0.8) brightness(0.9) saturate(0.8)' : 'none'}
-		></div>
+		<div bind:this={container} class="z-10 h-full w-full outline-none"></div>
 	</div>
 </div>
