@@ -7,7 +7,7 @@ or train artificial intelligence or large language models on it. We do not have 
 personal data. Please read on for more information about how your data is handled here.
 
 
-## AmpMod IDE
+## AmpMod IDE and AmpMod 3D
 
 The AmpMod IDE and Website are completely separate (they don't even go to the same backend, which is why it loads
 so fast). You can program in AmpMod without any data being collected from you. However, it will still access the
@@ -45,7 +45,8 @@ it after you register.
 ### For users under 13
 
 AmpMod does not knowingly collect personal information from users under 13. If you are under 13, you should
-enter a parent or guardian's email on signup instead of your own.
+enter a parent or guardian's email on signup instead of your own, or simply don't enter one at all.
+If a user under 13 has provided personal information on AmpMod, please contact AmpMod to remove that information.
 
 If you live in a country where the age required for us to legally collect personal information is over 13,
 "13" in this section should be replaced with that age.

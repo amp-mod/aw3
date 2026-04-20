@@ -2,7 +2,7 @@
 title: AmpMod Terms of Service
 ---
 
-*Last updated: 31 March 2026*
+*Last updated: 20 April 2026*
 
 *   This document applies to https://ampmod.org and all of its subdomains, including https://forums.ampmod.org,
     https://wiki.ampmod.org, https://extensions.ampmod.org, https://commons.ampmod.org, and https://blog.ampmod.org,
@@ -13,16 +13,23 @@ title: AmpMod Terms of Service
 *   AmpMod is not affiliated with the Lifelong Kindergarten Group, Scratch Foundation, TurboWarp, or any of their other
 affiliates.
 
+<!-- [Please ignore this. AmpMod LLC currently isn't a real thing.]
+*   These terms of service are set by and enforced by the AmpMod Computer LLC ("AmpMod LLC"), an organisation consisting of developers, moderators, and
+    others. AmpMod LLC may change the terms of service at any time.
+-->
 *   AmpMod is not a legally registered organisation at this time, so these terms are not enforced legally. We are not lawyers.
     However, we reserve the right to ban you from the site or warn you for violations.
 
-*   Your privacy matters to us. Please see the [Privacy Policy](/privacy) for more information.
+*   Your privacy matters to us. Please see the [Privacy Policy](/privacy) for more information, such as information for younger users.
+
+*   If you see someone violating these terms of service. please use the Report button (or "Flag" on the forums) to notify us to
+    take action.
 
 ## 1. Definitions
 
-1.  "AmpMod" refers to the services at ampmod.org and all subdomains, including wiki.ampmod.org, forums.ampmod.org, and
-    commons.ampmod.org. This does not include the "AmpMod IDE" at <https://ampmod.org/projects/editor>, but does include the
-    project sharing service that it is integrated with.
+1.  "AmpMod" refers to the services at ampmod.org and all subdomains, including wiki.ampmod.org, forums.ampmod.org and
+    commons.ampmod.org. This does not include the "AmpMod IDE" services at <https://ampmod.org/projects/editor> or <https://3d.ampmod.org>, but does include the
+    project sharing service that they are integrated with.
 2.  "Account" refers to an AmpMod account, which is needed to upload projects and add other content to the site.
 3.  "Administrators", "we", or "us" refers to: a) all users with an Account on ampmod.org that has been classified as a
     "Moderator" or "Operator" on their profile; and b) any person who has administrative access to the AmpMod
@@ -42,6 +49,8 @@ affiliates.
 6.  You may manage more than 1 Account, but not to manipulate site statistics or violate Section 2.2.  
 7.  You may create or link an Account with a user account on a service supported by AmpMod. By linking your Account,
     you agree to the terms of any services that you link your Account to.
+8.  By creating an account, AmpMod will automatically link your account to other services when you log in on them, such
+    as the Wiki. By logging into the AmpMod Wiki, agree to be bound by Appendix A when you use it.
 
 ## 3. "User-Generated Content"
 
@@ -86,5 +95,51 @@ affiliates.
 of this section) is provided as is, without any warranty of any kind. We are not responsible for any losses or damages
 caused by any malfunction in AmpMod. YOU MAY ONLY USE AMPMOD AT YOUR OWN RISK.**
 
-*TL;DR: If a bug in AmpMod causes you to lose your account, we won't give you any money. All your responsibility are
-belong to you.*
+*TL;DR: If a bug in AmpMod causes you to lose your account, we won't give you any money.*
+
+## 6. Notification, suspension and termination
+
+1.  If you violate these terms once, you will be notified by us. Multiple violations will lead to suspension or permanent
+    termination of your account. Administrator actions on ampmod.org extends to all other services on AmpMod, but actions on
+    other services does not result in extension to other services.
+
+2.  Upon termination, you will not be allowed to use any services that the ban applies to. However, you may still use the
+    source code of the AmpMod IDE under the GPL v3.
+
+## Appendix A - AmpMod Wiki
+
+1.  These terms apply to the "AmpMod Wiki" at <https://wiki.ampmod.org> and all of its subdomains.
+
+2.  You agree not to use the AmpMod Wiki to:
+    * spread misinformation about AmpMod on purpose in the mainspace;
+    * bypass a ban from AmpMod;
+    * or engage in edit wars or vandalise the wiki's mainspace.
+
+3.  All content on the wiki is bound by Section 3.2 and 3.3.
+
+## Appendix B - AmpMod Commons
+
+1.  These terms apply to the "AmpMod Commons" at <https://commons.ampmod.org>, where sprites, costumes, backdrops and sounds
+    are uploaded.
+
+2.  All content on Commons is bound by Section 3.2 and 3.3. You agree not to upload assets violating such sections.
+
+3.  Commons content is searchable inside AmpMod. You agree that AmpMod moderators will review content before it is added
+    to the index.
+
+4.  By uploading Commons content you agree that AmpMod may remove your content and add it to the IDE.
+
+## Appendix C - AmpMod Community
+
+1.  These terms apply to the collective "AmpMod Community" at <https://forums.ampmod.org> and <https://blog.ampmod.org>,
+    where users can discuss AmpMod, and approved users can post on the blog.
+
+2.  All content on the Forums is bound by Section 3.2 and 3.3. 
+
+3.  You agree not to use the AmpMod Forums to:
+    * post commercial advertisements or spam;
+    * make irrelevant posts, included but not limited to chain mail, repetitive posts and Scratchblocks spam;
+    * or bypass a ban from AmpMod.
+
+4.  You agree not to post updates on the AmpMod Blog without being added as a Newswriter. (Don't worry, that's actually
+    fairly easy to get into.)
