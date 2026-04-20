@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { Pencil, Star } from '@lucide/svelte'
+	import { Pencil, Star, MessageSquareWarning } from '@lucide/svelte'
 	import Button from '$lib/components/Button.svelte'
 	import ProjectRunner from '$lib/components/ProjectRunner.svelte'
 	import { enhance } from '$app/forms'
 	import { beforeNavigate } from '$app/navigation'
 	import { getPfpPath } from '$lib/storage-helpers'
 	import { CATEGORIES } from '$lib/categories'
+	import { reportState } from '$lib/report.svelte'
 
 	let { data } = $props()
 
@@ -24,7 +25,6 @@
 	let titleFormElement: HTMLFormElement | undefined = $state()
 	let notesFormElement: HTMLFormElement | undefined = $state()
 
-	// Timers for manual debouncing (non-reactive)
 	let titleTimer: ReturnType<typeof setTimeout>
 	let notesTimer: ReturnType<typeof setTimeout>
 
@@ -56,7 +56,6 @@
 		return null
 	})
 
-	// Manual Save Handlers
 	function handleTitleInput() {
 		clearTimeout(titleTimer)
 		titleTimer = setTimeout(() => {
@@ -68,11 +67,9 @@
 		clearTimeout(notesTimer)
 		notesTimer = setTimeout(() => {
 			if (notesValue !== (project.notes || '')) notesFormElement?.requestSubmit()
-		}, 1500) // Longer delay to let you finish a thought
+		}, 1500)
 	}
 
-	// Still keep this to update local state if the server changes (e.g. external edit)
-	// but only if the user is NOT the one currently typing (handled by the value check)
 	$effect(() => {
 		if (document.activeElement?.name !== 'title') titleValue = project.title
 		if (document.activeElement?.name !== 'notes') notesValue = project.notes || ''
@@ -232,21 +229,30 @@
 			{/if}
 
 			<div class="flex flex-col gap-2 px-1">
-				<p>
+				<p class="text-sm text-neutral-500">
 					Copyright &copy; {new Date(project.createdAt).toLocaleDateString('en-GB', {
 						day: 'numeric',
 						month: 'short',
 						year: 'numeric',
 					})}
 					{author.username}.
-					<a href="/terms" class="link"> This project is licensed under CC-BY-SA 4.0. </a>
+					<a href="/terms" class="link hover:underline">
+						This project is licensed under CC-BY-SA 4.0.
+					</a>
 				</p>
+
+				<button
+					onclick={() => reportState.open(project.id, 'project', project.title)}
+					class="flex w-fit items-center gap-1.5 text-xs font-medium text-neutral-500 transition-colors hover:text-red-500"
+				>
+					<MessageSquareWarning size={14} /> Report Project
+				</button>
 			</div>
 		</aside>
 	</div>
 
 	{#if loadedExtensions.length > 0}
-		<section class="flex flex-wrap gap-2">
+		<section class="mt-4 flex flex-wrap gap-2">
 			{#each loadedExtensions as ext}
 				<div class="inline-flex items-center gap-2 rounded bg-blue-500/10 p-3">
 					{#if ext.icon}

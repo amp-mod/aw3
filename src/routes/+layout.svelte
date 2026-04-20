@@ -7,6 +7,7 @@
 	import { onMount } from 'svelte'
 	import ToastContainer from '$lib/components/ToastContainer.svelte'
 	import { addToast } from '$lib/toast.svelte'
+	import ReportModal from '$lib/components/ReportModal.svelte'
 
 	let { children, data } = $props()
 
@@ -35,6 +36,7 @@
 {@render children?.()}
 
 <LoginModal bind:open={modals.login} />
+<ReportModal />
 <ToastContainer />
 
 {#if data?.isDangerousMode}
