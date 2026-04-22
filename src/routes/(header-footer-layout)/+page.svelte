@@ -154,7 +154,7 @@
 {/if}
 
 <div class="m-auto flex max-w-6xl flex-col gap-8 p-8">
-	<Row title="Featured Projects">
+	<Row title="Featured Projects" seeMore="/projects/featured">
 		<ProjectList projects={data.featuredProjects} />
 	</Row>
 
