@@ -7,6 +7,7 @@
 	import { getPfpPath } from '$lib/storage-helpers'
 	import { CATEGORIES } from '$lib/categories'
 	import { reportState } from '$lib/report.svelte'
+	import { getProjectJson } from '../loadproject.remote'
 
 	let { data } = $props()
 
@@ -88,6 +89,8 @@
 		cancel()
 		location.href = to?.url.href
 	})
+
+	const projectJson = await getProjectJson(project.id)
 </script>
 
 <svelte:head>
@@ -161,6 +164,7 @@
 		<main class="relative flex flex-col gap-6">
 			<ProjectRunner
 				{project}
+				{projectJson}
 				bind:extensions={loadedExtensions}
 				user={data.user}
 				flashingLights={project.flashingLights}

@@ -10,12 +10,14 @@
 
 	let {
 		project,
+		projectJson = null,
 		extensions = $bindable([]),
 		isEmbed = false,
 		user,
 		flashingLights = false,
 	} = $props<{
 		project: any
+		projectJson: any
 		extensions: any
 		user: User
 		isEmbed: boolean
@@ -119,7 +121,8 @@
 
 			Object.assign(vm.extensionManager.securityManager, SecurityManagerImplementation)
 			vm.on('EXTENSION_ADDED', handleExtensionAdded)
-			await scaffolding.loadProject(project.json)
+			console.log(projectJson)
+			await scaffolding.loadProject(projectJson || project.json)
 
 			isLoading = false
 			vm.runtime.on('PROJECT_RUN_START', () => (isRunning = true))

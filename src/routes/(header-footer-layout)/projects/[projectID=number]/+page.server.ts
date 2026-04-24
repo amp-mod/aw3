@@ -13,6 +13,14 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	const project = await db.query.project.findFirst({
 		where: eq(table.project.id, projectId),
+		columns: {
+			id: true,
+			title: true,
+			notes: true,
+			userId: true,
+			createdAt: true,
+			updatedAt: true,
+		},
 	})
 
 	if (!project) {
