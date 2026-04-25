@@ -13,6 +13,24 @@ import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import { eq } from 'drizzle-orm'
 
+const handleLocalhostConnection: Handle = async ({ event, resolve }) => {
+	const isScratchPath = event.url.pathname === '/scratch_gui_connection'
+	const isLocalhost = event.url.hostname === 'localhost' || event.url.hostname === '127.0.0.1'
+
+	if (isScratchPath && isLocalhost) {
+		// Allow the request to proceed and ensure credentials (cookies) can be included
+		const response = await resolve(event)
+
+		// Set CORS headers to allow localhost to send cookies
+		response.headers.set('Access-Control-Allow-Origin', event.request.headers.get('origin') || '*')
+		response.headers.set('Access-Control-Allow-Credentials', 'true')
+
+		return response
+	}
+
+	return resolve(event)
+}
+
 const handleParaglide: Handle = async ({ event, resolve }) => {
 	const cookieLang = event.cookies.get(langCookieName)
 	const headerLang = extractLocaleFromHeader(event.request)
@@ -147,6 +165,7 @@ const handleSetup: Handle = async ({ event, resolve }) => {
 }
 
 export const handle: Handle = sequence(
+	handleLocalhostConnection,
 	handleSetup,
 	handleAuth,
 	handleBanned,
