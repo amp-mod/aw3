@@ -265,7 +265,7 @@
 	<div class="flex w-full items-center justify-between px-2 py-1">
 		<div class="flex items-center gap-1">
 			<button
-				class="rounded p-2 {isRunning ? 'bg-[#59C059]/20' : 'hover:bg-[#59C059]/5'}"
+				class="cursor-pointer rounded p-2 {isRunning ? 'bg-[#59C059]/20' : 'hover:bg-[#59C059]/5'}"
 				onclick={startProject}
 				title="Go"
 			>
@@ -273,14 +273,14 @@
 			</button>
 			<button
 				onclick={togglePause}
-				class="rounded p-2 hover:bg-[#59C059]/5"
+				class="cursor-pointer rounded p-2 hover:bg-[#59C059]/5"
 				title={isPaused ? 'Play' : 'Pause'}
 			>
 				<PauseButtonIcon size={24} fill="#faa900" color="#d89400" strokeWidth={1.5} />
 			</button>
 			<button
 				onclick={stopAll}
-				class="rounded p-2 hover:bg-[#59C059]/5 {!isRunning ? 'opacity-60' : ''}"
+				class="cursor-pointer rounded p-2 hover:bg-[#59C059]/5 {!isRunning ? 'opacity-60' : ''}"
 				title="Stop"
 			>
 				<Octagon size={24} fill="#ff4c4c" color="#d94040" strokeWidth={1.5} />
