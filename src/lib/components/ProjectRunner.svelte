@@ -1,12 +1,23 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
-	import { Flag, Octagon, Maximize, Minimize, Pause, Play, ShieldAlert } from '@lucide/svelte'
+	import {
+		Flag,
+		Octagon,
+		Maximize,
+		Minimize,
+		Pause,
+		Play,
+		ShieldAlert,
+		ChevronUp,
+		ChevronDown,
+		ChevronLeft,
+		ChevronRight,
+	} from '@lucide/svelte'
 	import { SecurityManagerImplementation } from '$lib/security-manager.svelte'
 	import SecurityUI from './SecurityUI.svelte'
 	import { type User } from '$lib/server/db/schema'
 	import ampmodLogo from '$lib/assets/logo.svg'
-	import Button from '$lib/components/Button.svelte'
-	import { fade } from 'svelte/transition'
+	import { fade, slide } from 'svelte/transition'
 
 	let {
 		project,
@@ -38,9 +49,17 @@
 
 	// Control States
 	let isTouchOriented = $state(false)
+	let isCollapsed = $state(true)
 	let controlMode = $state<'gamepad' | 'keyboard'>('gamepad')
+	let secondaryControlMode = $state<'space' | '4-button'>('space')
 	let playerHeight = $state(0)
 	const PauseButtonIcon = $derived(isPaused ? Play : Pause)
+
+	// Joystick 8-Way Logic
+	let joystickPos = $state({ x: 0, y: 0 })
+	let isDragging = $state(false)
+	let activeKeys = $state(new Set<string>())
+	const joystickRadius = 65
 
 	function setKeyState(key: string, isDown: boolean) {
 		if (!scaffolding?.vm) return
@@ -50,6 +69,84 @@
 	const handleKey = (key: string, isDown: boolean) => (e: PointerEvent) => {
 		if (e.cancelable) e.preventDefault()
 		setKeyState(key, isDown)
+	}
+
+	function updateJoystick(clientX: number, clientY: number, rect: DOMRect) {
+		const centerX = rect.left + rect.width / 2
+		const centerY = rect.top + rect.height / 2
+		let dx = clientX - centerX
+		let dy = clientY - centerY
+
+		const distance = Math.sqrt(dx * dx + dy * dy)
+		if (distance < 15) {
+			joystickPos = { x: 0, y: 0 }
+			clearActiveKeys()
+			return
+		}
+
+		const angle = Math.atan2(dy, dx)
+		const snappedAngle = Math.round(angle / (Math.PI / 4)) * (Math.PI / 4)
+		const visualDist = Math.min(distance, joystickRadius)
+
+		joystickPos = {
+			x: Math.cos(snappedAngle) * visualDist,
+			y: Math.sin(snappedAngle) * visualDist,
+		}
+
+		const newKeys = new Set<string>()
+		const deg = (snappedAngle * 180) / Math.PI
+
+		if (deg > -112.5 && deg < -67.5) {
+			newKeys.add('ArrowUp')
+		} else if (deg >= -67.5 && deg <= -22.5) {
+			newKeys.add('ArrowUp')
+			newKeys.add('ArrowRight')
+		} else if (deg > -22.5 && deg < 22.5) {
+			newKeys.add('ArrowRight')
+		} else if (deg >= 22.5 && deg <= 67.5) {
+			newKeys.add('ArrowDown')
+			newKeys.add('ArrowRight')
+		} else if (deg > 67.5 && deg < 112.5) {
+			newKeys.add('ArrowDown')
+		} else if (deg >= 112.5 && deg <= 157.5) {
+			newKeys.add('ArrowDown')
+			newKeys.add('ArrowLeft')
+		} else if (deg > 157.5 || deg < -157.5) {
+			newKeys.add('ArrowLeft')
+		} else if (deg >= -157.5 && deg <= -112.5) {
+			newKeys.add('ArrowUp')
+			newKeys.add('ArrowLeft')
+		}
+
+		activeKeys.forEach((k) => {
+			if (!newKeys.has(k)) setKeyState(k, false)
+		})
+		newKeys.forEach((k) => {
+			if (!activeKeys.has(k)) setKeyState(k, true)
+		})
+		activeKeys = newKeys
+	}
+
+	function clearActiveKeys() {
+		activeKeys.forEach((k) => setKeyState(k, false))
+		activeKeys.clear()
+	}
+
+	function handleJoystickStart(e: PointerEvent) {
+		;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+		isDragging = true
+		updateJoystick(e.clientX, e.clientY, (e.currentTarget as HTMLElement).getBoundingClientRect())
+	}
+
+	function handleJoystickMove(e: PointerEvent) {
+		if (!isDragging) return
+		updateJoystick(e.clientX, e.clientY, (e.currentTarget as HTMLElement).getBoundingClientRect())
+	}
+
+	function handleJoystickEnd() {
+		isDragging = false
+		joystickPos = { x: 0, y: 0 }
+		clearActiveKeys()
 	}
 
 	function handleExtensionAdded(categoryInfo: any) {
@@ -139,21 +236,17 @@
 		}
 	})
 
-	function startProject() {
+	const startProject = () => {
 		scaffolding?.vm?.start()
 		scaffolding?.vm?.greenFlag()
 		isStarted = true
 	}
-	function stopAll() {
-		scaffolding?.vm?.stopAll()
-	}
-	function togglePause() {
+	const stopAll = () => scaffolding?.vm?.stopAll()
+	const togglePause = () => {
 		if (scaffolding?.vm) scaffolding.vm.runtime.isPaused = !scaffolding.vm.runtime.isPaused
 	}
-	function toggleFullscreen() {
-		if (!rootElement) return
-		!document.fullscreenElement ? rootElement.requestFullscreen() : document.exitFullscreen()
-	}
+	const toggleFullscreen = () =>
+		!document.fullscreenElement ? rootElement?.requestFullscreen() : document.exitFullscreen()
 
 	const kbRows = [
 		['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
@@ -167,12 +260,12 @@
 
 <div
 	bind:this={rootElement}
-	class="player-root fullscreen:bg-black relative flex h-full w-full flex-col overflow-hidden"
+	class="player-root fullscreen:bg-black fullscreen:pt-safe relative flex h-full w-full flex-col overflow-hidden"
 >
 	<div class="flex w-full items-center justify-between px-2 py-1">
 		<div class="flex items-center gap-1">
 			<button
-				class="cursor-pointer rounded p-2 {isRunning ? 'bg-[#59C059]/20' : 'hover:bg-[#59C059]/5'}"
+				class="rounded p-2 {isRunning ? 'bg-[#59C059]/20' : 'hover:bg-[#59C059]/5'}"
 				onclick={startProject}
 				title="Go"
 			>
@@ -180,36 +273,30 @@
 			</button>
 			<button
 				onclick={togglePause}
-				class="cursor-pointer rounded p-2 hover:bg-[#59C059]/5"
+				class="rounded p-2 hover:bg-[#59C059]/5"
 				title={isPaused ? 'Play' : 'Pause'}
 			>
 				<PauseButtonIcon size={24} fill="#faa900" color="#d89400" strokeWidth={1.5} />
 			</button>
 			<button
 				onclick={stopAll}
-				class="cursor-pointer rounded p-2 hover:bg-[#59C059]/5 {!isRunning ? 'opacity-60' : ''}"
+				class="rounded p-2 hover:bg-[#59C059]/5 {!isRunning ? 'opacity-60' : ''}"
 				title="Stop"
 			>
 				<Octagon size={24} fill="#ff4c4c" color="#d94040" strokeWidth={1.5} />
 			</button>
 		</div>
 		<div class="flex items-center gap-1">
-			{#if isEmbed}
-				<a
+			{#if isEmbed}<a
 					class="flex h-9 cursor-pointer items-center gap-2 rounded bg-accent p-2 leading-tight font-bold text-white"
-					href="/projects/{project.id}?utm_source=aw3embed"
-					target="_blank"
-				>
-					View on <img src={ampmodLogo} class="h-6" alt="AmpMod" />
-				</a>
-			{/if}
+					href="/projects/{project.id}"
+					target="_blank">View on <img src={ampmodLogo} class="h-6" alt="AmpMod" /></a
+				>{/if}
 			<button
-				class="h-9 cursor-pointer rounded border border-neutral-500/40 p-2 text-zinc-600 dark:text-zinc-400"
+				class="h-9 cursor-pointer rounded border border-neutral-500/40 p-2 text-zinc-400"
 				onclick={toggleFullscreen}
-				title="Toggle fullscreen"
+				>{#if isFullscreen}<Minimize size={20} />{:else}<Maximize size={20} />{/if}</button
 			>
-				{#if isFullscreen}<Minimize size={20} />{:else}<Maximize size={20} />{/if}
-			</button>
 		</div>
 	</div>
 
@@ -244,17 +331,17 @@
 
 		{#if !isStarted && !isLoading && !isBlockedBySafety}
 			<button
-				class="absolute inset-0 z-20 flex cursor-pointer items-center justify-center bg-black/40"
+				class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/40"
 				onclick={startProject}
 			>
 				<div class="pointer-events-none absolute inset-x-0 top-0 flex flex-col gap-2">
 					{#if isEmbed}<p
-							class="pointer-events-auto bg-accent p-2 text-left font-sans text-2xl leading-tight font-bold text-white"
+							class="pointer-events-auto bg-accent p-2 text-left font-sans text-2xl font-bold text-white"
 						>
 							{project.title}
 						</p>{/if}
 					{#if flashingLights}<p
-							class="pointer-events-auto m-2 rounded-lg border border-red-900 bg-red-600 p-2 text-center font-sans text-2xl leading-tight font-bold text-white"
+							class="pointer-events-auto m-2 rounded-lg border border-red-900 bg-red-600 p-2 text-center font-sans text-2xl font-bold text-white"
 						>
 							This project contains flashing lights.
 						</p>{/if}
@@ -271,16 +358,30 @@
 
 	{#if isTouchOriented && isStarted}
 		<div
-			class="flex w-full touch-none flex-col gap-4 border-t border-black/10 bg-white/5 p-4 select-none dark:border-white/10"
+			class="pb-safe flex w-full touch-none flex-col gap-4 p-4 select-none {isFullscreen
+				? 'fixed right-0 bottom-0 left-0 z-[9999] border-t border-white/10 bg-black/95 shadow-2xl'
+				: 'relative border-t border-black/10 bg-white/5 dark:border-white/10'}"
 			in:fade
 		>
-			<div class="flex items-center justify-between">
-				<button
-					onclick={() => (controlMode = controlMode === 'gamepad' ? 'keyboard' : 'gamepad')}
-					class="rounded bg-neutral-500/20 px-3 py-1 text-xs font-bold tracking-wider text-zinc-500 uppercase"
-				>
-					{controlMode} mode
-				</button>
+			<div class="mx-auto flex w-full max-w-screen-xl justify-between">
+				<div class="flex gap-2">
+					<button
+						onclick={() => (controlMode = controlMode === 'gamepad' ? 'keyboard' : 'gamepad')}
+						class="rounded bg-neutral-500/20 px-3 py-1 text-xs font-bold uppercase"
+						>{controlMode}</button
+					>
+					{#if controlMode === 'gamepad'}<button
+							onclick={() =>
+								(secondaryControlMode = secondaryControlMode === 'space' ? '4-button' : 'space')}
+							class="rounded bg-neutral-500/20 px-3 py-1 text-xs font-bold text-accent uppercase"
+							>{secondaryControlMode}</button
+						>{/if}
+					{#if !isFullscreen}<button
+							onclick={() => (isCollapsed = !isCollapsed)}
+							class="rounded bg-accent/20 px-3 py-1 text-xs font-bold text-accent uppercase"
+							>{isCollapsed ? 'Show' : 'Hide'}</button
+						>{/if}
+				</div>
 				<div class="flex gap-2">
 					<button
 						class="rounded bg-red-700 px-4 py-1.5 text-sm font-bold text-white active:scale-95"
@@ -295,108 +396,120 @@
 				</div>
 			</div>
 
-			<div class="flex h-44 items-center justify-center">
-				{#if controlMode === 'gamepad'}
-					<div class="grid w-full grid-cols-2 items-center">
-						<div class="relative mx-auto grid h-36 w-36 grid-cols-3 grid-rows-3 gap-1">
-							<div class="col-start-2">
-								<button
-									class="h-11 w-11 rounded-t-lg bg-neutral-500/20 active:bg-accent"
-									onpointerdown={handleKey('ArrowUp', true)}
-									onpointerup={handleKey('ArrowUp', false)}>▲</button
-								>
-							</div>
-							<div class="col-start-1 row-start-2">
-								<button
-									class="h-11 w-11 rounded-l-lg bg-neutral-500/20 active:bg-accent"
-									onpointerdown={handleKey('ArrowLeft', true)}
-									onpointerup={handleKey('ArrowLeft', false)}>◀</button
-								>
-							</div>
-							<div class="col-start-2 row-start-2 flex items-center justify-center">
-								<div class="h-4 w-4 rounded-full bg-neutral-500/20"></div>
-							</div>
-							<div class="col-start-3 row-start-2">
-								<button
-									class="h-11 w-11 rounded-r-lg bg-neutral-500/20 active:bg-accent"
-									onpointerdown={handleKey('ArrowRight', true)}
-									onpointerup={handleKey('ArrowRight', false)}>▶</button
-								>
-							</div>
-							<div class="col-start-2 row-start-3">
-								<button
-									class="h-11 w-11 rounded-b-lg bg-neutral-500/20 active:bg-accent"
-									onpointerdown={handleKey('ArrowDown', true)}
-									onpointerup={handleKey('ArrowDown', false)}>▼</button
-								>
-							</div>
-						</div>
-
-						<div class="flex justify-center gap-4">
-							<button
-								class="h-24 w-24 rounded-full bg-accent text-xl font-bold text-white shadow-lg active:scale-90"
-								onpointerdown={handleKey(' ', true)}
-								onpointerup={handleKey(' ', false)}>Space</button
-							>
-							<div class="flex flex-col gap-2">
-								<button
-									class="h-11 w-11 rounded-full bg-red-900 text-lg font-bold text-white active:scale-90"
-									onpointerdown={handleKey('x', true)}
-									onpointerup={handleKey('x', false)}>X</button
-								>
-								<button
-									class="h-11 w-11 rounded-full bg-blue-900 text-lg font-bold text-white active:scale-90"
-									onpointerdown={handleKey('z', true)}
-									onpointerup={handleKey('z', false)}>Z</button
-								>
-							</div>
-						</div>
-					</div>
-				{:else}
-					<div class="flex w-full flex-col items-center gap-1.5">
-						{#each kbRows as row}
-							<div class="flex gap-1">
-								{#each row as key}
-									<button
-										class="flex h-9 w-8 items-center justify-center rounded bg-neutral-500/10 text-xs font-bold text-zinc-500 uppercase active:bg-neutral-500/30"
-										onpointerdown={handleKey(key, true)}
-										onpointerup={handleKey(key, false)}>{key}</button
+			{#if !isCollapsed || isFullscreen}
+				<div class="flex min-h-[250px] items-center justify-center" transition:slide>
+					<div class="w-full max-w-screen-xl">
+						{#if controlMode === 'gamepad'}
+							<div class="grid grid-cols-2 items-center">
+								<div class="relative mx-auto flex items-center justify-center">
+									<div
+										class="relative h-44 w-44 touch-none rounded-full border border-white/5 bg-neutral-500/10 shadow-inner"
+										onpointerdown={handleJoystickStart}
+										onpointermove={handleJoystickMove}
+										onpointerup={handleJoystickEnd}
+										onpointerleave={handleJoystickEnd}
 									>
+										<div class="pointer-events-none absolute inset-0 opacity-10">
+											<div
+												class="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 bg-white"
+											></div>
+											<div class="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-white"></div>
+											<div class="absolute inset-0 flex rotate-45 items-center justify-center">
+												<div class="h-full w-0.5 bg-white"></div>
+												<div class="absolute h-0.5 w-full bg-white"></div>
+											</div>
+										</div>
+										<div
+											class="pointer-events-none absolute h-20 w-20 rounded-full border-4 border-neutral-400 bg-neutral-300 shadow-xl"
+											style="left: 50%; top: 50%; margin-left: -40px; margin-top: -40px; transform: translate3d({joystickPos.x}px, {joystickPos.y}px, 0); transition: {isDragging
+												? 'transform 0.08s ease-out'
+												: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'}"
+										>
+											<div
+												class="h-full w-full rounded-full bg-gradient-to-br from-white/60 to-black/30"
+											></div>
+										</div>
+									</div>
+								</div>
+								<div class="flex items-center justify-center">
+									{#if secondaryControlMode === 'space'}
+										<button
+											class="h-36 w-36 rounded-full border-4 border-white/10 bg-accent text-2xl font-bold text-white shadow-xl active:scale-90"
+											onpointerdown={handleKey(' ', true)}
+											onpointerup={handleKey(' ', false)}>SPACE</button
+										>
+									{:else}
+										<div class="relative h-48 w-48">
+											<button
+												class="absolute top-0 left-1/2 h-16 w-16 -translate-x-1/2 rounded-full border-4 bg-yellow-500 text-xl font-bold text-black active:scale-90"
+												onpointerdown={handleKey('s', true)}
+												onpointerup={handleKey('s', false)}>S</button
+											>
+											<button
+												class="absolute top-1/2 left-0 h-16 w-16 -translate-y-1/2 rounded-full border-4 bg-blue-600 text-xl font-bold text-white active:scale-90"
+												onpointerdown={handleKey('a', true)}
+												onpointerup={handleKey('a', false)}>A</button
+											>
+											<button
+												class="absolute top-1/2 right-0 h-16 w-16 -translate-y-1/2 rounded-full border-4 bg-red-600 text-xl font-bold text-white active:scale-90"
+												onpointerdown={handleKey('x', true)}
+												onpointerup={handleKey('x', false)}>X</button
+											>
+											<button
+												class="absolute bottom-0 left-1/2 h-16 w-16 -translate-x-1/2 rounded-full border-4 bg-green-600 text-xl font-bold text-white active:scale-90"
+												onpointerdown={handleKey('z', true)}
+												onpointerup={handleKey('z', false)}>Z</button
+											>
+										</div>
+									{/if}
+								</div>
+							</div>
+						{:else}
+							<div class="flex flex-col items-center gap-1.5 overflow-x-auto pb-2">
+								{#each kbRows as row}
+									<div class="flex gap-1">
+										{#each row as k}<button
+												class="h-9 w-8 rounded bg-white/10 text-[10px] font-bold uppercase active:bg-accent"
+												onpointerdown={handleKey(k, true)}
+												onpointerup={handleKey(k, false)}>{k}</button
+											>{/each}
+									</div>
 								{/each}
+								<div class="mt-2 flex items-end gap-8">
+									<button
+										class="h-10 w-36 rounded bg-accent font-bold active:scale-95"
+										onpointerdown={handleKey(' ', true)}
+										onpointerup={handleKey(' ', false)}>Space</button
+									>
+									<div class="grid grid-cols-3 gap-0.5">
+										<button
+											class="col-start-2 h-8 w-9 rounded-t bg-white/10"
+											onpointerdown={handleKey('ArrowUp', true)}
+											onpointerup={handleKey('ArrowUp', false)}><ChevronUp /></button
+										>
+										<div></div>
+										<button
+											class="h-8 w-9 rounded-l bg-white/10"
+											onpointerdown={handleKey('ArrowLeft', true)}
+											onpointerup={handleKey('ArrowLeft', false)}><ChevronLeft /></button
+										>
+										<button
+											class="h-8 w-9 bg-white/10"
+											onpointerdown={handleKey('ArrowDown', true)}
+											onpointerup={handleKey('ArrowDown', false)}><ChevronDown /></button
+										>
+										<button
+											class="h-8 w-9 rounded-r bg-white/10"
+											onpointerdown={handleKey('ArrowRight', true)}
+											onpointerup={handleKey('ArrowRight', false)}><ChevronRight /></button
+										>
+									</div>
+								</div>
 							</div>
-						{/each}
-						<div class="mt-2 flex items-end gap-6">
-							<button
-								class="h-10 w-36 rounded bg-accent font-bold text-white shadow-md active:scale-95"
-								onpointerdown={handleKey(' ', true)}
-								onpointerup={handleKey(' ', false)}>Space</button
-							>
-							<div class="grid grid-cols-3 gap-0.5">
-								<button
-									class="col-start-2 h-8 w-9 rounded-t bg-neutral-500/10 text-xs text-zinc-500 active:bg-accent active:text-white"
-									onpointerdown={handleKey('ArrowUp', true)}
-									onpointerup={handleKey('ArrowUp', false)}>▲</button
-								>
-								<button
-									class="h-8 w-9 rounded-l bg-neutral-500/10 text-xs text-zinc-500 active:bg-accent active:text-white"
-									onpointerdown={handleKey('ArrowLeft', true)}
-									onpointerup={handleKey('ArrowLeft', false)}>◀</button
-								>
-								<button
-									class="h-8 w-9 bg-neutral-500/10 text-xs text-zinc-500 active:bg-accent active:text-white"
-									onpointerdown={handleKey('ArrowDown', true)}
-									onpointerup={handleKey('ArrowDown', false)}>▼</button
-								>
-								<button
-									class="h-8 w-9 rounded-r bg-neutral-500/10 text-xs text-zinc-500 active:bg-accent active:text-white"
-									onpointerdown={handleKey('ArrowRight', true)}
-									onpointerup={handleKey('ArrowRight', false)}>▶</button
-								>
-							</div>
-						</div>
+						{/if}
 					</div>
-				{/if}
-			</div>
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>
