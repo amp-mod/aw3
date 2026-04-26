@@ -8,8 +8,11 @@
 	import { Image as ImageIcon, Upload } from '@lucide/svelte'
 	import { addToast } from '$lib/toast.svelte'
 
+	let { data } = $props()
+
 	let loading = $state(false)
 	let isMessageImport = $state(false)
+	let isScratchImport = $state(false)
 	let error = $state('')
 	let hasFile = $state(false)
 
@@ -18,7 +21,6 @@
 	let projectJson = $state<any>(null)
 	let needsEpilepsyWarning = $state<boolean | null>(false)
 
-	// Thumbnail state
 	let thumbnails = $state<{ name: string; url: string; priority: number; mimeType: string }[]>([])
 	let selectedThumbnailUrl = $state('')
 	let thumbnailType = $state<'project' | 'custom'>('project')
@@ -49,133 +51,175 @@
 	async function selectProjectThumbnail(thumb: { url: string; name: string; mimeType: string }) {
 		selectedThumbnailUrl = thumb.url
 		thumbnailType = 'project'
-
 		try {
 			const response = await fetch(thumb.url)
 			const blob = await response.blob()
 			const file = new File([blob], 'thumbnail.webp', { type: thumb.mimeType })
-
 			const dataTransfer = new DataTransfer()
 			dataTransfer.items.add(file)
-			thumbInput.files = dataTransfer.files
+			if (thumbInput) thumbInput.files = dataTransfer.files
 		} catch (e) {
-			console.error('Failed to sync thumbnail to input:', e)
+			console.error('Failed to sync thumbnail:', e)
 		}
 	}
 
 	async function extractProjectData(file: File | Blob) {
 		try {
-			const zip = new JSZip()
-			const contents = await zip.loadAsync(file)
-			const jsonFile = contents.file('project.json')
+			const buffer = await file.arrayBuffer()
+			const uint8 = new Uint8Array(buffer)
+			const isZip = uint8[0] === 0x50 && uint8[1] === 0x4b
 
-			if (!jsonFile) throw new Error('Not a Scratch project')
+			let zip = new JSZip()
+			let jsonText = ''
 
-			const jsonText = await jsonFile.async('string')
+			if (isZip) {
+				const contents = await zip.loadAsync(buffer)
+				const jsonFile = contents.file('project.json')
+				if (!jsonFile) throw new Error('Not a Scratch project (missing project.json)')
+				jsonText = await jsonFile.async('string')
+			} else {
+				jsonText = new TextDecoder().decode(buffer)
+			}
+
 			projectJson = JSON.parse(jsonText)
-
 			const foundThumbnails: typeof thumbnails = []
+			const newZip = new JSZip()
+			newZip.file('project.json', jsonText)
 
 			for (const target of projectJson.targets || []) {
-				for (const costume of target.costumes || []) {
-					const ext = costume.dataFormat || 'png'
-					const fileName = costume.md5ext || `${costume.assetId}.${ext}`
-					const assetFile = contents.file(fileName)
+				const assets = [...(target.costumes || []), ...(target.sounds || [])]
+				for (const asset of assets) {
+					const ext = asset.dataFormat || (asset.md5ext ? asset.md5ext.split('.').pop() : 'png')
+					const fileName = asset.md5ext || `${asset.assetId}.${ext}`
 
-					if (assetFile) {
-						const mimeType = getMimeType(ext)
-						const blob = await assetFile.async('blob')
-						const url = URL.createObjectURL(new Blob([blob], { type: mimeType }))
+					let assetData: ArrayBuffer
 
-						const { width, height } = await getImageDimensions(url)
-						if (width < 200 && height < 200) {
-							URL.revokeObjectURL(url)
-							continue
+					if (isZip) {
+						const contents = await zip.loadAsync(buffer)
+						const existingFile = contents.file(fileName)
+						if (existingFile) {
+							assetData = await existingFile.async('arraybuffer')
+						} else {
+							const resp = await fetch(
+								`https://assets.scratch.mit.edu/internalapi/asset/${fileName}/get/`,
+							)
+							assetData = resp.ok ? await resp.arrayBuffer() : new ArrayBuffer(0)
 						}
+					} else {
+						const resp = await fetch(
+							`https://assets.scratch.mit.edu/internalapi/asset/${fileName}/get/`,
+						)
+						assetData = resp.ok ? await resp.arrayBuffer() : new ArrayBuffer(0)
+					}
 
-						let priority = 0
-						const lowerName = costume.name.toLowerCase()
-						if (lowerName === 'thumbnail') priority = 100
-						else if (lowerName.includes('thumbnail')) priority = 50
-						if (costume.rotationCenterX >= 240 && costume.rotationCenterY >= 180) priority += 25
-						if (ext === 'svg') priority += 10
+					if (assetData.byteLength > 0) {
+						newZip.file(fileName, assetData)
 
-						foundThumbnails.push({
-							name: costume.name,
-							url,
-							priority,
-							mimeType,
-						})
+						if (target.costumes?.includes(asset)) {
+							const mimeType = getMimeType(ext)
+							const blob = new Blob([assetData], { type: mimeType })
+							const url = URL.createObjectURL(blob)
+							const { width, height } = await getImageDimensions(url)
+
+							if (width >= 200 || height >= 200) {
+								let priority = asset.name.toLowerCase().includes('thumbnail') ? 100 : 0
+								foundThumbnails.push({ name: asset.name, url, priority, mimeType })
+							} else {
+								URL.revokeObjectURL(url)
+							}
+						}
 					}
 				}
 			}
 
-			thumbnails = foundThumbnails.sort((a, b) => b.priority - a.priority)
+			const completeBlob = await newZip.generateAsync({ type: 'blob' })
+			const dataTransfer = new DataTransfer()
+			dataTransfer.items.add(new File([completeBlob], 'project.sb3', { type: 'application/x-zip' }))
+			if (fileInput) fileInput.files = dataTransfer.files
 
-			if (thumbnails.length > 0) {
+			const uniqueThumbs = [...thumbnails]
+			foundThumbnails.forEach((nt) => {
+				if (!uniqueThumbs.find((ut) => ut.url === nt.url)) uniqueThumbs.push(nt)
+			})
+			thumbnails = uniqueThumbs.sort((a, b) => b.priority - a.priority)
+
+			if (!selectedThumbnailUrl && thumbnails.length > 0) {
 				await selectProjectThumbnail(thumbnails[0])
 			}
-		} catch (err) {
-			console.error('Failed to unzip project:', err)
-			error = 'Could not parse project file.'
+		} catch (err: any) {
+			error = 'Failed to process project: ' + err.message
+			console.error(err)
 		}
 	}
 
 	async function handleFileSelection(file: File | Blob) {
 		error = ''
 		hasFile = true
-		title = file instanceof File ? file.name.replace(/\.[^/.]+$/, '') : 'Imported Project'
-
-		const dataTransfer = new DataTransfer()
-		const fileObj =
-			file instanceof File ? file : new File([file], 'project.apz', { type: 'application/x-zip' })
-		dataTransfer.items.add(fileObj)
-		fileInput.files = dataTransfer.files
-
-		await extractProjectData(fileObj)
+		await extractProjectData(file)
+		if (file instanceof File && !title) title = file.name.replace(/\.[^/.]+$/, '')
 	}
 
-	function onFileChange(e: Event) {
-		const file = (e.target as HTMLInputElement).files?.[0]
-		if (file) handleFileSelection(file)
-	}
-
-	function handleCustomThumb(e: Event) {
-		const file = (e.target as HTMLInputElement).files?.[0]
-		if (file) {
-			if (thumbnailType === 'custom' && selectedThumbnailUrl)
-				URL.revokeObjectURL(selectedThumbnailUrl)
-			selectedThumbnailUrl = URL.createObjectURL(file)
-			thumbnailType = 'custom'
-		}
-	}
-
-	onMount(() => {
+	onMount(async () => {
 		const params = new URLSearchParams(window.location.search)
-		if (params.get('import_from')) {
+		const scratchId = params.get('scratch_id')
+		if (scratchId) {
 			loading = true
-			isMessageImport = true
+			isScratchImport = true
+			try {
+				const metaResp = await fetch(`https://trampoline.turbowarp.org/api/projects/${scratchId}`)
+				if (!metaResp.ok) throw new Error('Project not shared or not found.')
+				const metadata = await metaResp.json()
+
+				if (metadata.author?.username?.toLowerCase() !== data.linkedUsername?.toLowerCase()) {
+					throw new Error(`Ownership mismatch. Verified as ${data.linkedUsername}.`)
+				}
+
+				title = metadata.title || ''
+
+				// Concatenate Instructions and Notes/Credits
+				const instructions = metadata.instructions || ''
+				const credits = metadata.description || '' // Scratch API refers to Notes & Credits as "description"
+				notesAndCredits = [instructions, credits].filter(Boolean).join('\n\n')
+
+				if (metadata.image) {
+					const scratchThumb = {
+						name: 'Scratch Thumbnail',
+						url: metadata.image,
+						priority: 200,
+						mimeType: 'image/png',
+					}
+					thumbnails = [scratchThumb]
+					await selectProjectThumbnail(scratchThumb)
+				}
+
+				const dataResp = await fetch(
+					`https://projects.scratch.mit.edu/${scratchId}?token=${metadata.project_token}`,
+				)
+				const buffer = await dataResp.arrayBuffer()
+				await handleFileSelection(new Blob([buffer]))
+			} catch (err: any) {
+				error = err.message
+				addToast({ type: 'failure', text: error })
+			} finally {
+				loading = false
+			}
 		}
 
 		handleMessage = async (event: MessageEvent) => {
 			if (event.data?.type === 'aw3/upload' && event.data.payload instanceof Uint8Array) {
-				const blob = new Blob([event.data.payload], { type: 'application/x-zip' })
-				await handleFileSelection(blob)
-				loading = false
-				isMessageImport = false
+				await handleFileSelection(new Blob([event.data.payload]))
 			}
 		}
 		window.addEventListener('message', handleMessage)
 	})
 
 	onDestroy(() => {
-		thumbnails.forEach((t) => URL.revokeObjectURL(t.url))
-		if (thumbnailType === 'custom' && selectedThumbnailUrl)
-			URL.revokeObjectURL(selectedThumbnailUrl)
-		if (browser) window.removeEventListener('message', handleMessage)
+		thumbnails.forEach((t) => {
+			if (t.url.startsWith('blob:')) URL.revokeObjectURL(t.url)
+		})
 	})
 
-	let isFormValid = $derived(title.trim().length > 0 && needsEpilepsyWarning !== null)
+	let isFormValid = $derived(title.trim().length > 0 && needsEpilepsyWarning !== null && hasFile)
 </script>
 
 <form
@@ -183,118 +227,82 @@
 	enctype="multipart/form-data"
 	use:enhance={() => {
 		loading = true
-		error = ''
 		return async ({ update, result }) => {
 			loading = false
 			await update()
-			console.log(result)
-			if (!result.success) {
-				addToast({ type: 'failure', text: result.data.message })
-			}
+			if (result.type === 'failure')
+				addToast({ type: 'failure', text: result.data?.message ?? 'Upload failed' })
 		}
 	}}
 	class="m-auto my-16 flex max-w-3xl flex-col gap-6 px-4"
 >
-	<div
-		class="flex flex-col gap-4 rounded border-l-4 border-l-accent bg-neutral-100 p-4 dark:bg-neutral-800"
-	>
-		<h2 class="text-2xl font-bold">Upload Project</h2>
+	<input bind:this={fileInput} name="projectFile" type="file" class="hidden" required />
+	<input bind:this={thumbInput} name="thumbnail" type="file" class="hidden" />
 
-		{#if error}
-			<div class="rounded bg-red-100 p-3 text-sm text-red-800 dark:bg-red-900 dark:text-red-200">
-				{error}
+	{#if !isScratchImport}
+		<div
+			class="flex flex-col gap-4 rounded border-l-4 border-l-accent bg-neutral-100 p-4 dark:bg-neutral-800"
+		>
+			<h2 class="text-2xl font-bold">Upload Project</h2>
+			{#if error}<div class="text-sm font-bold text-red-500">{error}</div>{/if}
+			<div class="flex flex-col gap-2">
+				<p>On this page you can upload a project to AmpMod.</p>
+				<p>
+					<b
+						>The AmpMod Website does not support programming languages other than Scratch 3.0,
+						TurboWarp or AmpMod.</b
+					>
+				</p>
+				<p>
+					By uploading you agree to the <a href="/terms" class="link text-accent underline"
+						>terms of service</a
+					>.
+				</p>
+				<p>
+					Using the online AmpMod editor? Consider using the "Upload" button there to
+					auto-screenshot a thumbnail.
+				</p>
 			</div>
-		{/if}
-
-		<div class="flex flex-col gap-2">
-			<p>On this page you can upload a project to AmpMod.</p>
-			<p>
-				<b class="block">
-					The AmpMod Website does not support programming languages other than Scratch 3.0,
-					TurboWarp or AmpMod.
-				</b>
-			</p>
-			<p>
-				By uploading you agree to the <a href="/terms" class="link text-accent underline"
-					>terms of service</a
-				> for AmpMod.
-			</p>
-			<p>
-				Using the online AmpMod editor? Consider simply using the "Upload" button. It will
-				screenshot your project for use as a thumbnail.
-			</p>
-		</div>
-
-		{#if loading && isMessageImport}
-			<div
-				class="rounded bg-yellow-100 p-3 text-sm text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-			>
-				<p><b>Loading...</b></p>
-				<p>Please do not close the AmpMod editor.</p>
-			</div>
-		{:else}
 			<div class="relative flex items-center gap-3">
 				<input
-					bind:this={fileInput}
-					name="projectFile"
-					onchange={onFileChange}
 					type="file"
 					accept=".apz,.sb3"
-					required
+					onchange={(e) => handleFileSelection(e.target.files[0])}
 					class="absolute inset-0 z-10 cursor-pointer opacity-0"
 				/>
 				<div
-					class="flex w-full items-center gap-3 overflow-hidden rounded-lg border border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"
+					class="flex w-full items-center gap-3 overflow-hidden rounded-lg border bg-white dark:bg-neutral-900"
 				>
-					<div class="bg-accent px-4 py-2 text-sm font-bold text-white">Browse...</div>
-					<span class="truncate pr-4 text-sm text-neutral-500 dark:text-neutral-400">
-						{fileInput?.files?.[0]?.name ?? 'No file selected'}
-					</span>
+					<div class="bg-accent px-4 py-2 font-bold text-white">Browse...</div>
+					<span class="truncate p-2 text-sm text-neutral-500"
+						>{fileInput?.files?.[0]?.name ?? 'No file selected'}</span
+					>
 				</div>
 			</div>
-		{/if}
-	</div>
+		</div>
+	{/if}
 
 	{#if hasFile}
 		<div
 			class="flex flex-col gap-6 rounded border-l-4 border-l-blue-500 bg-neutral-100 p-4 dark:bg-neutral-800"
 			transition:fade
 		>
-			<h3 class="text-xl font-bold text-zinc-800 dark:text-zinc-200">Project Details</h3>
+			<h3 class="text-xl font-bold">Project Details</h3>
 
 			{#if projectJson?.meta?.platform && projectJson.meta.platform?.name !== 'TurboWarp' && projectJson.meta.platform?.name !== 'AmpMod'}
 				<div class="rounded bg-red-500 p-3 text-sm font-bold text-white">
 					<p>
-						This project was created for
-						{#if projectJson.meta.platform.url}
-							<a
-								href={projectJson.meta.platform.url}
-								rel="noreferrer noopener"
-								target="_blank"
-								class="underline"
-							>
-								{projectJson.meta.platform.name || '(unknown)'}
-							</a>
-						{:else}
-							{projectJson.meta.platform.name || '(unknown)'}
-						{/if}.
-					</p>
-					<p class="mt-2">
-						Incompatible projects are against the Terms of Service. Please test this project in
-						AmpMod and ensure it functions exactly as it does in {projectJson.meta.platform?.name ||
-							'the origin platform'}
-						before uploading.
+						This project was created for {projectJson.meta.platform.name}. Incompatible projects are
+						against the TOS. Ensure it functions correctly in AmpMod before uploading.
 					</p>
 				</div>
 			{/if}
 
 			<div class="flex flex-col gap-3">
-				<span class="text-sm font-semibold text-zinc-700 dark:text-zinc-300"
-					>Thumbnail Selection</span
-				>
+				<span class="text-sm font-semibold">Thumbnail Selection</span>
 				<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<div
-						class="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-lg border border-neutral-300 bg-black/10 dark:border-neutral-700"
+						class="flex aspect-[4/3] items-center justify-center overflow-hidden rounded border border-neutral-300 bg-black/10 dark:border-neutral-700"
 					>
 						{#if selectedThumbnailUrl}
 							<img src={selectedThumbnailUrl} alt="Preview" class="h-full w-full object-contain" />
@@ -302,121 +310,106 @@
 							<ImageIcon size={48} class="text-neutral-400" />
 						{/if}
 					</div>
-
-					<div class="flex flex-col gap-2">
-						<div
-							class="flex max-h-[180px] flex-wrap gap-2 overflow-y-auto rounded border bg-white p-2 dark:border-neutral-700 dark:bg-neutral-900"
-						>
-							{#each thumbnails as thumb}
-								<button
-									type="button"
-									onclick={() => selectProjectThumbnail(thumb)}
-									class="relative aspect-[4/3] w-16 overflow-hidden rounded border-2 transition-all {selectedThumbnailUrl ===
-										thumb.url && thumbnailType === 'project'
-										? 'border-accent ring-2 ring-accent/20'
-										: 'border-transparent opacity-70 hover:opacity-100'}"
-									title={thumb.name}
-								>
-									<img src={thumb.url} alt={thumb.name} class="h-full w-full object-cover" />
-								</button>
-							{/each}
-
-							<label
-								class="relative flex aspect-[4/3] w-16 cursor-pointer flex-col items-center justify-center overflow-hidden rounded border-2 border-dashed border-neutral-400 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800 {thumbnailType ===
-								'custom'
-									? 'border-accent bg-accent/5'
-									: ''}"
+					<div
+						class="flex max-h-[180px] flex-wrap gap-2 overflow-y-auto rounded border bg-white p-2 dark:bg-neutral-900"
+					>
+						{#each thumbnails as thumb}
+							<button
+								type="button"
+								onclick={() => selectProjectThumbnail(thumb)}
+								class="aspect-[4/3] w-16 overflow-hidden rounded border-2 transition-all {selectedThumbnailUrl ===
+								thumb.url
+									? 'scale-105 border-accent'
+									: 'border-transparent opacity-60 hover:opacity-100'}"
 							>
-								<Upload size={18} class="text-neutral-500" />
-								<span class="mt-1 text-[8px] font-bold uppercase">Custom</span>
-								<input
-									bind:this={thumbInput}
-									type="file"
-									name="thumbnail"
-									accept="image/*"
-									class="hidden"
-									onchange={handleCustomThumb}
-								/>
-							</label>
-						</div>
+								<img src={thumb.url} alt="costume" class="h-full w-full object-cover" />
+							</button>
+						{/each}
+						<label
+							class="flex aspect-[4/3] w-16 cursor-pointer flex-col items-center justify-center rounded border-2 border-dashed hover:bg-neutral-50 dark:hover:bg-neutral-800 {thumbnailType ===
+							'custom'
+								? 'border-accent'
+								: ''}"
+						>
+							<Upload size={16} />
+							<input
+								type="file"
+								accept="image/*"
+								class="hidden"
+								onchange={(e) => {
+									if (e.target.files?.[0]) {
+										selectedThumbnailUrl = URL.createObjectURL(e.target.files[0])
+										thumbnailType = 'custom'
+										const dt = new DataTransfer()
+										dt.items.add(e.target.files[0])
+										thumbInput.files = dt.files
+									}
+								}}
+							/>
+						</label>
 					</div>
 				</div>
 			</div>
 
 			<div class="flex flex-col gap-2">
-				<label for="title" class="text-sm font-semibold text-zinc-800 dark:text-zinc-200"
-					>Title</label
-				>
+				<label for="title" class="text-sm font-semibold">Title</label>
 				<input
 					id="title"
 					name="title"
-					type="text"
 					bind:value={title}
 					required
-					placeholder="Project name here..."
-					class="w-full rounded border border-neutral-300 bg-white p-2 text-sm focus:border-accent focus:outline-none dark:border-neutral-600 dark:bg-neutral-900"
+					class="w-full rounded border p-2 outline-none focus:ring-1 focus:ring-accent dark:bg-neutral-900"
 				/>
 			</div>
 
 			<div class="flex flex-col gap-2">
-				<label for="notes" class="text-sm font-semibold text-zinc-800 dark:text-zinc-200"
-					>Notes and Credits</label
-				>
+				<label for="notes" class="text-sm font-semibold">Notes and Credits</label>
 				<textarea
 					id="notes"
 					name="notes"
 					bind:value={notesAndCredits}
-					placeholder="How did you make this project? Did you use any assets from others?"
-					class="min-h-[120px] w-full rounded border border-neutral-300 bg-white p-2 text-sm focus:border-accent focus:outline-none dark:border-neutral-600 dark:bg-neutral-900"
+					placeholder="How did you make this? Did you use other assets?"
+					class="min-h-[150px] w-full rounded border p-2 outline-none dark:bg-neutral-900"
 				></textarea>
 			</div>
 
 			<div
-				class="flex flex-col gap-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900/50 dark:bg-yellow-900/20"
+				class="rounded border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900 dark:bg-yellow-900/20"
 			>
-				<div class="flex flex-col gap-1">
-					<span class="font-bold text-yellow-900 dark:text-yellow-200">
-						Does this project contain flashing lights?
-					</span>
-					<p class="text-sm text-yellow-800 dark:text-yellow-300">
-						A small percentage of individuals may experience epileptic seizures when exposed to
-						certain light patterns. Once set to Yes, you cannot change this back without moderator
-						support. Intentionally inaccurate answers will lead to a ban.
-					</p>
-				</div>
-
-				<div class="flex flex-col gap-6">
+				<p class="mb-3 font-bold text-yellow-900 dark:text-yellow-200">
+					Does this project contain flashing lights?
+				</p>
+				<p class="mb-3 text-xs text-yellow-800 dark:text-yellow-300">
+					A small percentage of individuals may experience seizures from certain light patterns.
+					Intentionally inaccurate answers will lead to a ban.
+				</p>
+				<div class="flex flex-col gap-3">
 					<label class="flex cursor-pointer items-center gap-2">
 						<input
 							type="radio"
 							name="flashingLights"
 							bind:group={needsEpilepsyWarning}
 							value={true}
-							class="h-4 w-4 border-gray-300 text-accent focus:ring-accent"
+							class="accent-accent"
 						/>
-						<span class="text-sm font-medium text-yellow-900 dark:text-yellow-200"
-							>This project contains flashing lights</span
-						>
+						<span class="text-sm">Yes, this project has flashing lights.</span>
 					</label>
-
 					<label class="flex cursor-pointer items-center gap-2">
 						<input
 							type="radio"
 							name="flashingLights"
 							bind:group={needsEpilepsyWarning}
 							value={false}
-							class="h-4 w-4 border-gray-300 text-accent focus:ring-accent"
+							class="accent-accent"
 						/>
-						<span class="text-sm font-medium text-yellow-900 dark:text-yellow-200"
-							>This project does not contain flashing lights</span
-						>
+						<span class="text-sm">No, it is safe for photosensitive users.</span>
 					</label>
 				</div>
 			</div>
 
-			<div class="flex justify-end">
+			<div class="flex justify-end pt-4">
 				<Button type="submit" disabled={loading || !isFormValid}>
-					{loading ? 'Uploading...' : !isFormValid ? 'Complete form to upload' : 'Upload Project'}
+					{loading ? 'Processing...' : 'Upload Project'}
 				</Button>
 			</div>
 		</div>

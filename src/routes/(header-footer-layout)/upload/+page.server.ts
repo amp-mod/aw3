@@ -6,8 +6,29 @@ import yauzl from 'yauzl'
 import sharp from 'sharp'
 import { storage } from '$lib/storage'
 import { acceptablePrefixes } from '$lib/security-manager.svelte'
+import type { PageServerLoad } from './$types'
 
 const MAX_TOTAL_UNCOMPRESSED_SIZE = 100 * 1024 * 1024
+
+export const load: PageServerLoad = async ({ cookies, locals }) => {
+	// 1. Ensure user is logged in
+	if (!locals.user) throw error(401, 'Unauthorized')
+
+	// 2. Fetch the user's current link status from the DB
+	const dbUser = await db.query.user.findFirst({
+		where: eq(table.user.id, locals.user.id),
+		columns: {
+			scratchUsername: true,
+			scratchLinked: true,
+		},
+	})
+
+	return {
+		// Data from DB
+		isLinked: !!dbUser?.scratchLinked,
+		linkedUsername: dbUser?.scratchUsername,
+	}
+}
 
 const openZipFromBuffer = (buffer: Buffer): Promise<yauzl.ZipFile> =>
 	new Promise((res, rej) =>

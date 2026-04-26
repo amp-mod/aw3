@@ -55,6 +55,9 @@ export const user = pgTable(
 		status: text('status').default('normal'),
 		bannedExpiry: timestamp('banned_expiry', { withTimezone: true, mode: 'date' }),
 		banReason: text('ban_reason'),
+		// Scratch link
+		scratchLinked: boolean('scratch_linked').default(false),
+		scratchUsername: varchar('scratch_username', { length: 64 }).default(''), // Usually most names are under 20 chars long, but some exotic namems bypass this
 	},
 	(table) => [index('username_idx').on(table.username)],
 )

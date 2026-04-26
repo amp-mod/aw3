@@ -14,6 +14,7 @@
 	import { page } from '$app/state'
 	import LoginModal from '$lib/components/LoginModal.svelte'
 	import { m } from '$lib/paraglide/messages.js'
+	import ScratchLogo from '~icons/simple-icons/scratch'
 
 	const { data, children } = $props()
 
@@ -34,6 +35,13 @@
 			href: '/settings/profile',
 			restricted: true,
 			icon: UserRound,
+		},
+		{
+			id: 'link-scratch',
+			label: 'Scratch account',
+			href: '/settings/link-scratch',
+			restricted: true,
+			icon: ScratchLogo,
 		},
 		{
 			id: 'auth',

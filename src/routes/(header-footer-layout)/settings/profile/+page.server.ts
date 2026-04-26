@@ -1,60 +1,115 @@
-import { error, fail, type Actions } from '@sveltejs/kit'
-import { eq } from 'drizzle-orm'
+import { fail, error } from '@sveltejs/kit'
+import type { Actions, PageServerLoad } from './$types'
+import { eq, and, ne } from 'drizzle-orm'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
-import type { PageServerLoad } from './$types'
+import { generateVerificationData, findVerificationToken } from '$lib/server/scratch-verify'
 
-export const load: PageServerLoad = async ({ locals }) => {
-	// 1. Ensure the user is logged in
-	if (!locals.user) {
-		return {}
-	}
+export const load: PageServerLoad = async ({ cookies, locals }) => {
+	if (!locals.user) throw error(401, 'Unauthorized')
 
-	// 2. Fetch the user's settings from the DB
-	const [userSettings] = await db
-		.select({
-			isPrivate: table.user.isPrivate,
-		})
-		.from(table.user)
-		.where(eq(table.user.id, locals.user.id))
-		.limit(1)
-
-	if (!userSettings) {
-		throw error(404, 'User settings not found')
-	}
+	const username = cookies.get('scratch_user')
+	const token = cookies.get('scratch_token')
+	const comment = cookies.get('scratch_comment')
 
 	return {
-		settings: userSettings,
+		step: username ? 2 : 1,
+		username,
+		verificationToken: token,
+		verificationComment: comment,
 	}
 }
 
 export const actions: Actions = {
-	updateSettings: async ({ request, locals }) => {
-		if (!locals.user) {
-			return fail(401, { message: 'Unauthorized' })
-		}
+	setup: async ({ request, cookies, locals }) => {
+		if (!locals.user) return fail(401, { message: 'Unauthorized' })
 
 		const formData = await request.formData()
-		const updates: Partial<typeof table.user.$inferSelect> = {
-			isPrivate: false,
-		}
-		if (Object.keys(updates).length === 0) {
-			return fail(400, { message: 'No changes provided' })
-		}
+		const username = formData.get('username')?.toString().trim()
 
-		if (formData.has('isPrivate')) {
-			updates.isPrivate = formData.has('isPrivate')
+		if (!username) return fail(400, { message: 'Username is required' })
+
+		try {
+			// 1. Check if this Scratch account is already linked to someone else
+			const existingLink = await db.query.user.findFirst({
+				where: and(
+					eq(table.user.scratchUsername, username),
+					eq(table.user.scratchVerified, true),
+					ne(table.user.id, locals.user.id), // Allow re-verifying own account
+				),
+			})
+
+			if (existingLink) {
+				return fail(400, { message: 'This Scratch account is already linked to another user.' })
+			}
+
+			// 2. Check if user is Scratch Team
+			const userResponse = await fetch(`https://api.scratch.mit.edu/users/${username}`)
+			if (!userResponse.ok) return fail(404, { message: 'Scratch user not found.' })
+
+			const userData = await userResponse.json()
+			if (userData.scratchteam === true) {
+				return fail(403, { message: 'Scratch Team members must verify manually via contact.' })
+			}
+
+			const { token, fullComment } = generateVerificationData()
+
+			cookies.set('scratch_user', username, { path: '/', maxAge: 1800 })
+			cookies.set('scratch_token', token, { path: '/', maxAge: 1800 })
+			cookies.set('scratch_comment', fullComment, { path: '/', maxAge: 1800 })
+
+			return {
+				step: 2,
+				username,
+				verificationToken: token,
+				verificationComment: fullComment,
+			}
+		} catch (err) {
+			return fail(500, { message: 'Internal server error.' })
+		}
+	},
+
+	verify: async ({ cookies, locals }) => {
+		if (!locals.user) return fail(401, { message: 'Unauthorized' })
+
+		const username = cookies.get('scratch_user')
+		const expectedToken = cookies.get('scratch_token')
+
+		if (!username || !expectedToken) {
+			return fail(400, { message: 'Session expired. Start over.' })
 		}
 
 		try {
-			await db.update(table.user).set(updates).where(eq(table.user.id, locals.user.id))
+			const foundToken = await findVerificationToken(username)
 
-			return {
-				success: true,
-				updatedFields: Object.keys(updates),
+			if (!foundToken || foundToken !== expectedToken) {
+				return fail(400, { message: 'Verification failed. Could not find the comment.' })
 			}
-		} catch (e) {
-			return fail(500, { message: 'Internal Server Error saving settings' })
+
+			// SUCCESS: Update the Database
+			await db
+				.update(table.user)
+				.set({
+					scratchUsername: username,
+					scratchVerified: true,
+				})
+				.where(eq(table.user.id, locals.user.id))
+
+			// Clear cookies
+			cookies.delete('scratch_user', { path: '/' })
+			cookies.delete('scratch_token', { path: '/' })
+			cookies.delete('scratch_comment', { path: '/' })
+
+			return { success: true }
+		} catch (err) {
+			return fail(500, { message: 'Failed to update account in database.' })
 		}
+	},
+
+	reset: async ({ cookies }) => {
+		cookies.delete('scratch_user', { path: '/' })
+		cookies.delete('scratch_token', { path: '/' })
+		cookies.delete('scratch_comment', { path: '/' })
+		return { step: 1 }
 	},
 }
