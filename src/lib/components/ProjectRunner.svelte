@@ -192,6 +192,7 @@
 		window.process = { env: { AMPMOD_VERSION: 'aw3' } }
 
 		try {
+			/* @vite-ignore */
 			if (!window.Scaffolding) await import('$lib/vendor/scaffolding-min')
 			scaffolding = new window.Scaffolding.Scaffolding()
 			scaffolding.usePackagedRuntime = true

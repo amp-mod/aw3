@@ -3,6 +3,7 @@ import * as table from '$lib/server/db/schema'
 import { desc, eq, sql } from 'drizzle-orm'
 import type { PageServerLoad } from './$types'
 import { CATEGORIES } from '$lib/categories'
+import sharp from 'sharp'
 
 export const load: PageServerLoad = async (event) => {
 	const userId = event.locals.user?.id
@@ -12,36 +13,26 @@ export const load: PageServerLoad = async (event) => {
 	const randomTitle = keys[Math.floor(Math.random() * keys.length)]
 	const randomTag = CATEGORIES[randomTitle]
 
-	// 2. Define the allowed logic mapping
 	const getAllowedTags = (title: string): string[] => {
 		const t = CATEGORIES
 		switch (title) {
 			case 'Game':
 				return [t.Game, t['3D'], t.Platformer]
 			case 'Contest':
-				return Object.values(t) // Anything goes
+				return Object.values(t)
 			case 'Story':
 				return [t.Story, t.Art, t.Animation, t.Game]
 			case 'Online':
 			case '3D':
-				// Anything except music
 				return Object.values(t).filter((v) => v !== t.Music)
 			default:
-				// Default behavior: strictly only show this tag
 				return [t[title as keyof typeof CATEGORIES]]
 		}
 	}
 
 	const allowedTags = getAllowedTags(randomTitle)
-
-	// 3. Identify "Forbidden" tags for this specific selection
-	// These are any tags in our system that are NOT in the allowed list
 	const forbiddenTags = Object.values(CATEGORIES).filter((tag) => !allowedTags.includes(tag))
-
-	// 4. Prepare SQL Regex patterns
 	const primaryPattern = `(?<![a-zA-Z0-9])${randomTag}(?![a-zA-Z0-9])`
-
-	// Join forbidden tags into a single regex: (#music|#tutorial|...)
 	const forbiddenPattern =
 		forbiddenTags.length > 0
 			? forbiddenTags.map((tag) => tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
@@ -58,6 +49,48 @@ export const load: PageServerLoad = async (event) => {
 		},
 	}
 
+	const fetchBlogUpdates = async () => {
+		try {
+			const res = await fetch(
+				'https://ampblog.flarum.cloud/api/discussions?filter%5Bq%5D=is%3Ablog&sort=-createdAt&include=user,tags',
+			)
+
+			if (!res.ok) return []
+			const json = await res.json()
+
+			const discussions = json.data || []
+			const included = json.included || []
+
+			return await Promise.all(
+				discussions.map(async (discussion: any) => {
+					const authorId = discussion.relationships?.user?.data?.id
+					const authorData = included.find(
+						(inc: any) => inc.type === 'users' && inc.id === authorId,
+					)
+
+					// Get Tag Info
+					const tagRelation = discussion.relationships?.tags?.data?.[0]
+					const tagData = included.find(
+						(inc: any) => inc.type === 'tags' && inc.id === tagRelation?.id,
+					)
+
+					return {
+						id: discussion.id,
+						title: discussion.attributes.title,
+						slug: discussion.attributes.slug,
+						createdAt: discussion.attributes.createdAt,
+						author: {
+							username: authorData?.attributes.username ?? 'Newswriters',
+						},
+					}
+				}),
+			)
+		} catch (e) {
+			console.error('Flarum fetch error:', e)
+			return []
+		}
+	}
+
 	const queries = {
 		latest: db
 			.select(projectSelection)
@@ -70,27 +103,12 @@ export const load: PageServerLoad = async (event) => {
 		category: db
 			.select(projectSelection)
 			.from(table.project)
-			.leftJoin(table.user, eq(table.project.userId, table.user.id))
-			.where(
-				sql`
-        ${table.project.hidden} = false
-        -- 1. Must contain the random tag
-        AND coalesce(${table.project.notes}, '') ~* ${primaryPattern}
-        
-        -- 2. Must NOT contain any forbidden tags
-        ${
-					forbiddenPattern
-						? sql`AND NOT (coalesce(${table.project.notes}, '') ~* ${forbiddenPattern})`
-						: sql``
-				}
-            
-        -- 3. The random tag itself must only appear ONCE
-        AND (
-            SELECT count(*) 
-            FROM regexp_matches(coalesce(${table.project.notes}, ''), ${primaryPattern}, 'gi')
-        ) = 1
-    `,
-			),
+			.leftJoin(table.user, eq(table.project.userId, table.user.id)).where(sql`
+                ${table.project.hidden} = false
+                AND coalesce(${table.project.notes}, '') ~* ${primaryPattern}
+                ${forbiddenPattern ? sql`AND NOT (coalesce(${table.project.notes}, '') ~* ${forbiddenPattern})` : sql``}
+                AND (SELECT count(*) FROM regexp_matches(coalesce(${table.project.notes}, ''), ${primaryPattern}, 'gi')) = 1
+            `),
 
 		featuredProjects: db
 			.select(projectSelection)
@@ -109,14 +127,18 @@ export const load: PageServerLoad = async (event) => {
 					.orderBy(desc(table.project.createdAt))
 					.limit(12)
 			: Promise.resolve([]),
+
+		blog: fetchBlogUpdates(),
 	}
 
-	const [latestProjects, categoryProjects, featuredProjects, followedProjects] = await Promise.all([
-		queries.latest,
-		queries.category,
-		queries.featuredProjects,
-		queries.following,
-	])
+	const [latestProjects, categoryProjects, featuredProjects, followedProjects, blogDiscussions] =
+		await Promise.all([
+			queries.latest,
+			queries.category,
+			queries.featuredProjects,
+			queries.following,
+			queries.blog,
+		])
 
 	return {
 		latestProjects,
@@ -126,5 +148,7 @@ export const load: PageServerLoad = async (event) => {
 			title: randomTitle,
 			projects: categoryProjects,
 		},
+		blogDiscussions,
+		user: event.locals.user,
 	}
 }
