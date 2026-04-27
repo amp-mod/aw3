@@ -56,6 +56,20 @@
 	</div>
 {/if}
 
+{#if data.user && !data.user.scratchUsername}
+	<div class=" bg-[#855cd6] py-5 font-bold text-white">
+		<div class="m-auto flex max-w-6xl flex-col gap-2">
+			<h2 class="text-2xl font-bold">Unify your experience</h2>
+			<p>
+				Linking your Scratch account allows you to easily copy your projects from Scratch, and log
+				in using Scratch. Just post a comment on Scratch to verify your account.
+			</p>
+			<div>
+				<Button href="/settings/link-scratch">Link to Scratch</Button>
+			</div>
+		</div>
+	</div>
+{/if}
 <div class="m-auto flex min-h-80 max-w-6xl gap-3 p-8">
 	<div class="flex grow basis-0 flex-col items-center justify-center gap-3 text-center">
 		{#if data.user}

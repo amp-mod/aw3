@@ -3,7 +3,6 @@ import * as table from '$lib/server/db/schema'
 import { desc, eq, sql } from 'drizzle-orm'
 import type { PageServerLoad } from './$types'
 import { CATEGORIES } from '$lib/categories'
-import sharp from 'sharp'
 
 export const load: PageServerLoad = async (event) => {
 	const userId = event.locals.user?.id
