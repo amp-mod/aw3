@@ -51,11 +51,42 @@ export const actions: Actions = {
 		const username = formData.get('username')?.toString().trim()
 
 		if (!username) return fail(400, { message: 'Username is required' })
-		// easter egg
+		// easter egg collection
 		if (username === 'kaj') {
 			return fail(400, {
+				message: 'qwert320',
+			})
+		}
+		if (username === 'KajTheModerator') {
+			return fail(400, {
+				message: 'Paddle2See',
+			})
+		}
+		if (username === '8to16') {
+			return fail(400, {
+				message: 'Spocake or AmpElectrecuted, one username will win.',
+			})
+		}
+		if (username === 'AmpElectrecuted') {
+			return fail(400, {
 				message:
-					'Guvf vf NzcRyrpgerphgrq fcrnxvat. Fpengpu unf VC onaarq zr... V nz gur arj Xnw. Cyrnfr cerff S gb cnl lbhe erfcrpgf.',
+					'We are here to mourn the loss of my Scratch account AmpElectrecuted. Rest in peace. 2025-2025',
+			})
+		}
+		if (username === 'Griffpatch-Academy') {
+			return fail(400, {
+				message:
+					'Griffpatch, please link YOUR account, not this promo one. Are you even Griffpatch in the first place? Sigh, impersonators these days...',
+			})
+		}
+		if (username === 'ScratchCat') {
+			return fail(400, {
+				message: 'Meow purr purr 2496 meow.',
+			})
+		}
+		if (username === '2l') {
+			return fail(400, {
+				message: 'We got 2 letter usernammes before GTA 6 :skull:',
 			})
 		}
 
