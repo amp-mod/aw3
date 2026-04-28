@@ -3,7 +3,7 @@ import { error } from '@sveltejs/kit'
 
 export function load() {
 	const user = getRequestEvent().locals.user
-	if (!user || (user.rank !== 3 && !process.env.AW3_FORCE_ADMIN)) {
+	if (!user || user.rank !== 3) {
 		throw error(404)
 	}
 }

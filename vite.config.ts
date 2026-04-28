@@ -4,13 +4,6 @@ import { sveltekit } from '@sveltejs/kit/vite'
 import { defineConfig } from 'vite'
 import Icons from 'unplugin-icons/vite'
 
-// info for admins
-if (process.env.AW3_FORCE_ADMIN) {
-	console.warn(
-		'WARNING! You are enabling force admin mode, so anyone can access the admin panel. This is intended for the operator to give themselves admin powers. This will be removed soon. Do not use in production, else your site can be defaced!',
-	)
-}
-
 export default defineConfig({
 	plugins: [
 		tailwindcss(),

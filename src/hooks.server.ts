@@ -102,9 +102,8 @@ export const handleGuard: Handle = async ({ event, resolve }) => {
 
 	if (isAdminRoute && isNotGet) {
 		const hasRank = event.locals.user?.rank === 3
-		const isForced = process.env.AW3_FORCE_ADMIN === 'true' || process.env.AW3_FORCE_ADMIN === '1'
 
-		if (!event.locals.user || (!hasRank && !isForced)) {
+		if (!event.locals.user || !hasRank) {
 			throw error(404, 'Not Found')
 		}
 	}

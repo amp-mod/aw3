@@ -28,7 +28,6 @@ export const load: LayoutServerLoad = async ({ locals, url, depends }) => {
 	return {
 		user,
 		unreadNotificationsCount,
-		isDangerousMode: process.env.AW3_FORCE_ADMIN === 'true',
 		sessionDeleted,
 	}
 }
