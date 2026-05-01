@@ -3,13 +3,21 @@ import { redirect } from '@sveltejs/kit'
 import bannedPermittedPaths from '$lib/banned-permitted-paths'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
-import { eq, and, count } from 'drizzle-orm'
+import { eq, and, count, is } from 'drizzle-orm'
 
-export const load: LayoutServerLoad = async ({ locals, url, depends }) => {
+export const load: LayoutServerLoad = async ({ locals, url, cookies, depends }) => {
 	depends('aw3:sessions')
 	const { user, sessionDeleted } = locals
-
 	const isPermittedPath = bannedPermittedPaths.includes(url.pathname)
+
+	if (
+		!user &&
+		cookies.get('s_reg_token') &&
+		url.pathname !== '/auth/register' &&
+		!isPermittedPath
+	) {
+		throw redirect(307, '/auth/register')
+	}
 
 	if (user?.status === 'banned' && !isPermittedPath) {
 		throw redirect(307, '/banned')
