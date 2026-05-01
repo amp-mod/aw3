@@ -1,7 +1,7 @@
 {
 	"name": "@ampmod/aw3",
 	"private": true,
-	"version": "0.0.1",
+	"version": "0.1.0-alpha",
 	"type": "module",
 	"license": "AGPL-3.0-or-later",
 	"scripts": {

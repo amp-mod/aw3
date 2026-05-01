@@ -3,8 +3,12 @@ import tailwindcss from '@tailwindcss/vite'
 import { sveltekit } from '@sveltejs/kit/vite'
 import { defineConfig } from 'vite'
 import Icons from 'unplugin-icons/vite'
+import pkg from './package.json' assert { type: 'json' }
 
 export default defineConfig({
+	define: {
+		'import.meta.env.VITE_NPM_PACKAGE_VERSION': JSON.stringify(pkg.version),
+	},
 	plugins: [
 		tailwindcss(),
 		sveltekit(),

@@ -9,15 +9,24 @@
 			title: m.footerAbout(),
 			links: [
 				{ href: '/about', label: m.about() },
-				{ href: '/amp-mod', label: 'AmpMod ≠ Amp Mods' },
+				// { href: '/about3d', label: 'About AmpMod 3D' },
+				{ href: '/amp-mod', label: 'Name confusion note' },
+				{ href: '/faq', label: m.faq() },
+				{ href: '/history', label: 'History of AmpMod' },
 				{ href: '/credits', label: m.credits() },
+				{
+					href: 'https://ampmod.flarum.cloud/t/applications',
+					label: 'Join AmpMod Team',
+					external: true,
+				},
 			],
 		},
 		{
 			title: m.footerCommunity(),
 			links: [
 				{ href: '/projects/explore', label: m.exploreProjects() },
-				{ href: 'https://ampblog.flarum.cloud', label: m.footerBlog(), external: true },
+				{ href: '/events', label: 'Ongoing Events' },
+				{ href: 'https://ampmod.flarum.cloud', label: 'AmpMod Forums', external: true },
 				{ href: 'https://ampmod.miraheze.org', label: m.footerWiki(), external: true },
 				// Do not localise!
 				{ href: 'https://youtube.com/@ampmod', label: 'YouTube', external: true },
@@ -26,8 +35,11 @@
 		{
 			title: m.footerResources(),
 			links: [
+				{ href: 'https://ampblog.flarum.cloud', label: m.footerBlog(), external: true },
 				{ href: '/source-code', label: m.sourceCode() },
-				{ href: '/faq', label: m.faq() },
+				{ href: '/help', label: 'Help Center' },
+				{ href: 'https://codeberg.org/ampmod/-/projects/30002', label: 'Roadmap', external: true },
+				{ href: 'move-to-aw3', label: 'AmpMod overhaul' },
 			],
 		},
 		{
@@ -36,6 +48,8 @@
 				{ href: '/guidelines', label: m.guidelines() },
 				{ href: '/terms', label: m.termsOfService() },
 				{ href: '/privacy', label: m.privacyPolicy() },
+				{ href: '/cookies', label: 'Cookie Notice' },
+				{ href: '/dmca', label: 'DMCA' },
 			],
 		},
 	]
@@ -67,11 +81,18 @@
 			{/each}
 		</nav>
 
-		<div class="flex justify-between gap-4">
+		<div class="flex flex-col items-center gap-4">
 			{#if !noJS}<LangSwitcher />{/if}
-			<p class="text-xs">
-				{m.footerNotAffiliated()}
-			</p>
+			<div class="flex max-w-5xl flex-col gap-2 text-center text-xs">
+				<p>
+					Copyright &copy; 2024-{new Date().getFullYear()} AmpMod. AmpMod is not affiliated with Scratch,
+					the Scratch Team, the Scratch Foundation, TurboWarp, or GarboMuffin. For more information on
+					user content licencing, see the <a href="/terms" class="link">Terms of Service</a>.
+				</p>
+				<p>
+					aw3 version {import.meta.env.VITE_NPM_PACKAGE_VERSION}
+				</p>
+			</div>
 		</div>
 	</div>
 </footer>
