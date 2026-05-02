@@ -37,9 +37,9 @@
 
 	let progress = $state('Loading project...')
 	let progressNumber = $state(0)
-	let container: HTMLDivElement | undefined = $state()
+	let iframeElement: HTMLIFrameElement | undefined = $state()
 	let rootElement: HTMLDivElement | undefined = $state()
-	let scaffolding: any = null
+	let scaffolding: any = $state(null)
 	let isLoading = $state(true)
 	let isStarted = $state(false)
 	let isRunning = $state(false)
@@ -165,9 +165,10 @@
 	}
 
 	function syncScaling() {
-		if (!rootElement || !container) return
+		if (!rootElement || !iframeElement) return
 		const isFS = isEmbed || !!document.fullscreenElement
-		const canvas = container.querySelector('.sc-canvas') as HTMLCanvasElement
+		const iframeDoc = iframeElement.contentDocument
+		const canvas = iframeDoc?.querySelector('.sc-canvas') as HTMLCanvasElement
 		const ratio = canvas ? canvas.width / canvas.height : 4 / 3
 		if (isFS) {
 			const screenRatio = window.innerWidth / window.innerHeight
@@ -189,18 +190,53 @@
 		}
 
 		syncScaling()
-		window.process = { env: { AMPMOD_VERSION: 'aw3' } }
 
 		try {
-			/* @vite-ignore */
-			if (!window.Scaffolding) await import('$lib/vendor/scaffolding-min')
-			scaffolding = new window.Scaffolding.Scaffolding()
+			const iframeWin = iframeElement?.contentWindow
+			const iframeDoc = iframeElement?.contentDocument
+			if (!iframeWin || !iframeDoc) throw new Error('Iframe not ready')
+
+			// Define environment inside iframe
+			iframeWin.process = { env: { AMPMOD_VERSION: 'aw3' } }
+
+			// Inject the script into the iframe
+			const script = iframeDoc.createElement('script')
+			script.src = '/scaffolding-min.js'
+
+			await new Promise((resolve, reject) => {
+				script.onload = resolve
+				script.onerror = reject
+				iframeDoc.head.appendChild(script)
+			})
+
+			// Setup Iframe styling
+			const style = iframeDoc.createElement('style')
+			style.textContent = `
+                body { margin: 0; padding: 0; overflow: hidden; background: transparent; }
+                .sc-canvas { width: 100%; height: 100%; display: block; }
+            `
+			iframeDoc.head.appendChild(style)
+
+			const iframeContainer = iframeDoc.createElement('div')
+			iframeContainer.style.width = '100%'
+			iframeContainer.style.height = '100%'
+			iframeDoc.body.appendChild(iframeContainer)
+
+			// Access constructor from the IFRAME window
+			const IframeScaffolding = (iframeWin as any).Scaffolding.Scaffolding
+
+			scaffolding = new IframeScaffolding()
 			scaffolding.usePackagedRuntime = true
 			scaffolding.setup()
 			scaffolding.setUsername(user?.username || '')
-			scaffolding.appendTo(container)
+			scaffolding.appendTo(iframeContainer)
+
 			const vm = scaffolding.vm
 			window.vm = vm
+			console.log(
+				'Globals: Access the VM by typing vm. To see compiled code, type vm.enableDebug().',
+			)
+
 			scaffolding.storage.addWebStore(
 				[
 					scaffolding.storage.AssetType.ImageVector,
@@ -211,14 +247,18 @@
 				(asset: any) =>
 					`${location.origin}/uploads/projects/${project.id}/${asset.assetId}.${asset.dataFormat}`,
 			)
+
 			vm.on('ASSET_PROGRESS', (f: number, t: number) => {
 				progress = `Loading assets: ${f} / ${t}`
 				progressNumber = f / t
 			})
+
 			Object.assign(vm.extensionManager.securityManager, SecurityManagerImplementation)
 			vm.on('EXTENSION_ADDED', handleExtensionAdded)
+
 			await scaffolding.loadProject(projectJson || project.json)
 			isLoading = false
+
 			vm.runtime.on('PROJECT_RUN_START', () => (isRunning = true))
 			vm.runtime.on('PROJECT_RUN_STOP', () => (isRunning = false))
 			vm.runtime.on('RUNTIME_PAUSED', () => (isPaused = true))
@@ -227,6 +267,7 @@
 			let scalingInterval = !isEmbed ? setInterval(syncScaling, 100) : null
 			const fsChange = () => (isFullscreen = !!document.fullscreenElement)
 			document.addEventListener('fullscreenchange', fsChange)
+
 			return () => {
 				if (scalingInterval) clearInterval(scalingInterval)
 				document.removeEventListener('fullscreenchange', fsChange)
@@ -332,7 +373,7 @@
 
 		{#if !isStarted && !isLoading && !isBlockedBySafety}
 			<button
-				class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/40"
+				class="absolute inset-0 z-20 flex cursor-pointer flex-col items-center justify-center bg-black/40"
 				onclick={startProject}
 			>
 				<div class="pointer-events-none absolute inset-x-0 top-0 flex flex-col gap-2">
@@ -354,7 +395,12 @@
 				</div>
 			</button>
 		{/if}
-		<div bind:this={container} class="z-10 h-full w-full outline-none"></div>
+		<iframe
+			bind:this={iframeElement}
+			class="z-10 h-full w-full border-none outline-none"
+			sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads allow-pointer-lock"
+			title="Project"
+		></iframe>
 	</div>
 
 	{#if isTouchOriented && isStarted}

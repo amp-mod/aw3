@@ -59,14 +59,6 @@
 			></textarea>
 		{/if}
 
-		{#if modals.type === 'loadExtension'}
-			<div class="rounded bg-red-500 p-2 font-bold text-white">
-				Extensions load unsandboxed on the website, which may have certain security implications.
-				Run this project in the editor if you want to enable the sandbox (but this breaks many
-				extensions).
-			</div>
-		{/if}
-
 		<div>
 			{#if modals.type === 'fetch'}
 				This connection can be used to transfer data, host a multiplayer server, or access remote

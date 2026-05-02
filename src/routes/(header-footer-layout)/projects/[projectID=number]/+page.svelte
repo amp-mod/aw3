@@ -3,7 +3,6 @@
 	import Button from '$lib/components/Button.svelte'
 	import ProjectRunner from '$lib/components/ProjectRunner.svelte'
 	import { enhance } from '$app/forms'
-	import { beforeNavigate } from '$app/navigation'
 	import { getPfpPath } from '$lib/storage-helpers'
 	import { CATEGORIES } from '$lib/categories'
 	import { reportState } from '$lib/report.svelte'
@@ -84,11 +83,6 @@
 		inputBase:
 			'w-full bg-transparent border border-dashed border-neutral-500/50 focus:border-solid focus:border-accent focus:outline-none dark:text-white text-neutral-800',
 	}
-
-	beforeNavigate(({ to, cancel }) => {
-		cancel()
-		location.href = to?.url.href
-	})
 
 	const projectJson = await getProjectJson(project.id)
 </script>
