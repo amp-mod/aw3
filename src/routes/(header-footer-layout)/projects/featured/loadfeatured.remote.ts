@@ -19,6 +19,7 @@ export const getFeaturedProjects = query(v.number(), async (page) => {
 		.from(table.featuredProject)
 		.innerJoin(table.project, eq(table.featuredProject.projectId, table.project.id))
 		.leftJoin(table.user, eq(table.project.userId, table.user.id))
+		.where(eq(table.project.status, 'shared'))
 		.limit(limit)
 		.offset(offset)
 })

@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
-import { desc, eq, sql } from 'drizzle-orm'
+import { and, desc, eq, sql } from 'drizzle-orm'
 import type { PageServerLoad } from './$types'
 import { CATEGORIES } from '$lib/categories'
 
@@ -95,7 +95,7 @@ export const load: PageServerLoad = async (event) => {
 			.select(projectSelection)
 			.from(table.project)
 			.leftJoin(table.user, eq(table.project.userId, table.user.id))
-			.where(eq(table.project.hidden, false))
+			.where(eq(table.project.status, 'shared'))
 			.orderBy(desc(table.project.createdAt))
 			.limit(12),
 
@@ -103,17 +103,18 @@ export const load: PageServerLoad = async (event) => {
 			.select(projectSelection)
 			.from(table.project)
 			.leftJoin(table.user, eq(table.project.userId, table.user.id)).where(sql`
-                ${table.project.hidden} = false
-                AND coalesce(${table.project.notes}, '') ~* ${primaryPattern}
-                ${forbiddenPattern ? sql`AND NOT (coalesce(${table.project.notes}, '') ~* ${forbiddenPattern})` : sql``}
-                AND (SELECT count(*) FROM regexp_matches(coalesce(${table.project.notes}, ''), ${primaryPattern}, 'gi')) = 1
-            `),
+				"project"."status" = 'shared'
+				AND coalesce("project"."notes", '') ~* ${primaryPattern}
+				${forbiddenPattern ? sql`AND NOT (coalesce("project"."notes", '') ~* ${forbiddenPattern})` : sql``}
+				AND (SELECT count(*) FROM regexp_matches(coalesce("project"."notes", ''), ${primaryPattern}, 'gi')) = 1
+			`),
 
 		featuredProjects: db
 			.select(projectSelection)
 			.from(table.featuredProject)
 			.innerJoin(table.project, eq(table.featuredProject.projectId, table.project.id))
 			.leftJoin(table.user, eq(table.project.userId, table.user.id))
+			.where(eq(table.project.status, 'shared'))
 			.limit(12),
 
 		following: userId
@@ -122,7 +123,7 @@ export const load: PageServerLoad = async (event) => {
 					.from(table.project)
 					.innerJoin(table.follow, eq(table.project.userId, table.follow.followingId))
 					.leftJoin(table.user, eq(table.project.userId, table.user.id))
-					.where(eq(table.follow.followerId, userId))
+					.where(and(eq(table.follow.followerId, userId), eq(table.project.status, 'shared')))
 					.orderBy(desc(table.project.createdAt))
 					.limit(12)
 			: Promise.resolve([]),

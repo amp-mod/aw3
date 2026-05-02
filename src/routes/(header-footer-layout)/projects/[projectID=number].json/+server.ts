@@ -4,7 +4,7 @@ import { json, error } from '@sveltejs/kit'
 import { eq } from 'drizzle-orm'
 import type { RequestHandler } from './$types'
 
-export const GET: RequestHandler = async ({ params }) => {
+export const GET: RequestHandler = async ({ params, locals }) => {
 	const projectId = Number(params.projectID)
 
 	if (isNaN(projectId)) {
@@ -15,11 +15,25 @@ export const GET: RequestHandler = async ({ params }) => {
 		where: eq(table.project.id, projectId),
 		columns: {
 			json: true,
+			status: true,
+			userId: true,
 		},
 	})
 
 	if (!project) {
 		throw error(404, 'Project not found')
+	}
+
+	if (project.status !== 'shared') {
+		const isOwner = locals.user?.id === project.userId
+		const isAdmin = (locals.user?.rank ?? 0) >= 2
+
+		if (!isOwner && !isAdmin) {
+			throw error(
+				403,
+				'Forbidden. This may be because the project is unshared, or has been banned.',
+			)
+		}
 	}
 
 	return json(project.json)

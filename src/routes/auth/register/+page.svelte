@@ -16,7 +16,7 @@
 	import Scratch from '~icons/simple-icons/scratch'
 	import TwAdvanced from './tw-advanced.svelte'
 	import type { ActionData, PageData } from './$types'
-	import 'altcha'
+	import { browser } from '$app/environment'
 
 	let { form = $bindable(), data }: { form: ActionData; data: PageData } = $props()
 
@@ -87,6 +87,10 @@
 	function goBack() {
 		if (currentView === 'credentials') currentView = 'choice'
 		else if (currentView === 'email') currentView = 'credentials'
+	}
+
+	if (browser) {
+		import('altcha')
 	}
 </script>
 
@@ -253,13 +257,15 @@
 							value={password}
 						/><input type="hidden" name="email" value={email} />
 						<!-- Re-added Altcha here -->
-						<altcha-widget
-							name="altcha"
-							auto="onsubmit"
-							challengeurl="/auth/_altcha"
-							hidelogo
-							hidefooter
-						></altcha-widget>
+						{#if browser}
+							<altcha-widget
+								name="altcha"
+								auto="onsubmit"
+								challengeurl="/auth/_altcha"
+								hidelogo
+								hidefooter
+							></altcha-widget>
+						{/if}
 						<Button type="submit" class="w-full py-4 text-lg" disabled={submitting}>
 							{#if submitting}<Loader class="mx-auto animate-spin" size={20} />{:else}Join{/if}
 						</Button>

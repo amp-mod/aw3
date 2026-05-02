@@ -92,9 +92,14 @@ export const project = pgTable(
 		updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
 		moderatorNote: text('moderator_note'),
 		image: text(),
-		hidden: boolean('hidden').default(false),
+		status: text('status').default('unshared'),
 		ccVersion: smallint('cc_version').default(4),
 		flashingLights: boolean().default(false).notNull(),
+		original: bigint('original', { mode: 'number' }).references(() => project.id, {
+			onDelete: 'set null',
+			onUpdate: 'cascade',
+			match: 'full',
+		}),
 	},
 	(table) => [index('project_id_idx').on(table.id), index('project_user_id_idx').on(table.userId)],
 )

@@ -63,7 +63,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			title: table.project.title,
 		})
 		.from(table.project)
-		.where(eq(table.project.userId, userProfile.id))
+		.where(and(eq(table.project.userId, userProfile.id), eq(table.project.status, 'shared')))
 		.orderBy(desc(table.project.createdAt))
 		.limit(10)
 
@@ -72,8 +72,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		const projectCountResult = await db
 			.select({ count: sql<number>`count(*)` })
 			.from(table.project)
-			.where(eq(table.project.userId, userProfile.id))
-
+			.where(and(eq(table.project.userId, userProfile.id), eq(table.project.status, 'shared')))
 		const projectCount = Number(projectCountResult[0]?.count ?? 0)
 		const accountAgeDays =
 			(Date.now() - new Date(userProfile.createdAt).getTime()) / (1000 * 60 * 60 * 24)

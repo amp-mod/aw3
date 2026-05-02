@@ -1,7 +1,7 @@
 import { json, error } from '@sveltejs/kit'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, and } from 'drizzle-orm'
 import type { RequestHandler } from './$types'
 
 export const GET: RequestHandler = async ({ params, url, locals }) => {
@@ -27,7 +27,7 @@ export const GET: RequestHandler = async ({ params, url, locals }) => {
 				title: table.project.title,
 			})
 			.from(table.project)
-			.where(eq(table.project.userId, user.id))
+			.where(and(eq(table.project.userId, user.id), eq(table.project.status, 'shared')))
 			.orderBy(desc(table.project.createdAt))
 			.limit(limit)
 			.offset(offset)
