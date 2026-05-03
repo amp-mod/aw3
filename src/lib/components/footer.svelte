@@ -10,10 +10,11 @@
 			links: [
 				{ href: '/about', label: m.about() },
 				// { href: '/about3d', label: 'About AmpMod 3D' },
-				{ href: '/amp-mod', label: 'Name confusion note' },
+				{ href: '/desktop', label: 'Download' },
+				{ href: '/amp-mod', label: 'AmpMod \u2260 amp mods' },
 				{ href: '/faq', label: m.faq() },
-				{ href: '/history', label: 'History of AmpMod' },
-				{ href: '/credits', label: m.credits() },
+				//{ href: '/history', label: 'History of AmpMod' },
+				//{ href: '/credits', label: m.credits() },
 				{
 					href: 'https://ampmod.flarum.cloud/t/applications',
 					label: 'Join AmpMod Team',
@@ -25,7 +26,7 @@
 			title: m.footerCommunity(),
 			links: [
 				{ href: '/projects/explore', label: m.exploreProjects() },
-				{ href: '/events', label: 'Ongoing Events' },
+				// { href: '/events', label: 'Ongoing Events' },
 				{ href: 'https://ampmod.flarum.cloud', label: 'AmpMod Forums', external: true },
 				{ href: 'https://ampmod.miraheze.org', label: m.footerWiki(), external: true },
 				// Do not localise!
@@ -39,7 +40,6 @@
 				{ href: '/source-code', label: m.sourceCode() },
 				{ href: '/help', label: 'Help Center' },
 				{ href: 'https://codeberg.org/ampmod/-/projects/30002', label: 'Roadmap', external: true },
-				{ href: 'move-to-aw3', label: 'AmpMod overhaul' },
 			],
 		},
 		{
@@ -48,8 +48,8 @@
 				{ href: '/guidelines', label: m.guidelines() },
 				{ href: '/terms', label: m.termsOfService() },
 				{ href: '/privacy', label: m.privacyPolicy() },
-				{ href: '/cookies', label: 'Cookie Notice' },
-				{ href: '/dmca', label: 'DMCA' },
+				//{ href: '/cookies', label: 'Cookie Notice' },
+				//{ href: '/dmca', label: 'DMCA' },
 			],
 		},
 	]
