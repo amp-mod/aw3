@@ -17,6 +17,7 @@
 	import { untrack } from 'svelte'
 	import Modal from '$lib/components/Modal.svelte'
 	import { enhance } from '$app/forms'
+	import { md } from '$lib/markdown'
 
 	let { data } = $props()
 
@@ -277,8 +278,14 @@
 						<h2 class="mb-2 text-lg font-bold text-neutral-800 dark:text-white">
 							Notes and Credits
 						</h2>
-						<div class="whitespace-pre-wrap">
-							{project.notes || 'Project has no notes.'}
+						<div
+							class="prose flex-1 overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert prose-a:font-bold prose-a:text-accent prose-a:no-underline prose-a:hover:underline dark:prose-a:text-accent-light"
+						>
+							{#if project.notes}
+								{@html md.render(project.notes)}
+							{:else}
+								<span class="opacity-50">No project notes.</span>
+							{/if}
 						</div>
 					</div>
 				{/if}

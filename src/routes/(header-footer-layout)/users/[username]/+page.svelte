@@ -12,7 +12,7 @@
 	} from '@lucide/svelte'
 	import { enhance } from '$app/forms'
 	import { rankMap, isStaff } from '$lib/ranks'
-	import MarkdownIt from 'markdown-it'
+	import { md } from '$lib/markdown'
 	import Modal from '$lib/components/Modal.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import Button from '$lib/components/Button.svelte'
@@ -63,8 +63,6 @@
 		isEditingBio = false
 		isBanModalOpen = false
 	})
-
-	const md = new MarkdownIt({ html: false, linkify: true, breaks: true, typographer: true })
 
 	let joinedDate = $derived(
 		(() => {

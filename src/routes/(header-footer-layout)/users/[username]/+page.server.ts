@@ -4,25 +4,10 @@ import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import type { PageServerLoad } from './$types'
 import { Filter } from 'bad-words'
-import MarkdownIt from 'markdown-it'
+import { stripMarkdown } from '$lib/markdown'
 import { storage } from '$lib/storage'
 import sharp from 'sharp'
 import { desc } from 'drizzle-orm'
-
-const md = new MarkdownIt()
-
-function stripMarkdown(text: string): string {
-	const tokens = md.parse(text, {})
-	let plainText = ''
-	const extractText = (tokens: any[]) => {
-		tokens.forEach((token) => {
-			if (token.type === 'text' || token.type === 'code_inline') plainText += token.content
-			if (token.children) extractText(token.children)
-		})
-	}
-	extractText(tokens)
-	return plainText
-}
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const { username } = params
