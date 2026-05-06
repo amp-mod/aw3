@@ -2,18 +2,17 @@ import { query, getRequestEvent } from '$app/server'
 import * as v from 'valibot'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
-import { eq, desc, and, ne } from 'drizzle-orm'
+import { eq, desc, and, ne, ilike } from 'drizzle-orm'
 
-// Define the allowed status types
 type ProjectType = 'shared' | 'unshared'
 
 export const getMyProjects = query(
-	// Validate the single argument as an object
 	v.object({
 		page: v.number(),
 		type: v.picklist(['shared', 'unshared'] as const),
+		search: v.optional(v.string()),
 	}),
-	async ({ page, type }) => {
+	async ({ page, type, search }) => {
 		const { locals } = getRequestEvent()
 
 		if (!locals.user) {
@@ -28,8 +27,13 @@ export const getMyProjects = query(
 			unshared: ne(table.project.status, 'shared'),
 		}
 
-		// Note: type is narrowed to 'shared' | 'unshared' by Valibot
-		const statusCondition = typeConditions[type as ProjectType]
+		// Prepare the base conditions
+		const filters = [eq(table.project.userId, locals.user.id), typeConditions[type as ProjectType]]
+
+		// Add search filter if a search string is provided
+		if (search && search.trim() !== '') {
+			filters.push(ilike(table.project.title, `%${search}%`))
+		}
 
 		return await db
 			.select({
@@ -40,7 +44,7 @@ export const getMyProjects = query(
 				status: table.project.status,
 			})
 			.from(table.project)
-			.where(and(eq(table.project.userId, locals.user.id), statusCondition))
+			.where(and(...filters)) // Spread the array of conditions
 			.orderBy(desc(table.project.createdAt))
 			.limit(limit)
 			.offset(offset)
