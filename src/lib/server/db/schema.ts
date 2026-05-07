@@ -12,33 +12,29 @@ import {
 	jsonb,
 	primaryKey,
 	bigint,
+	customType,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
+
+// --- CUSTOM TYPES ---
+
+const tsvector = customType<{ data: string }>({
+	dataType() {
+		return 'tsvector'
+	},
+})
+
+// --- TABLES ---
 
 export const user = pgTable(
 	'user',
 	{
-		// main
 		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
 		username: varchar('username', { length: 20 }).notNull().unique(),
 		passwordHash: text('password_hash').notNull(),
-
-		// legal
 		termsRevision: integer('tos_revision').default(0),
 		privacyRevision: integer('pp_revision').default(0),
-
-		/*
-         0 = new ampmodder
-         1 = ampmodder
-         2 = moderator
-         3 = operator
-
-         we most likely won't expand the number of ranks anytime soon,
-         which is why this is a smallint
-      */
 		rank: smallint('rank').default(0),
-
-		// profile
 		bio: varchar({ length: 2000 }).default(''),
 		hasPFP: boolean().default(false).notNull(),
 		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
@@ -47,17 +43,12 @@ export const user = pgTable(
 			onDelete: 'set null',
 		}),
 		featuredProjectTitleIndex: smallint('featured_project_title_index').default(0),
-
-		// passkeys
 		passkeys: jsonb(),
-
-		// moderation
 		status: text('status').default('normal'),
 		bannedExpiry: timestamp('banned_expiry', { withTimezone: true, mode: 'date' }),
 		banReason: text('ban_reason'),
-		// Scratch link
 		scratchLinked: boolean('scratch_linked').default(false),
-		scratchUsername: varchar('scratch_username', { length: 64 }).default(''), // Usually most names are under 20 chars long, but some exotic namems bypass this
+		scratchUsername: varchar('scratch_username', { length: 64 }).default(''),
 	},
 	(table) => [index('username_idx').on(table.username)],
 )
@@ -65,13 +56,12 @@ export const user = pgTable(
 export const session = pgTable(
 	'session',
 	{
-		// SHA-256 results in 64 length hashes
 		id: char({ length: 64 }).primaryKey(),
 		userId: integer('user_id')
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
 		expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
-		ip: inet('ip'), // only used for IP bans
+		ip: inet('ip'),
 		userAgent: text('user_agent'),
 	},
 	(table) => [index('user_id_idx').on(table.userId)],
@@ -98,25 +88,37 @@ export const project = pgTable(
 		original: bigint('original', { mode: 'number' }).references(() => project.id, {
 			onDelete: 'set null',
 			onUpdate: 'cascade',
-			match: 'full',
 		}),
+		searchIndex: tsvector('search_index'),
 	},
-	(table) => [index('project_id_idx').on(table.id), index('project_user_id_idx').on(table.userId)],
+	(table) => [
+		index('project_id_idx').on(table.id),
+		index('project_user_id_idx').on(table.userId),
+		index('project_search_idx').using('gin', table.searchIndex),
+	],
 )
 
-export const gallery = pgTable('gallery', {
-	id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-	hostId: bigint('host_id', { mode: 'number' })
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
-	title: varchar({ length: 150 }).notNull(),
-	description: varchar({ length: 2000 }).default(''),
-	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-	updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-	moderatorNote: text('moderator_note'),
-	image: text(),
-	hidden: boolean('hidden').default(false),
-})
+export const gallery = pgTable(
+	'gallery',
+	{
+		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+		hostId: bigint('host_id', { mode: 'number' })
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		title: varchar({ length: 150 }).notNull(),
+		description: varchar({ length: 2000 }).default(''),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+		updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+		moderatorNote: text('moderator_note'),
+		image: text(),
+		hidden: boolean('hidden').default(false),
+		searchIndex: tsvector('search_index'),
+	},
+	(table) => [
+		index('gallery_host_id_idx').on(table.hostId),
+		index('gallery_search_idx').using('gin', table.searchIndex),
+	],
+)
 
 export const galleryCurators = pgTable(
 	'gallery_curators',
@@ -129,8 +131,8 @@ export const galleryCurators = pgTable(
 			.references(() => user.id, { onDelete: 'cascade' }),
 	},
 	(t) => [
-		index('gallery_curator_idx').on(t.galleryId, t.userId),
 		primaryKey({ columns: [t.galleryId, t.userId] }),
+		index('gallery_curator_idx').on(t.galleryId, t.userId),
 	],
 )
 
@@ -144,34 +146,52 @@ export const projectsToGalleries = pgTable(
 			.notNull()
 			.references(() => gallery.id, { onDelete: 'cascade' }),
 	},
-	(t) => [primaryKey({ columns: [t.projectId, t.galleryId] })],
+	(t) => [
+		primaryKey({ columns: [t.projectId, t.galleryId] }),
+		index('project_gallery_idx').on(t.galleryId),
+	],
 )
 
-export const auditLog = pgTable('audit_log', {
-	id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-	action: text('action').notNull(),
-	actorId: bigint('actor_id', { mode: 'number' }).references(() => user.id),
-	targetId: bigint('target_id', { mode: 'number' }),
-	targetType: text('target_type'),
-	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-	extra: jsonb('extra'),
-})
+export const auditLog = pgTable(
+	'audit_log',
+	{
+		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+		action: text('action').notNull(),
+		actorId: bigint('actor_id', { mode: 'number' }).references(() => user.id),
+		targetId: bigint('target_id', { mode: 'number' }),
+		targetType: text('target_type'),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+		extra: jsonb('extra'),
+	},
+	(table) => [
+		index('audit_actor_idx').on(table.actorId),
+		index('audit_target_idx').on(table.targetType, table.targetId),
+	],
+)
 
-export const featuredProject = pgTable('featured_project', {
-	id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
-	projectId: bigint('project_id', { mode: 'number' })
-		.notNull()
-		.references(() => project.id, { onDelete: 'cascade' }),
-	why: text('why'),
-})
+export const featuredProject = pgTable(
+	'featured_project',
+	{
+		id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+		projectId: bigint('project_id', { mode: 'number' })
+			.notNull()
+			.references(() => project.id, { onDelete: 'cascade' }),
+		why: text('why'),
+	},
+	(table) => [index('featured_project_id_idx').on(table.projectId)],
+)
 
-export const featuredGallery = pgTable('featured_gallery', {
-	id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
-	galleryId: bigint('gallery_id', { mode: 'number' })
-		.notNull()
-		.references(() => gallery.id, { onDelete: 'cascade' }),
-	why: text('why'),
-})
+export const featuredGallery = pgTable(
+	'featured_gallery',
+	{
+		id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+		galleryId: bigint('gallery_id', { mode: 'number' })
+			.notNull()
+			.references(() => gallery.id, { onDelete: 'cascade' }),
+		why: text('why'),
+	},
+	(table) => [index('featured_gallery_id_idx').on(table.galleryId)],
+)
 
 export const config = pgTable('config', {
 	key: text().primaryKey(),
@@ -181,22 +201,16 @@ export const config = pgTable('config', {
 export const authenticator = pgTable(
 	'authenticator',
 	{
-		// The unique ID returned by the browser (Base64URL encoded)
 		id: text('id').primaryKey(),
 		userId: bigint('user_id', { mode: 'number' })
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
-
-		// Friendly name (e.g., "Blue YubiKey", "Firefox Arch Linux")
 		name: varchar('name', { length: 255 }).default('New Passkey'),
-
-		// WebAuthn specific data
-		publicKey: text('public_key').notNull(), // Store as Base64 string
+		publicKey: text('public_key').notNull(),
 		counter: bigint('counter', { mode: 'number' }).notNull().default(0),
 		deviceType: varchar('device_type', { length: 32 }).notNull(),
 		backedUp: boolean('backed_up').notNull().default(false),
-		transports: text('transports'), // comma-separated or jsonb (e.g. "usb,nfc,internal")
-
+		transports: text('transports'),
 		createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 		lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
 	},
@@ -206,11 +220,9 @@ export const authenticator = pgTable(
 export const follow = pgTable(
 	'follow',
 	{
-		// The person doing the following
 		followerId: bigint('follower_id', { mode: 'number' })
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
-		// The person being followed
 		followingId: bigint('following_id', { mode: 'number' })
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
@@ -227,48 +239,79 @@ export const notification = pgTable(
 	'notification',
 	{
 		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-		// The user who receives the notification
 		recipientId: bigint('recipient_id', { mode: 'number' })
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
-		// The user who triggered the notification (optional, e.g., "System" notices)
 		issuerId: bigint('issuer_id', { mode: 'number' }).references(() => user.id, {
 			onDelete: 'set null',
 		}),
-
-		/* Types: 'follow', 'project_update', 'gallery_invite', 'featured', 'system'
-		 */
 		type: text('type').notNull(),
-
-		// References to the object involved (Project ID, Gallery ID, etc.)
 		targetId: bigint('target_id', { mode: 'number' }),
-		targetType: text('target_type'), // e.g., 'project', 'gallery'
-
+		targetType: text('target_type'),
 		isRead: boolean('is_read').default(false).notNull(),
 		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
-
-		// Flexible data for UI (e.g., "Project name was changed to X")
 		metadata: jsonb('metadata'),
 	},
-	(t) => [index('recipient_idx').on(t.recipientId), index('is_read_idx').on(t.isRead)],
+	(t) => [
+		index('recipient_idx').on(t.recipientId),
+		index('is_read_idx').on(t.isRead),
+		index('notif_target_idx').on(t.targetType, t.targetId),
+	],
 )
+
+// --- RELATIONS ---
+
+export const userRelations = relations(user, ({ many }) => ({
+	receivedNotifications: many(notification, { relationName: 'notif_recipient' }),
+	issuedNotifications: many(notification, { relationName: 'notif_issuer' }),
+	projects: many(project),
+	sessions: many(session),
+	authenticators: many(authenticator),
+	followers: many(follow, { relationName: 'following' }),
+	following: many(follow, { relationName: 'follower' }),
+}))
+
 export const notificationRelations = relations(notification, ({ one }) => ({
 	recipient: one(user, {
 		fields: [notification.recipientId],
 		references: [user.id],
-		relationName: 'recipient',
+		relationName: 'notif_recipient',
 	}),
 	issuer: one(user, {
 		fields: [notification.issuerId],
 		references: [user.id],
-		relationName: 'issuer',
+		relationName: 'notif_issuer',
 	}),
 }))
 
-export const userRelations = relations(user, ({ many }) => ({
-	notifications: many(notification),
+export const projectRelations = relations(project, ({ one, many }) => ({
+	author: one(user, {
+		fields: [project.userId],
+		references: [user.id],
+	}),
+	galleries: many(projectsToGalleries),
+	remixes: many(project, { relationName: 'remix_relation' }),
+	parent: one(project, {
+		fields: [project.original],
+		references: [project.id],
+		relationName: 'remix_relation',
+	}),
 }))
 
+export const followRelations = relations(follow, ({ one }) => ({
+	follower: one(user, {
+		fields: [follow.followerId],
+		references: [user.id],
+		relationName: 'follower',
+	}),
+	following: one(user, {
+		fields: [follow.followingId],
+		references: [user.id],
+		relationName: 'following',
+	}),
+}))
+
+// --- TYPES ---
 export type Authenticator = typeof authenticator.$inferSelect
 export type User = typeof user.$inferSelect
 export type Session = typeof session.$inferSelect
