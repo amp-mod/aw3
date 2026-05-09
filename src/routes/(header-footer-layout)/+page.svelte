@@ -1,6 +1,6 @@
 <script>
 	import { Tabs } from 'bits-ui'
-	import { Clapperboard, Newspaper, Rss, MapIcon, Sparkles } from '@lucide/svelte'
+	import { Clapperboard, Newspaper, Rss, MapIcon, Sparkles, Link, Globe } from '@lucide/svelte'
 	import CreateCardIcon from '$lib/assets/apple-cat-programming-sm.svg'
 	import HeroImg from '$lib/assets/apple-cat-programming.svg'
 	import ExploreProjectsIcon from '$lib/assets/exploreprojects.svg'
@@ -9,6 +9,7 @@
 	import { m } from '$lib/paraglide/messages'
 	import { getPfpPath } from '$lib/storage-helpers.js'
 	import Row from '$lib/components/Row.svelte'
+	import Alert from '$lib/components/Alert.svelte'
 
 	let { data } = $props()
 	const discussions = data.blogDiscussions ?? []
@@ -26,6 +27,31 @@
 <svelte:head>
 	<title>{data.user ? 'Front Page - AmpMod' : 'AmpMod - Block-based programming. amplified'}</title>
 </svelte:head>
+
+<Alert
+	id="aw3"
+	background="#49b049"
+	button={{
+		url: 'https://ampmod.flarum.cloud/t/suggestions',
+		text: 'Share feedback on forums',
+	}}
+	icon={Globe}
+>
+	Welcome to the brand-new AmpMod website! This site is currently in beta and might have bugs.
+</Alert>
+{#if data.user && !data.user.scratchUsername}
+	<Alert
+		id="linkScratch"
+		background="#855cd6"
+		button={{
+			url: '/settings/link-scratch',
+			text: 'Link now',
+		}}
+		icon={Link}
+	>
+		Import your Scratch projects by linking your account.
+	</Alert>
+{/if}
 
 {#if !data.user}
 	<div class="relative bg-accent p-9 text-white">
@@ -56,20 +82,6 @@
 	</div>
 {/if}
 
-{#if data.user && !data.user.scratchUsername}
-	<div class=" bg-[#855cd6] py-5 font-bold text-white">
-		<div class="m-auto flex max-w-6xl flex-col gap-2">
-			<h2 class="text-2xl font-bold">Unify your experience</h2>
-			<p>
-				Linking your Scratch account allows you to easily copy your projects from Scratch, and log
-				in using Scratch. Just post a comment on Scratch to verify your account.
-			</p>
-			<div>
-				<Button href="/settings/link-scratch">Link to Scratch</Button>
-			</div>
-		</div>
-	</div>
-{/if}
 <div class="m-auto flex min-h-80 max-w-6xl gap-3 p-8">
 	<div class="flex grow basis-0 flex-col items-center justify-center gap-3 text-center">
 		{#if data.user}
