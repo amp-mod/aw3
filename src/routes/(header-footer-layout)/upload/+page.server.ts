@@ -1,7 +1,7 @@
 import { error, fail, type Actions, redirect } from '@sveltejs/kit'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import yauzl from 'yauzl'
 import sharp from 'sharp'
 import { storage } from '$lib/storage'
@@ -155,6 +155,10 @@ export const actions: Actions = {
 					createdAt: new Date(),
 					updatedAt: new Date(),
 					flashingLights,
+					searchIndex: sql`to_tsvector('english', 
+						coalesce(${title.slice(0, 150)}, '') || ' ' || 
+						coalesce(${notes.slice(0, 2000)}, '')
+					)`,
 				})
 				.returning()
 

@@ -86,12 +86,13 @@
 				role="search"
 				aria-label={m.searchAriaLabel()}
 				class="relative hidden items-center md:flex"
-				onsubmit={(e) => e.preventDefault()}
+				action="/search"
 			>
 				<input
 					type="search"
 					placeholder={m.searchPlaceholder()}
 					class="h-8 w-full rounded-lg border border-neutral-300 bg-transparent px-3 pr-12 text-sm outline-none focus:border-accent-secondary sm:w-44 md:w-64 dark:border-white/20 dark:focus:border-white"
+					name="q"
 				/>
 				<button
 					type="submit"
