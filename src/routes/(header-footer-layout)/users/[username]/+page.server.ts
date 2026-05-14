@@ -16,7 +16,24 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const isStaffMember = viewerRank >= 2
 
 	const [userProfile] = await db
-		.select()
+		.select({
+			id: table.user.id,
+			username: table.user.username,
+			bio: table.user.bio,
+			rank: table.user.rank,
+			createdAt: table.user.createdAt,
+			hasPFP: table.user.hasPFP,
+			isPrivate: table.user.isPrivate,
+			featuredProjectId: table.user.featuredProjectId,
+			featuredProjectTitleIndex: table.user.featuredProjectTitleIndex,
+			...(isStaffMember
+				? {
+						status: table.user.status,
+						bannedExpiry: table.user.bannedExpiry,
+						banReason: table.user.banReason,
+					}
+				: {}),
+		})
 		.from(table.user)
 		.where(eq(table.user.username, username))
 		.limit(1)
