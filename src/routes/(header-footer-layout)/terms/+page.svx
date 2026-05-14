@@ -2,7 +2,7 @@
 title: AmpMod Terms of Service
 ---
 
-*Last updated: 20 April 2026*
+*Last updated: 14 May 2026*
 
 *   This document applies to https://ampmod.org and all of its subdomains, including https://forums.ampmod.org,
     https://wiki.ampmod.org, https://extensions.ampmod.org, https://commons.ampmod.org, and https://blog.ampmod.org,
@@ -45,7 +45,7 @@ affiliates.
 3.  You may not sell or transfer your Account or share it with anyone who is not in your immediate family.
 4.  You may not include personal information in your Account's username, including but not limited to your real name,
     birth date, or location.
-5.  For terms regarding Teacher Accounts and Managed Accounts, please see Section 4.
+5.  For terms regarding Teacher Accounts and Managed Accounts, please refer to Section 4.
 6.  You may manage more than 1 Account, but not to manipulate site statistics or violate Section 2.2.  
 7.  You may create or link an Account with a user account on a service supported by AmpMod. By linking your Account,
     you agree to the terms of any services that you link your Account to.
@@ -55,29 +55,30 @@ affiliates.
 ## 3. "User-Generated Content"
 
 1.  For the purposes of these Terms, "User-Generated Content" (UGC) refers to any content shared via an Account, including projects,
-    studios, custom extensions and wiki pages.
-2.  By publishing User-Generated Content, you agree to licence it under the
+    galleries, custom extensions and wiki pages.
+2.  By publishing User-Generated Content, you grant a licence for others to use it under the
     [Creative Commons Attribution-ShareAlike 4.0 Licence](https://creativecommons.org/licenses/by-sa/4.0/legalcode.en)
-    ("CC-BY-SA"). According to the deed, if you distribute others' UGC:
-        *   "You must give appropriate credit, provide a link to the license,
-            and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests
-            the licensor endorses you or your use." (Publishing a Remix on AmpMod will automatically handle this for you.)
-        *   "If you remix, transform, or build upon the material, you must
-            distribute your contributions under the same license as the original."
-3.  **You agree not to publish UGC that violates the [Guidelines](/guidelines), as well as content that:**
+    ("CC-BY-SA"). This allows others to share and remix content both on and outside of AmpMod,
+    commercially or non-commercially, as long as they provide credit and continue distributing under CC-BY-SA.
+3.  **You agree not to publish UGC that violates the [AmpMod Guidelines](/guidelines), as well as content that:**
         *   Does not function in the AmpMod IDE (e.g. uses primitives that exist in a modification of the AmpMod IDE,
             but not in the vanilla version);
-        *   Contains swear words, slurs, or other offensive language, or otherwise disrespects users;
+        *   Contains swear words, slurs, insults, personal attacks, or offensive language, or otherwise disrespects users or a group of people;
         *   Shares personally identifiable information about you or any other user, including real name, location
             (beyond state-level), email address, or other contact information such as links to private messaging sites;
-        *   Is illegal under the laws of your country or under any international regulation, including adult content;
+        *   Is illegal under the laws of your country or under any international regulation;
+        *   Contains pornographic or sexually explicit content;
         *   Infects systems with viruses, worms, or other malware;
-        *   makes profit;
+        *   Makes commercial profit in a way that is not intended by users;
         *   Contains blood, gore or other disturbing material; or
         *   Contains copyrighted material that you do not have permission to use.
 4.  AmpMod allows users to create their own copies of UGC and publish it as their own (a "Remix"). By publishing
     a Remix directly to AmpMod, you agree that you have made a modification to at least one area of the project.
     This does not apply to copying projects on other sites.
+5.  Projects on AmpMod may contain flashing lights or certain light patterns that can trigger photosensitive epilepsy.
+    You must accurately label if your content contains flashing lights, dangerous light patterns, or other content that may
+    trigger epilepsy. Mislabeling flashing lights intentionally is considered a severe violation of our guidelines and can lead to a ban,
+    though accidental mislabeling will result in proper labeling by a moderator.
 
 ## 4. Educational use
 
@@ -91,11 +92,8 @@ affiliates.
 
 ## 5. DISCLAIMER OF WARRANTY AND LIABILITY
 
-**To the maximum extent provided by applicable laws, "AmpMod" (redefined to include the AmpMod IDE for the purposes
-of this section) is provided as is, without any warranty of any kind. We are not responsible for any losses or damages
-caused by any malfunction in AmpMod. YOU MAY ONLY USE AMPMOD AT YOUR OWN RISK.**
-
-*TL;DR: If a bug in AmpMod causes you to lose your account, we won't give you any money.*
+**To the maximum extent provided by applicable laws, AmpMod and AmpMod IDE are provided as is, without any warranty of any kind. We are not responsible for any losses or damages
+caused by any malfunction in any service operated by us. YOU MAY ONLY USE OUR SERVICES AT YOUR OWN RISK.**
 
 ## 6. Notification, suspension and termination
 
@@ -119,8 +117,7 @@ caused by any malfunction in AmpMod. YOU MAY ONLY USE AMPMOD AT YOUR OWN RISK.**
 
 ## Appendix B - AmpMod Commons
 
-1.  These terms apply to the "AmpMod Commons" at <https://commons.ampmod.org>, where sprites, costumes, backdrops and sounds
-    are uploaded.
+1.  These terms apply to the "AmpMod Commons" at <https://commons.ampmod.org>.
 
 2.  All content on Commons is bound by Section 3.2 and 3.3. You agree not to upload assets violating such sections.
 
@@ -131,8 +128,7 @@ caused by any malfunction in AmpMod. YOU MAY ONLY USE AMPMOD AT YOUR OWN RISK.**
 
 ## Appendix C - AmpMod Community
 
-1.  These terms apply to the collective "AmpMod Community" at <https://forums.ampmod.org> and <https://blog.ampmod.org>,
-    where users can discuss AmpMod, and approved users can post on the blog.
+1.  These terms apply to the collective "AmpMod Community" at <https://forums.ampmod.org> and <https://blog.ampmod.org>.
 
 2.  All content on the Forums is bound by Section 3.2 and 3.3. 
 
@@ -141,5 +137,5 @@ caused by any malfunction in AmpMod. YOU MAY ONLY USE AMPMOD AT YOUR OWN RISK.**
     * make irrelevant posts, included but not limited to chain mail, repetitive posts and Scratchblocks spam;
     * or bypass a ban from AmpMod.
 
-4.  You agree not to post updates on the AmpMod Blog without being added as a Newswriter. (Don't worry, that's actually
-    fairly easy to get into.)
+4.  You agree not to post updates on the AmpMod Blog unless you have been granted Newswriter permissions by the AmpMod
+    moderation team.

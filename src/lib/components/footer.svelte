@@ -14,7 +14,7 @@
 				{ href: '/amp-mod', label: 'AmpMod \u2260 amp mods' },
 				{ href: '/faq', label: m.faq() },
 				//{ href: '/history', label: 'History of AmpMod' },
-				//{ href: '/credits', label: m.credits() },
+				{ href: '/credits', label: m.credits() },
 				{
 					href: 'https://ampmod.flarum.cloud/t/applications',
 					label: 'Join AmpMod Team',
