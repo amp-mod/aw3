@@ -18,6 +18,8 @@
 	import Modal from '$lib/components/Modal.svelte'
 	import { enhance } from '$app/forms'
 	import { md } from '$lib/markdown'
+	import { fade, slide } from 'svelte/transition'
+	import { acceptablePrefixes } from '$lib/security-manager.svelte'
 
 	let { data } = $props()
 
@@ -39,13 +41,19 @@
 	let titleTimer: ReturnType<typeof setTimeout>
 	let notesTimer: ReturnType<typeof setTimeout>
 
-	// Core Sync Logic: Only update local state from props if the user isn't typing
 	$effect(() => {
-		const currentId = project.id // Watch for navigation
 		untrack(() => {
 			if (document.activeElement?.name !== 'title') titleValue = project.title
 			if (document.activeElement?.name !== 'notes') notesValue = project.notes || ''
 		})
+	})
+
+	// Cleanup timers on destruction to prevent memory leaks
+	$effect(() => {
+		return () => {
+			clearTimeout(titleTimer)
+			clearTimeout(notesTimer)
+		}
 	})
 
 	// Manual Save Function
@@ -128,6 +136,7 @@
 			'w-full bg-transparent border border-dashed border-neutral-500/50 focus:border-solid focus:border-accent focus:outline-none dark:text-white text-neutral-800 transition-all focus:ring-4 focus:ring-accent/20',
 	}
 
+	// we have the awaits experimental feature on so this will work
 	const projectJson = await getProjectJson(project.id)
 </script>
 
@@ -136,21 +145,27 @@
 </svelte:head>
 
 {#if project.status !== 'shared'}
-	<div class="bg-yellow-500/20 p-4 leading-tight font-bold text-accent dark:text-white">
+	<div
+		class="bg-yellow-500/20 p-4 leading-tight font-bold text-accent dark:text-white"
+		transition:slide
+	>
 		<div class="m-auto max-w-6xl">
 			{#if project.status === 'unshared'}
 				<div class="flex items-center justify-between">
-					Only you can see this project. Do you want to share it?
+					<span>This project is unshared. Do you want to share it?</span>
 					<form method="POST" action="?/shareProject" class="inline" use:enhance>
 						<Button type="submit" class="ml-1">Share now</Button>
 					</form>
 				</div>
 			{:else if project.status === 'banned'}
-				AmpMod moderators have banned this project. It is now permanently unshared. If you believe
-				this was a mistake, please contact support.
+				<p>
+					AmpMod moderators have banned this project. It is now permanently unshared. If you believe
+					this was a mistake, please contact support.
+				</p>
 				{#if project.moderatorNote}
-					<br />
-					Moderator note: {project.moderatorNote}
+					<p class="mt-1 font-normal opacity-90">
+						{project.moderatorNote}
+					</p>
 				{/if}
 			{/if}
 		</div>
@@ -168,7 +183,7 @@
 	{/if}
 
 	<header class="flex flex-col items-center gap-1 border-neutral-200 pb-6 dark:border-neutral-800">
-		<div class="flex w-full gap-4">
+		<div class="flex w-full gap-2">
 			<a href="/users/{author.username}" title={author.username} class="shrink-0">
 				<img
 					src={getPfpPath(author)['64']}
@@ -186,18 +201,18 @@
 							bind:value={titleValue}
 							oninput={handleTitleInput}
 							placeholder="Project Title"
-							class="{styles.inputBase} w-full rounded p-2 text-2xl"
+							class="{styles.inputBase} h-12 w-full rounded p-2 text-2xl"
 						/>
 					</div>
 				{:else}
 					<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">{project.title}</h1>
 				{/if}
 				<div class="flex items-center gap-3 text-sm">
-					{#if !canEdit}<span class="text-neutral-500"
-							>by <a href="/users/{author.username}" class="font-bold text-accent hover:underline"
-								>{author.username}</a
-							></span
-						>{/if}
+					<span class="text-neutral-500">
+						by <a href="/users/{author.username}" class="font-bold text-accent hover:underline"
+							>{author.username}</a
+						>
+					</span>
 
 					<div
 						class="flex items-center gap-1.5 transition-opacity duration-300"
@@ -216,18 +231,15 @@
 
 			<div class="grow"></div>
 			<div class="flex shrink-0 items-start gap-3">
-				{#if data.user && data.user.id !== project.userId}<form
-						method="POST"
-						action="?/remixProject"
-						class="flex"
-						use:enhance
-					>
+				{#if data.user && data.user.id !== project.userId}
+					<form method="POST" action="?/remixProject" class="flex" use:enhance>
 						<input type="hidden" name="projectId" value={project.id} />
-						<Button type="submit" class="flex items-center gap-2">
-							<CopyPlus /> Remix
+						<Button type="submit" class="flex h-12 items-center gap-2">
+							<CopyPlus /> Remix!
 						</Button>
-					</form>{/if}
-				<Button href="/projects/{project.id}/editor" class="flex items-center gap-2">
+					</form>
+				{/if}
+				<Button href="/projects/{project.id}/editor" class="flex h-12 items-center gap-2">
 					<RefreshCcw size={18} /> See inside
 				</Button>
 			</div>
@@ -255,21 +267,22 @@
 							{data.originalProject?.author?.username}
 						</a>
 						for
-						<a href="/projects/{data.originalProject?.id}" class="link"
-							>{data.originalProject?.title}</a
-						>
+						<a href="/projects/{data.originalProject?.id}" class="link">
+							{data.originalProject?.title}
+						</a>
 					</p>
 				</div>
 			{/if}
 			<div class="grow">
 				{#if canEdit}
 					<div class="flex h-full flex-col gap-1">
-						<h2 class={styles.label}>Notes and Credits</h2>
+						<label for="project-notes-textarea" class={styles.label}>Notes and Credits</label>
 						<textarea
+							id="project-notes-textarea"
 							name="notes"
 							bind:value={notesValue}
 							oninput={handleNotesInput}
-							placeholder="Add notes or credits..."
+							placeholder="How do you use this project? Did you use assets from other people? If so, credit them here."
 							class="{styles.inputBase} h-full w-full resize-none rounded-lg p-4 text-sm"
 						></textarea>
 					</div>
@@ -292,7 +305,7 @@
 			</div>
 		</aside>
 	</div>
-	<div class="flex items-center justify-end gap-2 px-1">
+	<div class="flex flex-wrap items-center justify-end gap-2 px-1">
 		<p class="text-sm text-neutral-500">
 			Shared {new Date(project.createdAt).toLocaleDateString('en-GB', {
 				day: 'numeric',
@@ -303,16 +316,19 @@
 		{#if isMod}
 			{#if data.isFeatured}
 				<form method="POST" action="?/unfeatureProject">
-					<Button type="submit">Remove from Featured</Button>
+					<Button type="submit">Unfeature</Button>
 				</form>
 			{:else}
 				<form method="POST" action="?/featureProject" class="flex">
 					<input name="why" type="text" placeholder="Why feature this?" hidden />
-					<Button type="submit">Feature on Home</Button>
+					<Button type="submit">Feature</Button>
 				</form>
 			{/if}
+
 			<Button onclick={() => (isShowingBanProject = true)} class="flex items-center gap-2">
-				<Hammer /> Ban Project
+				<Hammer />
+				{#if project.status === 'banned'}
+					Unban{:else}Ban{/if}
 			</Button>
 		{/if}
 		<Button onclick={() => (isShowingCopyLink = true)} class="flex items-center gap-2">
@@ -327,82 +343,114 @@
 			</Button>
 		{/if}
 	</div>
+	{#if loadedExtensions.length > 0}
+		<section class="flex items-center gap-2 overflow-x-auto">
+			{#each loadedExtensions as ext}
+				<div
+					class="inline-flex shrink-0 items-center gap-3 rounded-lg border border-black/10 px-3 py-1.5 dark:border-white/10"
+					style:background-color={ext.color1 + '14'}
+				>
+					{#if ext.icon}
+						<img src={ext.icon} alt="" class="h-5 w-5" />
+					{:else}
+						<div
+							class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[8px] font-bold"
+							class:bg-accent={!ext.color1}
+							class:text-white={!ext.color1}
+							style:background-color={ext.color1}
+							style:border-color={ext.color2}
+						></div>
+					{/if}
+					<span class="text-neutral-700 dark:text-neutral-300">
+						{ext.name}
+					</span>
+				</div>
+			{/each}
+		</section>
+	{/if}
 </div>
 
-{#if isShowingCopyLink}
-	<Modal bind:open={isShowingCopyLink} title="Copy project link">
-		<div class="flex flex-col gap-4">
-			<h2 class="text-lg font-semibold">Link to project</h2>
-			<input
-				type="text"
-				value={window.location.href}
-				class="w-full rounded border border-neutral-500 p-2 font-mono"
-				readonly
-				onclick={(e) => (e.target as HTMLInputElement).select()}
-			/>
-			<Button
-				onclick={() => {
-					navigator.clipboard.writeText(window.location.href)
-					isShowingCopyLink = false
-				}}
-				class="self-end"
+<Modal bind:open={isShowingCopyLink} title="Copy project link">
+	<div class="flex flex-col gap-4">
+		{#if project.status !== 'shared'}
+			<div
+				class="flex items-center justify-between rounded border border-amber-500/20 bg-amber-500/5 p-2 leading-tight font-medium text-amber-600 dark:text-amber-400"
 			>
-				Copy
-			</Button>
-
-			<h2 class="text-lg font-semibold">Embed on websites</h2>
-			<textarea
-				readonly
-				class="h-40 w-full rounded border border-neutral-500 p-2 font-mono"
-				value={`<iframe src="${window.location.href}/embed" title="${project.title}" style="border: none;"></iframe>`}
-				onclick={(e) => (e.target as HTMLTextAreaElement).select()}
-			/>
-			<Button
-				onclick={() => {
-					navigator.clipboard.writeText(
-						`<iframe src="${window.location.href}/embed" title="${project.title}" style="border: none;"></iframe>`,
-					)
-					isShowingCopyLink = false
-				}}
-				class="self-end"
-			>
-				Copy
-			</Button>
-		</div>
-	</Modal>
-{/if}
-
-{#if isShowingBanProject}
-	<Modal bind:open={isShowingBanProject} title="Ban project">
-		<div class="flex flex-col gap-4">
-			{#if project.status === 'banned'}
-				<h2 class="text-lg font-semibold">Unban Project</h2>
-				<p>This project is currently banned. Do you want to unban it?</p>
-				<form method="POST" action="?/unbanProject" class="flex flex-col gap-4">
-					<div class="flex justify-end gap-2">
-						<Button type="button" onClick={() => (isShowingBanProject = false)}>Cancel</Button>
-						<Button type="submit" class="bg-green-600 text-white hover:bg-green-700"
-							>Unban Project</Button
-						>
-					</div>
+				<span>Share this project for links to work.</span>
+				<form method="POST" action="?/shareProject" class="inline" use:enhance>
+					<Button type="submit" class="ml-1">Share</Button>
 				</form>
-			{:else}
-				<h2 class="text-lg font-semibold">Ban this project?</h2>
-				<p>Are you sure you want to ban this project? This action can be undone.</p>
-				<form method="POST" action="?/banProject" class="flex flex-col gap-4">
-					<input
-						name="moderatorNote"
-						type="text"
-						placeholder="Reason for banning (optional)"
-						class="w-full rounded border border-neutral-500 p-2"
-					/>
-					<div class="flex justify-end gap-2">
-						<Button type="button" onClick={() => (isShowingBanProject = false)}>Cancel</Button>
-						<Button type="submit" class="bg-red-600 text-white hover:bg-red-700">Ban Project</Button
-						>
-					</div>
-				</form>
-			{/if}
-		</div>
-	</Modal>
-{/if}
+			</div>
+		{/if}
+		<h2 class="text-lg font-semibold">Link</h2>
+		<p>Share this project with friends:</p>
+		<input
+			type="text"
+			value={window.location.href}
+			class="input"
+			readonly
+			onfocus={(e) => e.currentTarget.select()}
+		/>
+		<Button
+			onclick={() => {
+				navigator.clipboard.writeText(window.location.href)
+				isShowingCopyLink = false
+			}}
+			class="self-end"
+		>
+			Copy
+		</Button>
+
+		<h2 class="text-lg font-semibold">HTML embed</h2>
+		<p>Share this project on your website:</p>
+		<textarea
+			readonly
+			class="input"
+			value={`<iframe src="${window.location.href}/embed" title="AmpMod project" style="border: none;"></iframe>`}
+			onfocus={(e) => e.currentTarget.select()}
+		></textarea>
+		<Button
+			onclick={() => {
+				navigator.clipboard.writeText(
+					`<iframe src="${window.location.href}/embed" title="AmpMod project" style="border: none;"></iframe>`,
+				)
+				isShowingCopyLink = false
+			}}
+			class="self-end"
+		>
+			Copy
+		</Button>
+	</div>
+</Modal>
+
+<Modal bind:open={isShowingBanProject} title="Ban project">
+	<div class="flex flex-col gap-4">
+		{#if project.status === 'banned'}
+			<h2 class="text-lg font-semibold">Unban Project</h2>
+			<p>This project is currently banned. Do you want to unban it?</p>
+			<form method="POST" action="?/unbanProject" class="flex flex-col gap-4">
+				<div class="flex justify-end gap-2">
+					<Button type="button" onclick={() => (isShowingBanProject = false)}>Cancel</Button>
+					<Button type="submit" class="bg-green-600 text-white hover:bg-green-700"
+						>Unban Project</Button
+					>
+				</div>
+			</form>
+		{:else}
+			<h2 class="text-lg font-semibold">Ban this project?</h2>
+			<p>Are you sure you want to ban this project? This action can be undone.</p>
+			<form method="POST" action="?/banProject" class="flex flex-col gap-4">
+				<input
+					name="moderatorNote"
+					type="text"
+					placeholder="Reason for banning (optional)"
+					class="w-full rounded border border-neutral-500 p-2"
+				/>
+				<div class="flex justify-end gap-2">
+					<Button type="button" onclick={() => (isShowingBanProject = false)}>Cancel</Button>
+					<Button type="submit" class="bg-red-600 text-white hover:bg-red-700">Ban Project</Button>
+				</div>
+			</form>
+		{/if}
+	</div>
+</Modal>
