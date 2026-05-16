@@ -13,18 +13,18 @@ import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import { eq } from 'drizzle-orm'
 
+import maintenanceHtml from './maintenance.html?raw'
+
+const isMaintenanceMode = true
+
 const handleLocalhostConnection: Handle = async ({ event, resolve }) => {
 	const isScratchPath = event.url.pathname === '/scratch_gui_connection'
 	const isLocalhost = event.url.hostname === 'localhost' || event.url.hostname === '127.0.0.1'
 
 	if (isScratchPath && isLocalhost) {
-		// Allow the request to proceed and ensure credentials (cookies) can be included
 		const response = await resolve(event)
-
-		// Set CORS headers to allow localhost to send cookies
 		response.headers.set('Access-Control-Allow-Origin', event.request.headers.get('origin') || '*')
 		response.headers.set('Access-Control-Allow-Credentials', 'true')
-
 		return response
 	}
 
@@ -72,8 +72,6 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		const currentUserAgent = event.request.headers.get('user-agent')
 
 		if (session.ip !== currentIp && session.userAgent !== currentUserAgent) {
-			// If this happens, it is almost certainly a session hijack.
-			// Better to just shut it down.
 			auth.invalidateSession(session.id)
 			auth.deleteSessionTokenCookie(event)
 			throw redirect(307, '/sessionpwned')
@@ -93,6 +91,38 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
 	event.locals.user = user
 	event.locals.session = session
+	return resolve(event)
+}
+
+const handleMaintenance: Handle = async ({ event, resolve }) => {
+	if (isMaintenanceMode) {
+		const user = event.locals.user
+		const userRank = user?.rank ?? 0
+
+		// If user is unauthenticated or rank is less than 2, lock them out
+		if (userRank < 2) {
+			// Return JSON payload if the client requested JSON data or performed a mutation (POST, PUT, etc.)
+			if (
+				event.request.headers.get('accept')?.includes('application/json') ||
+				event.request.method !== 'GET'
+			) {
+				return new Response(JSON.stringify({ error: 'Service Unavailable due to maintenance.' }), {
+					status: 503,
+					headers: { 'Content-Type': 'application/json' },
+				})
+			}
+
+			// Fallback to the imported static HTML payload for standard browser visits
+			return new Response(
+				maintenanceHtml.replaceAll('{AW3VERSION}', import.meta.env.VITE_NPM_PACKAGE_VERSION),
+				{
+					status: 503,
+					headers: { 'Content-Type': 'text/html; charset=utf-8' },
+				},
+			)
+		}
+	}
+
 	return resolve(event)
 }
 
@@ -167,6 +197,7 @@ export const handle: Handle = sequence(
 	handleLocalhostConnection,
 	handleSetup,
 	handleAuth,
+	handleMaintenance,
 	handleBanned,
 	handleGuard,
 	handleParaglide,
