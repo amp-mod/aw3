@@ -24,7 +24,7 @@ Stack:
 ### What aw3 won't do in the near future
 
 - Commenting on projects (it most likely never will - it's a nightmare to moderate for a small community with
-  only a few admins)
+  only a few admins) **Update: we are considering adding comments to AmpMod, so this might be removed from the list soon**
 - Forums, wiki, manual, extension gallery (hosted separately)
 - Editor (we have links to paths such as `/projects/editor` and `/settings/addons` but we expect you to reverse
   proxy those - see below)
