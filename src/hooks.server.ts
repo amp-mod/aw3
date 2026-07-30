@@ -15,7 +15,7 @@ import { eq } from 'drizzle-orm'
 
 import maintenanceHtml from './maintenance.html?raw'
 
-const isMaintenanceMode = true
+const isMaintenanceMode = false
 
 const handleLocalhostConnection: Handle = async ({ event, resolve }) => {
 	const isScratchPath = event.url.pathname === '/scratch_gui_connection'
