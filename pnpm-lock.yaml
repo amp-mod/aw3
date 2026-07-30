@@ -2511,7 +2511,7 @@ packages:
     resolution: {integrity: sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==}
 
   '@turbowarp/types@https://codeload.github.com/TurboWarp/types-tw/tar.gz/938c3ab84e4dd859f6f0646cdf7ed5dd1a94f622':
-    resolution: {tarball: https://codeload.github.com/TurboWarp/types-tw/tar.gz/938c3ab84e4dd859f6f0646cdf7ed5dd1a94f622}
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/TurboWarp/types-tw/tar.gz/938c3ab84e4dd859f6f0646cdf7ed5dd1a94f622}
     version: 0.0.14
 
   '@tybys/wasm-util@0.10.1':
