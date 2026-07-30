@@ -6,6 +6,7 @@ RUN corepack enable && pnpm install --frozen-lockfile
 
 COPY . .
 RUN pnpm run build
+RUN pnpm prune --prod
 
 FROM node:24-alpine
 WORKDIR /aw3-bundle
