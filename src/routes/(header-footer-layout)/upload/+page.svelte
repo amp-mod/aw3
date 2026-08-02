@@ -19,7 +19,6 @@
 	let title = $state('')
 	let notesAndCredits = $state('')
 	let projectJson = $state<any>(null)
-	let needsEpilepsyWarning = $state<boolean | null>(false)
 
 	let thumbnails = $state<{ name: string; url: string; priority: number; mimeType: string }[]>([])
 	let selectedThumbnailUrl = $state('')
@@ -219,7 +218,7 @@
 		})
 	})
 
-	let isFormValid = $derived(title.trim().length > 0 && needsEpilepsyWarning !== null && hasFile)
+	let isFormValid = $derived(title.trim().length > 0 && hasFile)
 </script>
 
 <form
@@ -371,40 +370,6 @@
 					placeholder="How did you make this? Did you use other assets?"
 					class="min-h-[150px] w-full rounded border p-2 outline-none dark:bg-neutral-900"
 				></textarea>
-			</div>
-
-			<div
-				class="rounded border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900 dark:bg-yellow-900/20"
-			>
-				<p class="mb-3 font-bold text-yellow-900 dark:text-yellow-200">
-					Does this project contain flashing lights?
-				</p>
-				<p class="mb-3 text-xs text-yellow-800 dark:text-yellow-300">
-					A small percentage of individuals may experience seizures from certain light patterns.
-					Intentionally inaccurate answers will lead to a ban.
-				</p>
-				<div class="flex flex-col gap-3">
-					<label class="flex cursor-pointer items-center gap-2">
-						<input
-							type="radio"
-							name="flashingLights"
-							bind:group={needsEpilepsyWarning}
-							value={true}
-							class="accent-accent"
-						/>
-						<span class="text-sm">Yes, this project has flashing lights.</span>
-					</label>
-					<label class="flex cursor-pointer items-center gap-2">
-						<input
-							type="radio"
-							name="flashingLights"
-							bind:group={needsEpilepsyWarning}
-							value={false}
-							class="accent-accent"
-						/>
-						<span class="text-sm">No, it is safe for photosensitive users.</span>
-					</label>
-				</div>
 			</div>
 
 			<div class="flex justify-end pt-4">

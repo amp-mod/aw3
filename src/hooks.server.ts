@@ -114,8 +114,8 @@ const handleMaintenance: Handle = async ({ event, resolve }) => {
 		const user = event.locals.user
 		const userRank = user?.rank ?? 0
 
-		// If user is unauthenticated or rank is less than 2, lock them out
-		if (userRank < 2) {
+		// If user is unauthenticated or rank is less than 3, lock them out
+		if (userRank < 3) {
 			// Return JSON payload if the client requested JSON data or performed a mutation (POST, PUT, etc.)
 			if (
 				event.request.headers.get('accept')?.includes('application/json') ||

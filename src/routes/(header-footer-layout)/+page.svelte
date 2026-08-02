@@ -25,7 +25,7 @@
 </script>
 
 <svelte:head>
-	<title>{data.user ? 'Front Page - AmpMod' : 'AmpMod - Block-based programming. amplified'}</title>
+	<title>AmpMod - Block-based programming, amplified</title>
 </svelte:head>
 
 <Alert

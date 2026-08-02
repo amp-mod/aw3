@@ -47,7 +47,7 @@
 			</div>
 			{#if button}
 				<a
-					href={button.uri}
+					href={button.url}
 					class="ml-2 cursor-pointer rounded-full bg-(--alert-fg-param) px-4 py-2 text-sm font-bold text-(--alert-bg-param) no-underline"
 				>
 					<span class="sr-only">{@render children()} </span>{button.text}

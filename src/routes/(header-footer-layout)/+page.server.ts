@@ -120,6 +120,7 @@ export const load: PageServerLoad = async (event) => {
 			.innerJoin(table.project, eq(table.featuredProject.projectId, table.project.id))
 			.leftJoin(table.user, eq(table.project.userId, table.user.id))
 			.where(eq(table.project.status, 'shared'))
+			.orderBy(desc(table.project.createdAt))
 			.limit(15),
 
 		following: userId
