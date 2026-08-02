@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms'
 	import Button from '$lib/components/Button.svelte'
 	import { getPfpPath } from '$lib/storage-helpers.js'
+	import { Cat } from '@lucide/svelte'
 
 	let { data } = $props()
 	let formElement = $state()
@@ -74,8 +75,8 @@
 		{@render settingToggle(
 			'privateProfile',
 			'isPrivate',
-			'Make my profile private',
-			'Moderators can view your profile when this setting is enabled. In addition, note that the Featured Project section will be removed from your profile.',
+			'Hide my profile from other users',
+			'Regardless of this setting, AmpMod moderators will still be able to see your profile.',
 			{
 				get value() {
 					return isPrivate
@@ -86,4 +87,9 @@
 			},
 		)}
 	</form>
+	<h3 class="text-2xl font-semibold">Link to your Scratch profile</h3>
+	<p>When you link your AmpMod account to Scratch, a link to your Scratch profile will be added.</p>
+	<div>
+		<Button class="flex items-center gap-2"><Cat />Go to Scratch linking settings</Button>
+	</div>
 </div>

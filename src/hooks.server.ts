@@ -16,6 +16,7 @@ import { eq } from 'drizzle-orm'
 import maintenanceHtml from './maintenance.html?raw'
 
 const isMaintenanceMode = false
+let activeUsers: any[] = []
 
 const handleLocalhostConnection: Handle = async ({ event, resolve }) => {
 	const isScratchPath = event.url.pathname === '/scratch_gui_connection'
@@ -62,6 +63,10 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	if (!sessionToken) {
 		event.locals.user = null
 		event.locals.session = null
+		const inactiveTimestamp = Date.now() - 5 * 60 * 1000
+		activeUsers = activeUsers.filter((item) => item.time > inactiveTimestamp)
+		event.locals.activeUsers = activeUsers
+
 		return resolve(event)
 	}
 
@@ -89,8 +94,18 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		auth.deleteSessionTokenCookie(event)
 	}
 
+	const inactiveTimestamp = Date.now() - 5 * 60 * 1000
+	activeUsers = activeUsers.filter((item) => item.time > inactiveTimestamp)
 	event.locals.user = user
 	event.locals.session = session
+	if (user) {
+		activeUsers = activeUsers.filter((item) => item.username !== user.username)
+		activeUsers.unshift({
+			username: user.username,
+			time: Date.now(),
+		})
+	}
+	event.locals.activeUsers = activeUsers
 	return resolve(event)
 }
 

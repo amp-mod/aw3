@@ -60,7 +60,7 @@
 					<a href="/projects/editor" data-sveltekit-reload class="header-link"
 						>{m.createProject()}</a
 					>
-					<a href="/projects/explore" class="header-link">{m.explore()}</a>
+					<a href="/explore/projects" class="header-link">{m.explore()}</a>
 					{#if !data.user}
 						<a href="/about" class="header-link">{m.aboutHeader()}</a>
 						<a href="https://ampmod.codeberg.page/manual" class="header-link">Manual</a>

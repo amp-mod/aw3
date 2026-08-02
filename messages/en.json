@@ -1,5 +1,5 @@
 {
-	"errorProtectedPage": "This is a protected page, only operators can access it.",
+	"errorProtectedPage": "This is a protected page, only administrators can access it.",
 	"footerPolicy": "Policy",
 	"guidelines": "Guidelines",
 	"termsOfService": "Terms of Service",
@@ -45,7 +45,7 @@
 	"newAmpModder": "New AmpModder",
 	"ampModder": "AmpModder",
 	"moderator": "Moderator",
-	"operator": "Operator",
+	"administrator": "Administrator",
 	"joinedDate": "Joined {joinedDate}",
 	"aboutMe": "About me",
 	"save": "Save",

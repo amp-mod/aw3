@@ -34,6 +34,7 @@ export const search = query(
 				title: table.project.title,
 				createdAt: table.project.createdAt,
 				status: table.project.status,
+				userId: table.project.userId,
 				rank: sql<number>`ts_rank(${table.project.searchIndex}, websearch_to_tsquery('english', ${trimmedSearch}))`.as(
 					'rank',
 				),

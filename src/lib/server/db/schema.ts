@@ -84,7 +84,6 @@ export const project = pgTable(
 		image: text(),
 		status: text('status').default('unshared'),
 		ccVersion: smallint('cc_version').default(4),
-		flashingLights: boolean().default(false).notNull(),
 		original: bigint('original', { mode: 'number' }).references(() => project.id, {
 			onDelete: 'set null',
 			onUpdate: 'cascade',

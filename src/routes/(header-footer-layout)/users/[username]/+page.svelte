@@ -360,12 +360,19 @@
 
 			<div class="flex grow flex-col justify-center">
 				<div class="flex items-center gap-3">
-					<div class="flex w-full items-center">
+					<div class="flex w-full items-center gap-4">
 						<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">
 							{userProfile.username}{#if userProfile.rank === 3}*{/if}
 						</h1>
 
 						<div class="grow"></div>
+
+						{#if isViewerStaff && !isOwnProfile}
+							<Button onclick={() => (isBanModalOpen = true)} class="flex items-center gap-2">
+								<Gavel size={24} />
+								{m.adminBan()}
+							</Button>
+						{/if}
 
 						{#if !isOwnProfile && data.user}
 							<form
@@ -407,20 +414,14 @@
 							(Rank up)
 						</button>
 					{/if}
+					{#if data.isOnline}
+						<span>•</span>
+						<span class="font-bold text-green-500">Online</span>
+					{/if}
 					<span>•</span>
 					<span>{m.joinedDate({ joinedDate })}</span>
 				</div>
 			</div>
-
-			{#if isViewerStaff && !isOwnProfile}
-				<button
-					onclick={() => (isBanModalOpen = true)}
-					class="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-red-700"
-				>
-					<Gavel size={16} />
-					{m.adminBan()}
-				</button>
-			{/if}
 		</header>
 
 		<div class="flex flex-col gap-6 lg:flex-row lg:items-stretch">
@@ -545,13 +546,27 @@
 				<ProjectList projects={data.projects} emptyMessage="No projects yet." />
 			</Row>
 
-			<Row title="Following ({followingCount})" seeMore="/users/{userProfile.username}/following">
-				<UserList users={data.following} emptyMessage="Not following anyone yet." />
-			</Row>
+			<div class="grid grid-cols-1 gap-2 md:grid-cols-2">
+				{#if data.following?.length > 0}
+					<Row
+						title="Following ({followingCount})"
+						seeMore="/users/{userProfile.username}/following"
+						class="grow"
+					>
+						<UserList users={data.following} />
+					</Row>
+				{/if}
 
-			<Row title="Followers ({followerCount})" seeMore="/users/{userProfile.username}/followers">
-				<UserList users={data.followers} emptyMessage="No followers yet." />
-			</Row>
+				{#if data.followers?.length > 0}
+					<Row
+						title="Followers ({followerCount})"
+						seeMore="/users/{userProfile.username}/followers"
+						class="grow"
+					>
+						<UserList users={data.followers} />
+					</Row>
+				{/if}
+			</div>
 		</div>
 	</div>
 {:else}

@@ -24,15 +24,13 @@
 		projectJson = null,
 		extensions = $bindable([]),
 		isEmbed = false,
-		user,
-		flashingLights = false,
+		user = null,
 	} = $props<{
 		project: any
-		projectJson: any
-		extensions: any
-		user: User
-		isEmbed: boolean
-		flashingLights: boolean
+		projectJson?: any
+		extensions?: any
+		user?: User
+		isEmbed?: boolean
 	}>()
 
 	let progress = $state('Loading project...')
@@ -183,11 +181,6 @@
 	onMount(async () => {
 		isTouchOriented = window.matchMedia('(pointer: coarse)').matches
 		const blockDangerous = localStorage.getItem('BlockDangerous') === 'true'
-		if (flashingLights && blockDangerous) {
-			isBlockedBySafety = true
-			isLoading = false
-			return
-		}
 
 		syncScaling()
 
@@ -381,11 +374,6 @@
 							class="pointer-events-auto bg-accent p-2 text-left font-sans text-2xl font-bold text-white"
 						>
 							{project.title}
-						</p>{/if}
-					{#if flashingLights}<p
-							class="pointer-events-auto m-2 rounded-lg border border-red-900 bg-red-600 p-2 text-center font-sans text-2xl font-bold text-white"
-						>
-							This project contains flashing lights.
 						</p>{/if}
 				</div>
 				<div

@@ -15,10 +15,6 @@
 			{ id: 'horror', label: 'Blood/gore/extreme horror' },
 			{ id: 'malicious', label: 'Malware or malicious extensions' },
 			{ id: 'copyright', label: 'Copyright / Uncredited assets' },
-			// --- TRAP OPTIONS ---
-			{ id: 'trap_dislike', label: "I don't like it" },
-			{ id: 'trap_not_game', label: 'It is not a game' },
-			// --------------------
 			{ id: 'other', label: 'Other' },
 		],
 		user: [
@@ -33,14 +29,17 @@
 			{ id: 'inappropriate', label: 'Inappropriate language' },
 			{ id: 'other', label: 'Other' },
 		],
+		gallery: [
+			{ id: 'spam', label: 'Spam or advertisement' },
+			{ id: 'harassment', label: 'Harassment or hate speech' },
+			{ id: 'raids', label: 'This gallery is being raided' },
+			{ id: 'other', label: 'Other' },
+		],
 	}
 
 	const activeCategories = $derived(
 		allCategories[reportState.targetType as keyof typeof allCategories] || allCategories.project,
 	)
-
-	// Check if the current selection is a trap
-	const isTrap = $derived(category.startsWith('trap_'))
 
 	const styles = {
 		label: 'text-sm font-bold text-neutral-500 dark:text-neutral-300 mb-1 block',
@@ -102,28 +101,17 @@
 			{/each}
 		</fieldset>
 
-		{#if isTrap}
-			<div class={styles.infoBox}>
-				<CircleAlert size={18} class="shrink-0" />
-				<p>
-					<strong>Note:</strong> AmpMod is a creative platform for everyone. Projects do not have to be
-					"games," and subjective taste isn't a violation of our terms. Please only report content that
-					is harmful or illegal.
-				</p>
-			</div>
-		{:else}
-			<div>
-				<label class={styles.label} for="reason">Additional details</label>
-				<textarea
-					id="reason"
-					name="reason"
-					bind:value={reason}
-					required
-					placeholder="Please provide context for the moderators..."
-					class={styles.textarea}
-				></textarea>
-			</div>
-		{/if}
+		<div>
+			<label class={styles.label} for="reason">Additional details</label>
+			<textarea
+				id="reason"
+				name="reason"
+				bind:value={reason}
+				required
+				placeholder="Please provide context for the moderators..."
+				class={styles.textarea}
+			></textarea>
+		</div>
 
 		<div class="flex justify-end gap-2">
 			<Button variant="secondary" onclick={() => (reportState.show = false)}>

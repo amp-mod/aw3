@@ -4,7 +4,7 @@ export const rankMap: Record<number, string> = {
 	0: m.newAmpModder(),
 	1: m.ampModder(),
 	2: m.moderator(),
-	3: m.operator(),
+	3: m.administrator(),
 }
 
 export const getRankName = (rank: number | null) => rankMap[rank ?? 0]

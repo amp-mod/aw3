@@ -15,8 +15,8 @@
 	>
 		<FileX size={64} />
 		<p>
-			This page is unavailable because a server operator has not set up the AmpMod editor on this
-			site properly.
+			This page is unavailable because a server administrator has not set up the AmpMod editor on
+			this site properly.
 			{#if path}You can access this page on the official site: <a
 					class="link"
 					href={`https://ampmod.codeberg.page/${path}`}>ampmod.codeberg.page/{path}</a

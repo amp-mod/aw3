@@ -7,7 +7,7 @@
 	const styles = {
 		// Use template literals to toggle between horizontal (default) and vertical layouts
 		card: `group relative flex gap-3 rounded-xl p-2 transition-all border border-black/10 dark:border-white/10 hover:bg-neutral-50 dark:hover:bg-white/5 
-               ${vertical ? 'flex-row items-center w-full' : 'flex-col w-46 shrink-0'}`,
+               ${vertical ? 'flex-row items-center w-full' : 'flex-col w-52 shrink-0'}`,
 
 		thumbContainer: `overflow-hidden rounded border border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 
                          ${vertical ? 'aspect-[4/3] h-18 shrink-0' : 'aspect-[4/3] w-full'}`,

@@ -5,22 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1764381036140,
-      "tag": "0000_cute_the_stranger",
+      "when": 1785621638357,
+      "tag": "0000_curved_mariko_yashida",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1764420291506,
-      "tag": "0001_careless_lady_ursula",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1778186444323,
-      "tag": "0002_bitter_bloodstorm",
+      "when": 1785695405063,
+      "tag": "0001_dazzling_marvex",
       "breakpoints": true
     }
   ]

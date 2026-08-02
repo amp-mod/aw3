@@ -11,6 +11,7 @@ import { desc } from 'drizzle-orm'
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const { username } = params
+	const { activeUsers } = locals
 	const viewer = locals.user
 	const viewerRank = viewer?.rank ?? 0
 	const isStaffMember = viewerRank >= 2
@@ -114,8 +115,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.where(eq(table.follow.followerId, userProfile.id))
 		.limit(20)
 
+	// Don't say "isOnline" on Scratch or you'll get banned!!
+	const isOnline = activeUsers.some((i) => i.username === userProfile.username)
+
 	return {
 		userProfile,
+		isOnline,
 		featuredProject,
 		isOwnProfile,
 		projects,

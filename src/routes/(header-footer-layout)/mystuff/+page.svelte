@@ -19,14 +19,13 @@
 	const { data } = $props()
 
 	const styles = {
-		tab: 'cursor-pointer rounded-t-lg border border-neutral-300 bg-neutral-100 px-3 h-8 text-neutral-600 outline-none border-b-0 flex items-center gap-3 data-[state=active]:border-b-transparent data-[state=active]:bg-white data-[state=active]:text-accent-secondary data-[state=active]:h-10 dark:border-neutral-500 dark:bg-neutral-800 dark:text-neutral-300 dark:data-[state=active]:bg-neutral-700 dark:data-[state=active]:text-white',
+		tab: 'rounded-l-xl border-r-0 cursor-pointer border border-neutral-300 bg-neutral-100 p-5 text-neutral-600 outline-none  flex items-center gap-3 data-[state=active]:bg-white data-[state=active]:text-accent-secondary h-10 dark:border-neutral-500 dark:bg-neutral-800 dark:text-neutral-300 dark:data-[state=active]:bg-neutral-700 dark:data-[state=active]:text-white',
 	}
 
 	const tabs = [
-		{ id: 'shared', label: 'Shared', icon: Globe },
-		{ id: 'unshared', label: 'Unshared', icon: GlobeOff },
+		{ id: 'shared', label: 'Shared Projects', icon: Globe },
+		{ id: 'unshared', label: 'Unshared Projects', icon: GlobeOff },
 		{ id: 'galleries', label: 'My galleries', icon: SquareStack },
-		{ id: 'curating', label: 'Galleries I curate', icon: SquareStack },
 	]
 
 	const newActions = [
@@ -95,43 +94,46 @@
 				</DropdownMenu.Root>
 			</div>
 		</div>
-
-		<Tabs.Root bind:value={myStuffState.view} class="flex flex-col">
-			<Tabs.List class="flex h-10 items-end gap-2 border-b border-neutral-500/20 pl-4">
-				{#each tabs as tab}
-					{@const isActive = myStuffState.view === tab.id}
-					<Tabs.Trigger value={tab.id} class={styles.tab}>
-						{#if tab.icon}
-							<tab.icon size={18} strokeWidth={isActive ? 2.5 : 2} />
-						{/if}
-						<span>{tab.label}</span>
-					</Tabs.Trigger>
-				{/each}
-			</Tabs.List>
-
-			{#if data.user}
-				<main
-					class="min-h-120 flex-1 rounded-lg border border-neutral-300 bg-white p-6 dark:border-neutral-500 dark:bg-neutral-800"
-				>
-					<Tabs.Content value="shared">
-						<MyStuffProjectList type="shared" />
-					</Tabs.Content>
-
-					<Tabs.Content value="unshared">
-						<MyStuffProjectList type="unshared" />
-					</Tabs.Content>
-
-					<Tabs.Content value="galleries">
-						<div class="py-20 text-center text-neutral-500 italic">
-							All your gallery are belong to us
-						</div>
-					</Tabs.Content>
-
-					<Tabs.Content value="curating">
-						<div class="py-20 text-center text-neutral-500">Coming soon</div>
-					</Tabs.Content>
-				</main>
-			{/if}
-		</Tabs.Root>
 	</header>
+	<Tabs.Root
+		bind:value={myStuffState.view}
+		class="flex min-h-120 items-stretch"
+		orientation="vertical"
+	>
+		<Tabs.List class="flex w-64 flex-col gap-2 py-8">
+			{#each tabs as tab}
+				{@const isActive = myStuffState.view === tab.id}
+				<Tabs.Trigger value={tab.id} class={styles.tab}>
+					{#if tab.icon}
+						<tab.icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+					{/if}
+					<span>{tab.label}</span>
+				</Tabs.Trigger>
+			{/each}
+		</Tabs.List>
+
+		{#if data.user}
+			<main
+				class=" flex-1 rounded-lg border border-neutral-300 bg-white p-6 dark:border-neutral-500 dark:bg-neutral-800"
+			>
+				<Tabs.Content value="shared">
+					<MyStuffProjectList type="shared" />
+				</Tabs.Content>
+
+				<Tabs.Content value="unshared">
+					<MyStuffProjectList type="unshared" />
+				</Tabs.Content>
+
+				<Tabs.Content value="galleries">
+					<div class="py-20 text-center text-neutral-500 italic">
+						All your gallery are belong to us
+					</div>
+				</Tabs.Content>
+
+				<Tabs.Content value="curating">
+					<div class="py-20 text-center text-neutral-500">Coming soon</div>
+				</Tabs.Content>
+			</main>
+		{/if}
+	</Tabs.Root>
 </div>

@@ -13,5 +13,5 @@
 </svelte:head>
 
 <div class="m-auto h-screen overflow-hidden">
-	<ProjectRunner {project} flashingLights={project.flashingLights} isEmbed />
+	<ProjectRunner {project} isEmbed />
 </div>

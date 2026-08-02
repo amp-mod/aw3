@@ -9,14 +9,9 @@
 	--font-pixelify: 'Pixelify Sans';
 	--font-sans: 'Geist Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
-	/* Primary: Desaturated Forest Green. 4.5:1 against neutral-50 (#fafafa) */
 	--color-accent: hsl(120, 30%, 34%);
-
-	/* Secondary & Tertiary: Shifted for depth and hierarchy */
 	--color-accent-secondary: hsl(120, 25%, 28%);
 	--color-accent-tertiary: hsl(120, 25%, 20%);
-
-	/* Light variants: Optimized for Dark Mode text (4.5:1 against neutral-900) */
 	--color-accent-light: hsl(120, 35%, 72%);
 	--color-accent-almost-light: hsl(120, 30%, 82%);
 }

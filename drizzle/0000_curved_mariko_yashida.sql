@@ -100,30 +100,36 @@ CREATE TABLE "projects_to_galleries" (
 	CONSTRAINT "projects_to_galleries_project_id_gallery_id_pk" PRIMARY KEY("project_id","gallery_id")
 );
 --> statement-breakpoint
-ALTER TABLE "session" DROP CONSTRAINT "session_user_id_user_id_fk";
+CREATE TABLE "session" (
+	"id" char(64) PRIMARY KEY NOT NULL,
+	"user_id" integer NOT NULL,
+	"expires_at" timestamp with time zone NOT NULL,
+	"ip" "inet",
+	"user_agent" text
+);
 --> statement-breakpoint
-ALTER TABLE "session" ALTER COLUMN "id" SET DATA TYPE char(64);--> statement-breakpoint
-ALTER TABLE "session" ALTER COLUMN "user_id" SET DATA TYPE integer;--> statement-breakpoint
-ALTER TABLE "user" ALTER COLUMN "id" SET DATA TYPE bigint;--> statement-breakpoint
-ALTER TABLE "user" ALTER COLUMN "id" ADD GENERATED ALWAYS AS IDENTITY (sequence name "user_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START WITH 1 CACHE 1);--> statement-breakpoint
-ALTER TABLE "user" ALTER COLUMN "username" SET DATA TYPE varchar(20);--> statement-breakpoint
-ALTER TABLE "user" ALTER COLUMN "bio" SET DATA TYPE varchar(2000);--> statement-breakpoint
-ALTER TABLE "user" ALTER COLUMN "bio" SET DEFAULT '';--> statement-breakpoint
-ALTER TABLE "session" ADD COLUMN "ip" "inet";--> statement-breakpoint
-ALTER TABLE "session" ADD COLUMN "user_agent" text;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "tos_revision" integer DEFAULT 0;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "pp_revision" integer DEFAULT 0;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "hasPFP" boolean DEFAULT false NOT NULL;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "created_at" timestamp with time zone DEFAULT now() NOT NULL;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "isPrivate" boolean DEFAULT false;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "featured_project_id" integer;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "featured_project_title_index" smallint DEFAULT 0;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "passkeys" jsonb;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "status" text DEFAULT 'normal';--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "banned_expiry" timestamp with time zone;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "ban_reason" text;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "scratch_linked" boolean DEFAULT false;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "scratch_username" varchar(64) DEFAULT '';--> statement-breakpoint
+CREATE TABLE "user" (
+	"id" bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "user_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START WITH 1 CACHE 1),
+	"username" varchar(20) NOT NULL,
+	"password_hash" text NOT NULL,
+	"tos_revision" integer DEFAULT 0,
+	"pp_revision" integer DEFAULT 0,
+	"rank" smallint DEFAULT 0,
+	"bio" varchar(2000) DEFAULT '',
+	"hasPFP" boolean DEFAULT false NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"isPrivate" boolean DEFAULT false,
+	"featured_project_id" integer,
+	"featured_project_title_index" smallint DEFAULT 0,
+	"passkeys" jsonb,
+	"status" text DEFAULT 'normal',
+	"banned_expiry" timestamp with time zone,
+	"ban_reason" text,
+	"scratch_linked" boolean DEFAULT false,
+	"scratch_username" varchar(64) DEFAULT '',
+	CONSTRAINT "user_username_unique" UNIQUE("username")
+);
+--> statement-breakpoint
 ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_actor_id_user_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "authenticator" ADD CONSTRAINT "authenticator_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "featured_gallery" ADD CONSTRAINT "featured_gallery_gallery_id_gallery_id_fk" FOREIGN KEY ("gallery_id") REFERENCES "public"."gallery"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -139,6 +145,8 @@ ALTER TABLE "project" ADD CONSTRAINT "project_user_id_user_id_fk" FOREIGN KEY ("
 ALTER TABLE "project" ADD CONSTRAINT "project_original_project_id_fk" FOREIGN KEY ("original") REFERENCES "public"."project"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "projects_to_galleries" ADD CONSTRAINT "projects_to_galleries_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "projects_to_galleries" ADD CONSTRAINT "projects_to_galleries_gallery_id_gallery_id_fk" FOREIGN KEY ("gallery_id") REFERENCES "public"."gallery"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "user" ADD CONSTRAINT "user_featured_project_id_project_id_fk" FOREIGN KEY ("featured_project_id") REFERENCES "public"."project"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "audit_actor_idx" ON "audit_log" USING btree ("actor_id");--> statement-breakpoint
 CREATE INDEX "audit_target_idx" ON "audit_log" USING btree ("target_type","target_id");--> statement-breakpoint
 CREATE INDEX "auth_user_id_idx" ON "authenticator" USING btree ("user_id");--> statement-breakpoint
@@ -156,7 +164,5 @@ CREATE INDEX "project_id_idx" ON "project" USING btree ("id");--> statement-brea
 CREATE INDEX "project_user_id_idx" ON "project" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "project_search_idx" ON "project" USING gin ("search_index");--> statement-breakpoint
 CREATE INDEX "project_gallery_idx" ON "projects_to_galleries" USING btree ("gallery_id");--> statement-breakpoint
-ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user" ADD CONSTRAINT "user_featured_project_id_project_id_fk" FOREIGN KEY ("featured_project_id") REFERENCES "public"."project"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "user_id_idx" ON "session" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "username_idx" ON "user" USING btree ("username");

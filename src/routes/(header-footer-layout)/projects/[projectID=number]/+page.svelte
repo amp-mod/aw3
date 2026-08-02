@@ -20,6 +20,7 @@
 	import { md } from '$lib/markdown'
 	import { fade, slide } from 'svelte/transition'
 	import { acceptablePrefixes } from '$lib/security-manager.svelte'
+	import { User } from '$lib/server/db/schema'
 
 	let { data } = $props()
 
@@ -235,7 +236,7 @@
 					<form method="POST" action="?/remixProject" class="flex" use:enhance>
 						<input type="hidden" name="projectId" value={project.id} />
 						<Button type="submit" class="flex h-12 items-center gap-2">
-							<CopyPlus /> Remix!
+							<CopyPlus /> Remix
 						</Button>
 					</form>
 				{/if}
@@ -253,8 +254,7 @@
 					{project}
 					{projectJson}
 					bind:extensions={loadedExtensions}
-					user={data.user}
-					flashingLights={project.flashingLights}
+					user={data.user as User}
 				/>
 			{/key}
 		</main>

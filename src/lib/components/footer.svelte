@@ -25,7 +25,7 @@
 		{
 			title: m.footerCommunity(),
 			links: [
-				{ href: '/projects/explore', label: m.exploreProjects() },
+				{ href: '/explore/projects', label: m.exploreProjects() },
 				// { href: '/events', label: 'Ongoing Events' },
 				{ href: 'https://ampmod.flarum.cloud', label: 'AmpMod Forums', external: true },
 				{ href: 'https://ampmod.miraheze.org', label: m.footerWiki(), external: true },
@@ -86,7 +86,8 @@
 			<div class="flex max-w-5xl flex-col gap-2 text-center text-xs">
 				<p>
 					Copyright &copy; 2024-{new Date().getFullYear()} AmpMod. AmpMod is not affiliated with Scratch,
-					the Scratch Team, the Scratch Foundation, TurboWarp, or GarboMuffin. For more information on
+					the Scratch Team, the Scratch Foundation, TurboWarp, or GarboMuffin. Scratch and the Scratch
+					logo are trademarks of the Scratch Foundation in the United States. For more information on
 					user content licencing, see the <a href="/terms" class="link">Terms of Service</a>.
 				</p>
 				<p>

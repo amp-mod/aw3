@@ -6,7 +6,7 @@
 		0: 'New AmpModder',
 		1: 'AmpModder',
 		2: 'Moderator',
-		3: 'Operator',
+		3: 'Administrator',
 	}
 </script>
 

@@ -97,17 +97,22 @@ export const load: PageServerLoad = async (event) => {
 			.leftJoin(table.user, eq(table.project.userId, table.user.id))
 			.where(eq(table.project.status, 'shared'))
 			.orderBy(desc(table.project.createdAt))
-			.limit(12),
+			.limit(15),
 
 		category: db
 			.select(projectSelection)
 			.from(table.project)
-			.leftJoin(table.user, eq(table.project.userId, table.user.id)).where(sql`
+			.leftJoin(table.user, eq(table.project.userId, table.user.id))
+			.where(
+				sql`
 				"project"."status" = 'shared'
 				AND coalesce("project"."notes", '') ~* ${primaryPattern}
 				${forbiddenPattern ? sql`AND NOT (coalesce("project"."notes", '') ~* ${forbiddenPattern})` : sql``}
 				AND (SELECT count(*) FROM regexp_matches(coalesce("project"."notes", ''), ${primaryPattern}, 'gi')) = 1
-			`),
+			`,
+			)
+			.orderBy(sql`RANDOM()`)
+			.limit(15),
 
 		featuredProjects: db
 			.select(projectSelection)
@@ -115,7 +120,7 @@ export const load: PageServerLoad = async (event) => {
 			.innerJoin(table.project, eq(table.featuredProject.projectId, table.project.id))
 			.leftJoin(table.user, eq(table.project.userId, table.user.id))
 			.where(eq(table.project.status, 'shared'))
-			.limit(12),
+			.limit(15),
 
 		following: userId
 			? db
@@ -125,7 +130,7 @@ export const load: PageServerLoad = async (event) => {
 					.leftJoin(table.user, eq(table.project.userId, table.user.id))
 					.where(and(eq(table.follow.followerId, userId), eq(table.project.status, 'shared')))
 					.orderBy(desc(table.project.createdAt))
-					.limit(12)
+					.limit(15)
 			: Promise.resolve([]),
 
 		blog: fetchBlogUpdates(),

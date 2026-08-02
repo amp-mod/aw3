@@ -18,7 +18,6 @@
 
 <div class="flex h-screen flex-col">
 	<Header {data} />
-
 	<div
 		bind:this={scrollContainer}
 		class="relative flex flex-1 flex-col overflow-auto scroll-smooth shadow-inner"

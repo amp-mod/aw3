@@ -2,7 +2,7 @@
 title: AmpMod Terms of Service
 ---
 
-*Last updated: 14 May 2026*
+*Last updated: 2 August 2026*
 
 *   This document applies to https://ampmod.org and all of its subdomains, including https://forums.ampmod.org,
     https://wiki.ampmod.org, https://extensions.ampmod.org, https://commons.ampmod.org, and https://blog.ampmod.org,
@@ -32,7 +32,7 @@ affiliates.
     project sharing service that they are integrated with.
 2.  "Account" refers to an AmpMod account, which is needed to upload projects and add other content to the site.
 3.  "Administrators", "we", or "us" refers to: a) all users with an Account on ampmod.org that has been classified as a
-    "Moderator" or "Operator" on their profile; and b) any person who has administrative access to the AmpMod
+    "Moderator" or "Administrator" on their profile; and b) any person who has administrative access to the AmpMod
     servers.
 
 ## 2. Account creation and maintenance
@@ -61,8 +61,6 @@ affiliates.
     ("CC-BY-SA"). This allows others to share and remix content both on and outside of AmpMod,
     commercially or non-commercially, as long as they provide credit and continue distributing under CC-BY-SA.
 3.  **You agree not to publish UGC that violates the [AmpMod Guidelines](/guidelines), as well as content that:**
-        *   Does not function in the AmpMod IDE (e.g. uses primitives that exist in a modification of the AmpMod IDE,
-            but not in the vanilla version);
         *   Contains swear words, slurs, insults, personal attacks, or offensive language, or otherwise disrespects users or a group of people;
         *   Shares personally identifiable information about you or any other user, including real name, location
             (beyond state-level), email address, or other contact information such as links to private messaging sites;
@@ -70,15 +68,13 @@ affiliates.
         *   Contains pornographic or sexually explicit content;
         *   Infects systems with viruses, worms, or other malware;
         *   Makes commercial profit in a way that is not intended by users;
-        *   Contains blood, gore or other disturbing material; or
-        *   Contains copyrighted material that you do not have permission to use.
+        *   Contains blood, gore, jumpscares, or other disturbing material;
+        *   Contains copyrighted material that you do not have permission to use; or
+        *   Does not function in the AmpMod IDE (e.g. uses primitives that exist in a modification of the AmpMod IDE,
+            but not in the vanilla version).
 4.  AmpMod allows users to create their own copies of UGC and publish it as their own (a "Remix"). By publishing
     a Remix directly to AmpMod, you agree that you have made a modification to at least one area of the project.
     This does not apply to copying projects on other sites.
-5.  Projects on AmpMod may contain flashing lights or certain light patterns that can trigger photosensitive epilepsy.
-    You must accurately label if your content contains flashing lights, dangerous light patterns, or other content that may
-    trigger epilepsy. Mislabeling flashing lights intentionally is considered a severe violation of our guidelines and can lead to a ban,
-    though accidental mislabeling will result in proper labeling by a moderator.
 
 ## 4. Educational use
 
@@ -88,12 +84,12 @@ affiliates.
 3.  You may not use an account that can create Managed Accounts (a "Teacher Account") unless you are a real educator
     (or during the site beta, someone who is testing the bare functionality of the site),
     especially not to create hundreds of accounts per minute and slow down our servers.
-    [Reminds you of anything?](https://en.scratch-wiki.info/wiki/2024-10-28_Outage)
+    <!--[Reminds you of anything?](https://en.scratch-wiki.info/wiki/2024-10-28_Outage)-->
 
 ## 5. DISCLAIMER OF WARRANTY AND LIABILITY
 
 **To the maximum extent provided by applicable laws, AmpMod and AmpMod IDE are provided as is, without any warranty of any kind. We are not responsible for any losses or damages
-caused by any malfunction in any service operated by us. YOU MAY ONLY USE OUR SERVICES AT YOUR OWN RISK.**
+caused by any malfunctionx` in any service operated by us. USE AMPMOD AT YOUR OWN RISK.**
 
 ## 6. Notification, suspension and termination
 
@@ -115,7 +111,23 @@ caused by any malfunction in any service operated by us. YOU MAY ONLY USE OUR SE
 
 3.  All content on the wiki is bound by Section 3.2 and 3.3.
 
-## Appendix B - AmpMod Commons
+## Appendix B - AmpMod Discussion Community
+
+1.  These terms apply to the collective "AmpMod Discussion Community" at <https://forums.ampmod.org> ("AmpMod Forums") and
+    <https://blog.ampmod.org> ("AmpMod Blog").
+
+2.  All content on the Forums is bound by Section 3.2 and 3.3. 
+
+3.  You agree not to use the AmpMod Discussion Community to:
+    * post commercial advertisements or spam;
+    * make irrelevant posts, included but not limited to chain mail, repetitive posts and Scratchblocks spam;
+    * or bypass a ban from AmpMod.
+
+4.  You agree not to post updates on the AmpMod Blog unless you have been granted Newswriter permissions by the AmpMod
+    moderation team.
+
+<!--
+## Appendix C - AmpMod Commons
 
 1.  These terms apply to the "AmpMod Commons" at <https://commons.ampmod.org>.
 
@@ -125,17 +137,4 @@ caused by any malfunction in any service operated by us. YOU MAY ONLY USE OUR SE
     to the index.
 
 4.  By uploading Commons content you agree that AmpMod may remove your content and add it to the IDE.
-
-## Appendix C - AmpMod Community
-
-1.  These terms apply to the collective "AmpMod Community" at <https://forums.ampmod.org> and <https://blog.ampmod.org>.
-
-2.  All content on the Forums is bound by Section 3.2 and 3.3. 
-
-3.  You agree not to use the AmpMod Forums to:
-    * post commercial advertisements or spam;
-    * make irrelevant posts, included but not limited to chain mail, repetitive posts and Scratchblocks spam;
-    * or bypass a ban from AmpMod.
-
-4.  You agree not to post updates on the AmpMod Blog unless you have been granted Newswriter permissions by the AmpMod
-    moderation team.
+-->

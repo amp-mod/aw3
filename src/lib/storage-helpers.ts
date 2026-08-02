@@ -11,7 +11,7 @@ export const getPublicUrl = (path: string) => {
  */
 export const getPfpPath = (user: User) => {
 	const sizes = ['16', '24', '32', '64', 'full'] as const
-	if (!user.hasPFP || user.isPrivate) {
+	if (!user.hasPFP) {
 		return Object.fromEntries(sizes.map((s) => [s, DefaultPFP]))
 	}
 	const base = `aw3-avatars/${user.id}`

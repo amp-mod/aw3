@@ -1,24 +1,13 @@
 <script lang="ts">
-	interface Props extends Record<string, any> {
-		href?: string
-		children?: import('svelte').Snippet
-		class?: string
-	}
+	import { Button } from 'bits-ui'
 
-	let { href, children, ...props }: Props = $props()
-
+	let { children, class: className, ...props } = $props()
 	const classes = [
 		'rounded-lg bg-accent px-4 py-1.5 text-center text-lg font-bold text-white',
 		'cursor-pointer disabled:cursor-not-allowed not-disabled:hover:bg-accent-secondary disabled:opacity-70',
 	]
 </script>
 
-{#if href}
-	<a {href} {...props} class={[...classes, props.class]}>
-		{@render children?.()}
-	</a>
-{:else}
-	<button {...props} class={[...classes, props.class]}>
-		{@render children?.()}
-	</button>
-{/if}
+<Button.Root class={[classes, className]} {...props}>
+	{@render children()}
+</Button.Root>

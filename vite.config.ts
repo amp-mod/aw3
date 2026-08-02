@@ -6,6 +6,9 @@ import Icons from 'unplugin-icons/vite'
 import pkg from './package.json' assert { type: 'json' }
 
 export default defineConfig({
+	server: {
+		allowedHosts: true,
+	},
 	define: {
 		'import.meta.env.VITE_NPM_PACKAGE_VERSION': JSON.stringify(pkg.version),
 	},

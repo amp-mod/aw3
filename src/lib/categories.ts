@@ -8,5 +8,11 @@ export const CATEGORIES = {
 	Music: '#music',
 	Platformer: '#platformer',
 	Contest: '#contest',
+	Collaboration: '#collab',
 	Story: '#story',
+	Utility: '#utility',
+	'1-Sprite': '#1sprite',
+	'Custom Extension': '#extension',
+	'Operating System': '#os',
+	Meme: '#meme',
 }

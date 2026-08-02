@@ -77,7 +77,7 @@
 		<div class="flex justify-center gap-4">
 			<a href="https://ampmod.codeberg.page/manual" class={styles.button_small}>Manual</a>
 			<a href="/about" class={styles.button_small}>About AmpMod</a>
-			<a href="/projects/explore" class={styles.button_small}>Explore Projects</a>
+			<a href="/explore/projects" class={styles.button_small}>Explore Projects</a>
 		</div>
 	</div>
 {/if}
@@ -132,7 +132,7 @@
 							<img src={CreateCardIcon} class="h-28 object-contain" alt="Mascot" />
 							<span class="font-bold">Make a Project</span>
 						</a>
-						<a href="/projects/explore" class={styles.card}>
+						<a href="/explore/projects" class={styles.card}>
 							<img src={ExploreProjectsIcon} class="h-28 object-contain" alt="Explore" />
 							<span class="font-bold">Explore</span>
 						</a>
