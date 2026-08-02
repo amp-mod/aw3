@@ -20,7 +20,6 @@
 	import { md } from '$lib/markdown'
 	import { fade, slide } from 'svelte/transition'
 	import { acceptablePrefixes } from '$lib/security-manager.svelte'
-	import { User } from '$lib/server/db/schema'
 
 	let { data } = $props()
 
@@ -254,7 +253,7 @@
 					{project}
 					{projectJson}
 					bind:extensions={loadedExtensions}
-					user={data.user as User}
+					user={data.user}
 				/>
 			{/key}
 		</main>

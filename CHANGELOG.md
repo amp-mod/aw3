@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2
+
+- fix build error
+
 ## 0.2.1
 
 - removed flashing lights field in upload form (use notes and credits for warnings instead)
