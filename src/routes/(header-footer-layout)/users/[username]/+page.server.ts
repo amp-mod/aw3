@@ -106,14 +106,14 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.from(table.follow)
 		.leftJoin(table.user, eq(table.follow.followerId, table.user.id))
 		.where(eq(table.follow.followingId, userProfile.id))
-		.limit(20)
+		.limit(12)
 
 	const following = await db
 		.select({ username: table.user.username, id: table.user.id, hasPFP: table.user.hasPFP })
 		.from(table.follow)
 		.leftJoin(table.user, eq(table.follow.followingId, table.user.id))
 		.where(eq(table.follow.followerId, userProfile.id))
-		.limit(20)
+		.limit(12)
 
 	// Don't say "isOnline" on Scratch or you'll get banned!!
 	const isOnline = activeUsers.some((i) => i.username === userProfile.username)
