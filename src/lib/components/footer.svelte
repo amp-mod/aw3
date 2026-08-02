@@ -36,6 +36,7 @@
 		{
 			title: m.footerResources(),
 			links: [
+				{ href: 'https://extensions.ampmod.org', label:"Extension gallery", external: true },
 				{ href: 'https://ampblog.flarum.cloud', label: m.footerBlog(), external: true },
 				{ href: '/source-code', label: m.sourceCode() },
 				{ href: '/help', label: 'Help Center' },
