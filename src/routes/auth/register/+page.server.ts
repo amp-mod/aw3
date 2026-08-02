@@ -1,6 +1,5 @@
 import { hash } from '@node-rs/argon2'
 import { fail, redirect } from '@sveltejs/kit'
-import * as auth from '$lib/server/auth'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import type { Actions, PageServerLoad } from './$types'
@@ -9,6 +8,13 @@ import { hmacKey } from '$lib/server/hmac'
 import { eq, sql } from 'drizzle-orm'
 import { isProfane } from '$lib/server/bad-word-checker'
 import { generateVerificationData, findVerificationToken } from '$lib/server/scratch-verify'
+import {
+	validateUsername,
+	validatePassword,
+	createNewUser,
+	establishSession,
+	clearScratchCookies,
+} from '../../../lib/server/signup-tools'
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -176,62 +182,4 @@ export const actions: Actions = {
 			message: existingUser.length > 0 ? 'Username taken.' : '',
 		}
 	},
-}
-
-// --- PRIVATE HELPERS ---
-
-async function createNewUser(username: string, passwordHash: string, isScratch = false) {
-	return await db.transaction(async (tx) => {
-		const existing = await tx
-			.select({ id: table.user.id })
-			.from(table.user)
-			.where(eq(table.user.username, username))
-			.limit(1)
-
-		if (existing.length > 0) return { error: 'Username already exists', status: 409 }
-
-		const userCount = await tx.select({ count: sql<number>`count(*)` }).from(table.user)
-		const assignedRank = Number(userCount[0].count) === 0 ? 3 : 0
-
-		const [newUser] = await tx
-			.insert(table.user)
-			.values({
-				username, // Already normalized
-				passwordHash,
-				rank: assignedRank,
-				scratchUsername: isScratch ? username : null,
-				scratchLinked: isScratch,
-			})
-			.returning({ id: table.user.id })
-
-		return { newUser, status: 200 }
-	})
-}
-
-async function establishSession(event: any, userId: string) {
-	const sessionToken = auth.generateSessionToken()
-	const session = await auth.createSession(
-		sessionToken,
-		userId,
-		event.getClientAddress(),
-		event.request.headers.get('user-agent'),
-	)
-	auth.setSessionTokenCookie(event, sessionToken, session.expiresAt)
-}
-
-function clearScratchCookies(cookies: any) {
-	const opts = { path: '/' }
-	cookies.delete('s_reg_user', opts)
-	cookies.delete('s_reg_token', opts)
-	cookies.delete('s_reg_comment', opts)
-	cookies.delete('s_reg_pw', opts)
-}
-
-function validateUsername(username: string): boolean {
-	// Only lowercase allowed post-normalization
-	return username.length >= 3 && username.length <= 20 && /^[a-z0-9_-]+$/.test(username)
-}
-
-function validatePassword(password: unknown): password is string {
-	return typeof password === 'string' && password.length >= 6 && password.length <= 255
 }
