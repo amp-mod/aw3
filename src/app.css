@@ -9,11 +9,11 @@
 	--font-pixelify: 'Pixelify Sans';
 	--font-sans: 'Geist Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
-	--color-accent: hsl(120, 30%, 34%);
-	--color-accent-secondary: hsl(120, 25%, 28%);
-	--color-accent-tertiary: hsl(120, 25%, 20%);
-	--color-accent-light: hsl(120, 35%, 72%);
-	--color-accent-almost-light: hsl(120, 30%, 82%);
+	--color-accent: #4FA55C;
+	--color-accent-secondary: #4FA55C;
+	--color-accent-tertiary: #3E834A;
+	--color-accent-light: #4FA55C;
+	--color-accent-almost-light: #409C5C;
 }
 
 @layer aw3 {
