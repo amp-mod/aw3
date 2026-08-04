@@ -1,6 +1,15 @@
 <script>
 	import { Tabs } from 'bits-ui'
-	import { Clapperboard, Newspaper, Rss, MapIcon, Sparkles, Link, Globe } from '@lucide/svelte'
+	import {
+		Clapperboard,
+		Newspaper,
+		Rss,
+		MapIcon,
+		Sparkles,
+		Link,
+		Globe,
+		TriangleAlert,
+	} from '@lucide/svelte'
 	import CreateCardIcon from '$lib/assets/apple-cat-programming-sm.svg'
 	import HeroImg from '$lib/assets/apple-cat-programming.svg'
 	import ExploreProjectsIcon from '$lib/assets/exploreprojects.svg'
@@ -10,6 +19,7 @@
 	import { getPfpPath } from '$lib/storage-helpers.js'
 	import Row from '$lib/components/Row.svelte'
 	import Alert from '$lib/components/Alert.svelte'
+	import ComingSoon from '$lib/components/ComingSoon.svelte'
 
 	let { data } = $props()
 	const discussions = data.blogDiscussions ?? []
@@ -38,6 +48,20 @@
 	icon={Globe}
 >
 	Welcome to the brand-new AmpMod website! This site is currently in beta and might have bugs.
+</Alert>
+<Alert
+	id="aw3-no-editor"
+	background="#6c6cff"
+	button={{
+		url: 'https://ampmod.codeberg.page/editor',
+		text: 'Create Project',
+	}}
+	icon={TriangleAlert}
+	closable={false}
+>
+	The integrated editor has not been added yet. Please click "Create Project" in this banner to
+	create your project, then you can export it and go to My Stuff &rarr; Create &rarr; Import .apz to
+	upload it.
 </Alert>
 {#if data.user && !data.user.scratchUsername}
 	<Alert
@@ -143,7 +167,7 @@
 					value="feed"
 					class="h-60 grow rounded-lg border border-neutral-300 bg-neutral-100 p-4 dark:border-neutral-500 dark:bg-neutral-800"
 				>
-					<p>No activity in your feed yet!</p>
+					<ComingSoon />
 				</Tabs.Content>
 			{/if}
 

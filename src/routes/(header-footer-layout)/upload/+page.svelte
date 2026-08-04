@@ -7,18 +7,22 @@
 	import Button from '$lib/components/Button.svelte'
 	import { Image as ImageIcon, Upload } from '@lucide/svelte'
 	import { addToast } from '$lib/toast.svelte'
+	import { goto } from '$app/navigation'
 
 	let { data } = $props()
 
 	let loading = $state(false)
-	let isMessageImport = $state(false)
 	let isScratchImport = $state(false)
 	let error = $state('')
 	let hasFile = $state(false)
 
 	let title = $state('')
 	let notesAndCredits = $state('')
+	let projectJsonText = $state('')
 	let projectJson = $state<any>(null)
+
+	// Store extracted raw assets for multi-step upload
+	let extractedAssets = $state<{ name: string; file: File }[]>([])
 
 	let thumbnails = $state<{ name: string; url: string; priority: number; mimeType: string }[]>([])
 	let selectedThumbnailUrl = $state('')
@@ -26,6 +30,8 @@
 
 	let fileInput: HTMLInputElement
 	let thumbInput: HTMLInputElement
+	let jsonInput: HTMLInputElement
+	let customThumbInput: HTMLInputElement
 	let handleMessage: (event: MessageEvent) => void
 
 	function getMimeType(extension: string): string {
@@ -34,8 +40,11 @@
 			png: 'image/png',
 			jpg: 'image/jpeg',
 			jpeg: 'image/jpeg',
+			webp: 'image/webp',
+			wav: 'audio/wav',
+			mp3: 'audio/mpeg',
 		}
-		return map[extension.toLowerCase()] || 'image/png'
+		return map[extension.toLowerCase()] || 'application/octet-stream'
 	}
 
 	async function getImageDimensions(url: string): Promise<{ width: number; height: number }> {
@@ -56,7 +65,7 @@
 			const file = new File([blob], 'thumbnail.webp', { type: thumb.mimeType })
 			const dataTransfer = new DataTransfer()
 			dataTransfer.items.add(file)
-			if (thumbInput) thumbInput.files = dataTransfer.files
+			if (customThumbInput) customThumbInput.files = dataTransfer.files
 		} catch (e) {
 			console.error('Failed to sync thumbnail:', e)
 		}
@@ -70,6 +79,7 @@
 
 			let zip = new JSZip()
 			let jsonText = ''
+			let newExtractedAssets: { name: string; file: File }[] = []
 
 			if (isZip) {
 				const contents = await zip.loadAsync(buffer)
@@ -80,61 +90,53 @@
 				jsonText = new TextDecoder().decode(buffer)
 			}
 
+			projectJsonText = jsonText
 			projectJson = JSON.parse(jsonText)
+
+			if (jsonInput) {
+				const jsonFileObj = new File([jsonText], 'project.json', { type: 'application/json' })
+				const dt = new DataTransfer()
+				dt.items.add(jsonFileObj)
+				jsonInput.files = dt.files
+			}
+
 			const foundThumbnails: typeof thumbnails = []
-			const newZip = new JSZip()
-			newZip.file('project.json', jsonText)
 
-			for (const target of projectJson.targets || []) {
-				const assets = [...(target.costumes || []), ...(target.sounds || [])]
-				for (const asset of assets) {
-					const ext = asset.dataFormat || (asset.md5ext ? asset.md5ext.split('.').pop() : 'png')
-					const fileName = asset.md5ext || `${asset.assetId}.${ext}`
-
-					let assetData: ArrayBuffer
-
-					if (isZip) {
-						const contents = await zip.loadAsync(buffer)
+			if (isZip) {
+				const contents = await zip.loadAsync(buffer)
+				for (const target of projectJson.targets || []) {
+					const assets = [...(target.costumes || []), ...(target.sounds || [])]
+					for (const asset of assets) {
+						const ext = asset.dataFormat || (asset.md5ext ? asset.md5ext.split('.').pop() : 'png')
+						const fileName = asset.md5ext || `${asset.assetId}.${ext}`
 						const existingFile = contents.file(fileName)
+
 						if (existingFile) {
-							assetData = await existingFile.async('arraybuffer')
-						} else {
-							const resp = await fetch(
-								`https://assets.scratch.mit.edu/internalapi/asset/${fileName}/get/`,
-							)
-							assetData = resp.ok ? await resp.arrayBuffer() : new ArrayBuffer(0)
-						}
-					} else {
-						const resp = await fetch(
-							`https://assets.scratch.mit.edu/internalapi/asset/${fileName}/get/`,
-						)
-						assetData = resp.ok ? await resp.arrayBuffer() : new ArrayBuffer(0)
-					}
+							const assetData = await existingFile.async('arraybuffer')
+							if (assetData.byteLength > 0) {
+								const mimeType = getMimeType(ext)
+								const assetBlob = new Blob([assetData], { type: mimeType })
+								const assetFile = new File([assetBlob], fileName, { type: mimeType })
+								newExtractedAssets.push({ name: fileName, file: assetFile })
 
-					if (assetData.byteLength > 0) {
-						newZip.file(fileName, assetData)
+								if (target.costumes?.includes(asset)) {
+									const url = URL.createObjectURL(assetBlob)
+									const { width, height } = await getImageDimensions(url)
 
-						if (target.costumes?.includes(asset)) {
-							const mimeType = getMimeType(ext)
-							const blob = new Blob([assetData], { type: mimeType })
-							const url = URL.createObjectURL(blob)
-							const { width, height } = await getImageDimensions(url)
-
-							if (width >= 200 || height >= 200) {
-								let priority = asset.name.toLowerCase().includes('thumbnail') ? 100 : 0
-								foundThumbnails.push({ name: asset.name, url, priority, mimeType })
-							} else {
-								URL.revokeObjectURL(url)
+									if (width >= 200 || height >= 200) {
+										let priority = asset.name.toLowerCase().includes('thumbnail') ? 100 : 0
+										foundThumbnails.push({ name: asset.name, url, priority, mimeType })
+									} else {
+										URL.revokeObjectURL(url)
+									}
+								}
 							}
 						}
 					}
 				}
 			}
 
-			const completeBlob = await newZip.generateAsync({ type: 'blob' })
-			const dataTransfer = new DataTransfer()
-			dataTransfer.items.add(new File([completeBlob], 'project.sb3', { type: 'application/x-zip' }))
-			if (fileInput) fileInput.files = dataTransfer.files
+			extractedAssets = newExtractedAssets
 
 			const uniqueThumbs = [...thumbnails]
 			foundThumbnails.forEach((nt) => {
@@ -175,9 +177,8 @@
 
 				title = metadata.title || ''
 
-				// Concatenate Instructions and Notes/Credits
 				const instructions = metadata.instructions || ''
-				const credits = metadata.description || '' // Scratch API refers to Notes & Credits as "description"
+				const credits = metadata.description || ''
 				notesAndCredits = [instructions, credits].filter(Boolean).join('\n\n')
 
 				if (metadata.image) {
@@ -224,19 +225,60 @@
 <form
 	method="POST"
 	enctype="multipart/form-data"
+	action="?/uploadProjectJson"
 	use:enhance={() => {
 		loading = true
-		return async ({ update, result }) => {
-			loading = false
-			await update()
-			if (result.type === 'failure')
-				addToast({ type: 'failure', text: result.data?.message ?? 'Upload failed' })
+		return async ({ result }) => {
+			try {
+				if (result.type === 'success' && result.data?.success) {
+					const projectId = result.data.projectId
+
+					// Upload extracted assets one by one
+					const concurrencyLimit = 4
+					let assetIndex = 0
+
+					async function uploadWorker() {
+						while (assetIndex < extractedAssets.length) {
+							const currentIndex = assetIndex++
+							const asset = extractedAssets[currentIndex]
+
+							const assetFormData = new FormData()
+							assetFormData.append('projectId', projectId)
+							assetFormData.append('name', asset.name)
+							assetFormData.append('asset', asset.file)
+
+							const assetResp = await fetch('?/uploadAsset', {
+								method: 'POST',
+								body: assetFormData,
+							})
+
+							if (!assetResp.ok) {
+								console.error(`Failed to upload asset: ${asset.name}`)
+							}
+						}
+					}
+
+					const workers = Array(Math.min(concurrencyLimit, extractedAssets.length))
+						.fill(0)
+						.map(() => uploadWorker())
+
+					await Promise.all(workers)
+					goto(`/projects/${projectId}`)
+				} else if (result.type === 'failure') {
+					loading = false
+					addToast({ type: 'failure', text: result.data?.message ?? 'Upload failed' })
+				}
+			} catch (err: any) {
+				loading = false
+				console.error('Multi-step upload sequence error:', err)
+				addToast({ type: 'failure', text: 'An error occurred uploading project assets.' })
+			}
 		}
 	}}
 	class="m-auto my-16 flex max-w-3xl flex-col gap-6 px-4"
 >
-	<input bind:this={fileInput} name="projectFile" type="file" class="hidden" required />
-	<input bind:this={thumbInput} name="thumbnail" type="file" class="hidden" />
+	<input bind:this={jsonInput} name="projectJson" type="file" class="hidden" required />
+	<input bind:this={customThumbInput} name="thumbnail" type="file" class="hidden" />
 
 	{#if !isScratchImport}
 		<div
@@ -266,7 +308,9 @@
 				<input
 					type="file"
 					accept=".apz,.sb3"
-					onchange={(e) => handleFileSelection(e.target.files[0])}
+					onchange={(e) => {
+						if (e.target.files?.[0]) handleFileSelection(e.target.files[0])
+					}}
 					class="absolute inset-0 z-10 cursor-pointer opacity-0"
 				/>
 				<div
@@ -274,7 +318,7 @@
 				>
 					<div class="bg-accent px-4 py-2 font-bold text-white">Browse...</div>
 					<span class="truncate p-2 text-sm text-neutral-500"
-						>{fileInput?.files?.[0]?.name ?? 'No file selected'}</span
+						>{jsonInput?.files?.[0]?.name ?? 'No file selected'}</span
 					>
 				</div>
 			</div>
@@ -341,7 +385,7 @@
 										thumbnailType = 'custom'
 										const dt = new DataTransfer()
 										dt.items.add(e.target.files[0])
-										thumbInput.files = dt.files
+										customThumbInput.files = dt.files
 									}
 								}}
 							/>

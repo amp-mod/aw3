@@ -64,7 +64,7 @@
 <Modal bind:open={reportState.show} title="Report {reportState.targetType}">
 	<form
 		method="POST"
-		action="/api/report"
+		action="?/report"
 		use:enhance={() => {
 			isSubmitting = true
 			return ({ result }) => {
@@ -115,18 +115,16 @@
 
 		<div class="flex justify-end gap-2">
 			<Button variant="secondary" onclick={() => (reportState.show = false)}>
-				{isTrap ? 'Close' : 'Cancel'}
+				{'Cancel'}
 			</Button>
 
-			{#if !isTrap}
-				<Button
-					type="submit"
-					disabled={isSubmitting || !reason || !category}
-					class="border-none bg-red-600 text-white hover:bg-red-700"
-				>
-					{isSubmitting ? 'Sending...' : 'Submit Report'}
-				</Button>
-			{/if}
+			<Button
+				type="submit"
+				disabled={isSubmitting || !reason || !category}
+				class="border-none bg-red-600 text-white hover:bg-red-700"
+			>
+				{isSubmitting ? 'Sending...' : 'Submit Report'}
+			</Button>
 		</div>
 	</form>
 </Modal>

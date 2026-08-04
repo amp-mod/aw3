@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm'
 import type { PageServerLoad, Actions } from './$types'
 import { storage } from '$lib/storage'
 import { form } from '$app/server'
+import { isProfane } from '$lib/server/bad-word-checker'
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const projectId = Number(params.projectID)
@@ -97,6 +98,10 @@ export const actions: Actions = {
 			return fail(403, { message: 'Forbidden' })
 		}
 
+		if (isProfane(newTitle)) {
+			return fail(400, { message: 'Profanity detected' })
+		}
+
 		await db.update(table.project).set({ title: newTitle }).where(eq(table.project.id, projectId))
 		return { success: true }
 	},
@@ -112,6 +117,9 @@ export const actions: Actions = {
 
 		if (project.userId !== locals.user.id && locals.user.rank < 2) {
 			return fail(403, { message: 'Forbidden' })
+		}
+		if (isProfane(notes)) {
+			return fail(400, { message: 'Profanity detected' })
 		}
 
 		await db.update(table.project).set({ notes }).where(eq(table.project.id, projectId))
@@ -175,7 +183,6 @@ export const actions: Actions = {
 			.values({
 				title: `${project.title} remix`,
 				userId: locals.user.id,
-				flashingLights: project.flashingLights,
 				original: project.id,
 				image: project.image,
 				status: 'unshared',
@@ -267,7 +274,9 @@ export const actions: Actions = {
 			recipientId: project.userId,
 			type: 'project_banned',
 			metadata: {
-				title: `Your project "${project.title}" has been banned by a moderator. Reason: ${message}`,
+				projID: project.id,
+				projTitle: project.title,
+				title: `${message}`,
 			},
 			link: `/projects/${project.id}`,
 		})

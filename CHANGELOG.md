@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.0
+
+### features
+
+- project ZIPs are now decompressed on the client when uploading
+- make a coming soon component and use it to fill in unimplemented features
+- hashtags and mentions are now scanned for profanity just in case
+
+### bug fixes
+
+- fix inaccurate secondary colour
+- fix text editor overflowing
+- fix profanity not being blocked in project metadata
+- fix report button crashing the site
+
 ## 0.2.2
 
 - fix build error

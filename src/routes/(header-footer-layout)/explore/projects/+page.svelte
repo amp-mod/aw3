@@ -1,1 +1,5 @@
-<p>Explore projects on this page</p>
+<script>
+	import ComingSoon from '$lib/components/ComingSoon.svelte'
+</script>
+
+<ComingSoon />

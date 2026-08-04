@@ -20,6 +20,7 @@
 	import { md } from '$lib/markdown'
 	import { fade, slide } from 'svelte/transition'
 	import { acceptablePrefixes } from '$lib/security-manager.svelte'
+	import ComingSoon from '$lib/components/ComingSoon.svelte'
 
 	let { data } = $props()
 
@@ -367,6 +368,9 @@
 			{/each}
 		</section>
 	{/if}
+	<h2 class="text-2xl font-bold">Comments</h2>
+
+	<ComingSoon />
 </div>
 
 <Modal bind:open={isShowingCopyLink} title="Copy project link">

@@ -15,6 +15,7 @@
 	import LoginModal from '$lib/components/LoginModal.svelte'
 	import { m } from '$lib/paraglide/messages.js'
 	import MyStuffProjectList from './MyStuffProjectList.svelte'
+	import ComingSoon from '$lib/components/ComingSoon.svelte'
 
 	const { data } = $props()
 
@@ -125,13 +126,7 @@
 				</Tabs.Content>
 
 				<Tabs.Content value="galleries">
-					<div class="py-20 text-center text-neutral-500 italic">
-						All your gallery are belong to us
-					</div>
-				</Tabs.Content>
-
-				<Tabs.Content value="curating">
-					<div class="py-20 text-center text-neutral-500">Coming soon</div>
+					<ComingSoon />
 				</Tabs.Content>
 			</main>
 		{/if}

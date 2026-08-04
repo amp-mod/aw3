@@ -3,7 +3,7 @@ import { eq, sql, and } from 'drizzle-orm'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import type { PageServerLoad } from './$types'
-import { Filter } from 'bad-words'
+import { isProfane } from '$lib/server/bad-word-checker'
 import { stripMarkdown } from '$lib/markdown'
 import { storage } from '$lib/storage'
 import sharp from 'sharp'
@@ -141,7 +141,6 @@ export const actions: Actions = {
 		if (!user) return fail(401, { message: 'Unauthorized' })
 		if ((user.rank ?? 0) !== 0) return fail(400, { message: 'Already ranked up' })
 
-		// Re-verify requirements on server side for security
 		const projectCountResult = await db
 			.select({ count: sql<number>`count(*)` })
 			.from(table.project)
@@ -151,7 +150,7 @@ export const actions: Actions = {
 		const accountAgeDays = (Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)
 
 		if (accountAgeDays < 5 || projectCount < 2) {
-			return fail(400, { message: 'Requirements not met (5 days + 2 projects)' })
+			return fail(400, { message: 'Requirements to rank up are not met' })
 		}
 
 		try {
@@ -250,8 +249,7 @@ export const actions: Actions = {
 		if (!targetUser || (viewer.id !== targetUser.id && (viewer.rank ?? 0) < 2))
 			return fail(403, { message: 'Forbidden' })
 
-		const filter = new Filter()
-		if (filter.isProfane(stripMarkdown(newBio)) || filter.isProfane(newBio))
+		if (isProfane(stripMarkdown(newBio)) || isProfane(newBio))
 			return fail(400, { message: 'Profanity detected' })
 
 		await db.update(table.user).set({ bio: newBio }).where(eq(table.user.id, targetUserId))

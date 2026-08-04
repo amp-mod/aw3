@@ -220,7 +220,7 @@ const NAUGHTY_WORDS = [
 	'e3m{[XG{d3W{',
 	'e3:x',
 ].map(decode)
-NAUGHTY_WORDS.unshift('badtestword')
+NAUGHTY_WORDS.push('badtestword')
 
 // Put the longest words first so that if "test" and "tests" are in the word list in
 // that order, redacting "tests" will give "***" instead of "***s"
@@ -231,13 +231,23 @@ function escapeRegExp(str: string): string {
 }
 
 /**
- * Checks if a string contains any naughty words.
+ * Checks if a string contains any naughty words. This is primitive way of checking for swears.
  */
 export function isProfane(text: string, isUsername: boolean = false): boolean {
 	const lowerText = text.toLowerCase()
-	return NAUGHTY_WORDS.some((word) =>
-		new RegExp(isUsername ? `.*${escapeRegExp(word)}.*` : `\\b${escapeRegExp(word)}\\b`, 'i').test(
-			lowerText,
-		),
-	)
+
+	return NAUGHTY_WORDS.some((word) => {
+		const escaped = escapeRegExp(word)
+
+		if (isUsername) {
+			return new RegExp(`.*${escaped}.*`, 'i').test(lowerText)
+		}
+
+		// Check if the naughty word appears normally with word boundaries,
+		// OR if it appears inside a token in the text that starts with '#' or '@'
+		const standardBoundary = new RegExp(`\\b${escaped}\\b`, 'i')
+		const symbolSubstr = new RegExp(`([#@][^\\s]*?)${escaped}`, 'i')
+
+		return standardBoundary.test(lowerText) || symbolSubstr.test(lowerText)
+	})
 }

@@ -9,11 +9,11 @@
 	--font-pixelify: 'Pixelify Sans';
 	--font-sans: 'Geist Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
-    --color-accent: #4FA55C;          /* Base primary accent */
-	--color-accent-secondary: #5DBB6C;  /* Slightly brighter and more vibrant */
-	--color-accent-tertiary: #3E834A;   /* Deeper, darker shade for contrast */
-	--color-accent-light: #82D18F;      /* Noticeably lighter tint */
-	--color-accent-almost-light: #68C477; /* Intermediate tint between base and light */
+	--color-accent: #4fa55c;
+	--color-accent-secondary: #3e834a;
+	--color-accent-tertiary: #2b5933;
+	--color-accent-light: #82d18f;
+	--color-accent-almost-light: #68c477;
 }
 
 @layer aw3 {

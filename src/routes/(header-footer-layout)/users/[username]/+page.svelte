@@ -23,6 +23,7 @@
 	import DOMPurify from 'isomorphic-dompurify'
 	import { getPfpPath, getPublicUrl } from '$lib/storage-helpers.js'
 	import ProjectList from '$lib/components/ProjectList.svelte'
+	import ComingSoon from '$lib/components/ComingSoon.svelte'
 
 	export const FEATURED_TITLES = [
 		'Featured Project', // Index 0
@@ -424,7 +425,7 @@
 			</div>
 		</header>
 
-		<div class="flex flex-col gap-6 lg:flex-row lg:items-stretch">
+		<div class="flex h-80 flex-col gap-6 lg:flex-row lg:items-stretch">
 			<section class="{styles.sectionCard} flex-1">
 				<div
 					class="mb-2 flex items-center justify-between border-b border-neutral-500/50 pb-2 dark:border-neutral-700"
@@ -472,7 +473,7 @@
 					</form>
 				{:else}
 					<div
-						class="prose max-h-70 min-h-0 max-w-none flex-1 overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert prose-a:font-bold prose-a:text-accent prose-a:no-underline prose-a:hover:underline dark:prose-a:text-accent-light"
+						class="prose max-w-none flex-1 overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert prose-a:font-bold prose-a:text-accent prose-a:no-underline prose-a:hover:underline dark:prose-a:text-accent-light"
 					>
 						{#if userProfile.bio}
 							{@html DOMPurify.sanitize(md.render(userProfile.bio))}
@@ -523,7 +524,7 @@
 					</a>
 				{:else}
 					<div
-						class="flex min-h-[200px] grow items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700"
+						class="flex aspect-[4/3] min-h-[200px] grow items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700"
 					>
 						<div class="text-center text-neutral-400">
 							<FolderOpen class="mx-auto mb-2 opacity-20" size={32} />
@@ -547,26 +548,25 @@
 			</Row>
 
 			<div class="grid grid-cols-1 gap-2 md:grid-cols-2">
-				{#if data.following?.length > 0}
-					<Row
-						title="Following ({followingCount})"
-						seeMore="/users/{userProfile.username}/following"
-						class="grow"
-					>
-						<UserList users={data.following} />
-					</Row>
-				{/if}
+				<Row
+					title="Following ({followingCount})"
+					seeMore="/users/{userProfile.username}/following"
+					class="grow"
+				>
+					<UserList users={data.following} />
+				</Row>
 
-				{#if data.followers?.length > 0}
-					<Row
-						title="Followers ({followerCount})"
-						seeMore="/users/{userProfile.username}/followers"
-						class="grow"
-					>
-						<UserList users={data.followers} />
-					</Row>
-				{/if}
+				<Row
+					title="Followers ({followerCount})"
+					seeMore="/users/{userProfile.username}/followers"
+					class="grow"
+				>
+					<UserList users={data.followers} />
+				</Row>
 			</div>
+			<h2 class="text-2xl font-bold">Comments</h2>
+
+			<ComingSoon />
 		</div>
 	</div>
 {:else}

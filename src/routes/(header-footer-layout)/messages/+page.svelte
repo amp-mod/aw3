@@ -12,8 +12,12 @@
 		Trash2,
 		LoaderCircle,
 		PartyPopper,
+		XOctagon,
+		OctagonX,
+		Ban,
 	} from '@lucide/svelte'
 	import { getPfpPath } from '$lib/storage-helpers'
+	import { getLocale } from '$lib/paraglide/runtime.js'
 
 	let { data } = $props()
 
@@ -26,11 +30,11 @@
 
 	const styles = {
 		container: 'm-auto flex max-w-4xl flex-col gap-6 lg:p-8 p-4',
-		card: 'group relative border border-neutral-300 dark:border-neutral-800 rounded-lg p-4 transition-all duration-200 bg-white dark:bg-neutral-900 flex gap-4 items-start',
-		unreadBorder: 'border-l-4 border-l-accent',
+		card: 'group relative border border-neutral-300 dark:border-neutral-800 rounded-lg p-4 transition-all duration-200 bg-white dark:bg-neutral-900 flex gap-4 items-center',
+		unreadBorder: 'border-l-4 border-l-accent bg-blue-500/10',
 		title: 'text-2xl font-bold text-neutral-800 dark:text-white flex items-center gap-3',
 		timestamp: 'text-xs text-neutral-500 dark:text-neutral-400 mt-1',
-		iconContainer: 'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+		iconContainer: 'flex h-10 w-10 shrink-0 items-center justify-center rounded',
 		metaText: 'text-sm text-neutral-600 dark:text-neutral-400',
 	}
 
@@ -47,6 +51,8 @@
 				return { component: PartyPopper, color: 'text-neutral-500 bg-neutral-500/10' }
 			case 'project_update':
 				return { component: FolderOpen, color: 'text-accent bg-accent/10' }
+			case 'project_banned':
+				return { component: Ban, color: 'text-white bg-red-500' }
 			default:
 				return { component: Inbox, color: 'text-neutral-400 bg-neutral-100' }
 		}
@@ -120,14 +126,22 @@
 					<div class="flex items-start justify-between">
 						<div class={styles.metaText}>
 							{#if note.type === 'follow'}
-								<a
-									href="/users/{note.issuer.username}"
-									class="font-bold text-accent hover:underline"
-								>
-									{note.issuer.username}
+								<a href="/users/{note.issuer?.username}" class="link">
+									{note.issuer?.username}
 								</a> followed you
 							{:else if note.type === 'featured'}
-								One of your projects are featured
+								<a class="link" href="/projects/{note.metadata?.projID}"
+									>{note.metadata?.projTitle}</a
+								> has been featured
+							{:else if note.type === 'project_banned'}
+								{#if note.metadata?.projID}
+									<p class="font-bold">
+										Your project, <a class="link" href="/projects/{note.metadata?.projID}"
+											>{note.metadata?.projTitle}</a
+										> has been banned by a moderator.
+									</p>
+									<p>{note.metadata?.title}</p>
+								{/if}
 							{:else}
 								{note.metadata?.title || 'System Notification'}
 							{/if}
@@ -138,9 +152,9 @@
 						{note.metadata?.message || ''}
 					</p>
 
-					<div class="mt-2 flex items-center gap-4">
+					<div class="flex items-center gap-4">
 						<span class={styles.timestamp}>
-							{new Date(note.createdAt).toLocaleDateString('en-GB', {
+							{new Date(note.createdAt).toLocaleDateString(getLocale(), {
 								day: 'numeric',
 								month: 'short',
 								hour: '2-digit',

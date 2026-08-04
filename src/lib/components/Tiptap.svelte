@@ -17,7 +17,7 @@
 
 	import emojiDataRaw from 'unicode-emoji-json'
 	import emojiNames from 'unicode-emoji-json/data-by-emoji.json'
-	import { InputRule, markInputRule, markPasteRule } from '@tiptap/core'
+	import { markPasteRule } from '@tiptap/core'
 
 	let { value = $bindable(''), class: className = '' } = $props()
 
@@ -32,6 +32,7 @@
 	let showEmojiMenu = $state(false)
 
 	// --- Emoji Data ---
+	// from forumoji source code
 	const forbidden = new Set([
 		'1f595',
 		'1f346',

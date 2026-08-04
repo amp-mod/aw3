@@ -258,6 +258,14 @@ export const notification = pgTable(
 	],
 )
 
+export const report = pgTable('report', {
+	itemId: bigint('recipient_id', { mode: 'number' }).notNull(),
+	itemType: text('type').notNull(),
+	chosenReason: varchar({ length: 64 }),
+	description: varchar({ length: 1000 }),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+})
+
 // --- RELATIONS ---
 
 export const userRelations = relations(user, ({ many }) => ({

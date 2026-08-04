@@ -42,13 +42,13 @@
 					<Icon />
 				</div>
 			{/if}
-			<div class="block">
+			<div class="block max-w-4xl">
 				{@render children()}
 			</div>
 			{#if button}
 				<a
 					href={button.url}
-					class="ml-2 cursor-pointer rounded-full bg-(--alert-fg-param) px-4 py-2 text-sm font-bold text-(--alert-bg-param) no-underline"
+					class="ml-2 shrink-0 cursor-pointer rounded-lg border-2 border-(--alert-fg-param) px-3 py-1.5 text-sm font-bold text-(--alert-fg-param) no-underline"
 				>
 					<span class="sr-only">{@render children()} </span>{button.text}
 				</a>

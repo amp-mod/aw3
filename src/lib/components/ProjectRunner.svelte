@@ -43,7 +43,6 @@
 	let isRunning = $state(false)
 	let isFullscreen = $state(false)
 	let isPaused = $state(false)
-	let isBlockedBySafety = $state(false)
 
 	// Control States
 	let isTouchOriented = $state(false)
@@ -339,19 +338,6 @@
 		class="relative w-full overflow-hidden rounded border border-black/10 dark:border-white/10"
 		style={`height: ${playerHeight || 'auto'}px; ${!playerHeight && 'aspect-ratio: 4/3;'}`}
 	>
-		{#if isBlockedBySafety}
-			<div
-				class="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-black p-8 text-center text-white"
-				in:fade
-			>
-				<ShieldAlert size={48} class="text-red-500" />
-				<p class="max-w-md text-zinc-400">
-					This project contains flashing lights. Your safety settings are set to block dangerous
-					content.
-				</p>
-			</div>
-		{/if}
-
 		{#if isLoading}
 			<div
 				class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-1 bg-accent text-white"
@@ -364,7 +350,7 @@
 			</div>
 		{/if}
 
-		{#if !isStarted && !isLoading && !isBlockedBySafety}
+		{#if !isStarted && !isLoading}
 			<button
 				class="absolute inset-0 z-20 flex cursor-pointer flex-col items-center justify-center bg-black/40"
 				onclick={startProject}

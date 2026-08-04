@@ -10,14 +10,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 		error(401, 'Unauthorized')
 	}
 
-	// 2. Mark all as read for this user immediately on load
-	await db
-		.update(table.notification)
-		.set({ isRead: true })
-		.where(
-			and(eq(table.notification.recipientId, locals.user.id), eq(table.notification.isRead, false)),
-		)
-
 	// 3. Fetch initial batch
 	const limit = 15
 	const notifications = await db.query.notification.findMany({
@@ -30,6 +22,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 			},
 		},
 	})
+
+	// 2. Mark all as read for this user immediately on load
+	await db
+		.update(table.notification)
+		.set({ isRead: true })
+		.where(
+			and(eq(table.notification.recipientId, locals.user.id), eq(table.notification.isRead, false)),
+		)
 
 	const hasNextPage = notifications.length > limit
 	const items = hasNextPage ? notifications.slice(0, -1) : notifications
