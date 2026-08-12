@@ -1,1 +1,15 @@
-{}
+{
+    "errorProtectedPage": "Тази страница е защитена, само операторите могат да имат достъп.",
+    "guidelines": "Правила",
+    "footerNotAffiliated": "АмпМод няма вързки с Фондацията на Скрач, ТурбоУарп, или на техните им партньори. Скрач е проект на Фондацията на Скрач, намиращ се в scratch.org. Този уебсайт е безплатен софтуер в GNU Affero General Public Licence 3.0. Всики неща направени от потребителя са в лиценза Creative Commons Attribution-ShareAlike 4.0 licence.",
+    "footerResources": "Ресурси",
+    "footerCommunity": "Общност",
+    "footerBlog": "АмпМод Блог",
+    "footerWiki": "АмпМод Уики",
+    "exploreProjects": "Разглеждай проекти",
+    "footerAbout": "За нас",
+    "about": "За АмпМод",
+    "sourceCodeEditor": "АмпМод редактор",
+    "sourceCodeAw3": "АмпМод Уебсайт (aw3)",
+    "sourceCodeWiki": "АмпМод Уики"
+}
