@@ -217,8 +217,8 @@ importers:
         specifier: ^25.9.5
         version: 25.9.5
       '@types/yauzl':
-        specifier: ^2.10.3
-        version: 2.10.3
+        specifier: ^3.0.0
+        version: 3.4.0
       '@vitest/browser':
         specifier: ^4.1.10
         version: 4.1.10(vite@8.0.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@25.9.5)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.12))(vitest@4.1.10(@types/node@25.9.5)(jsdom@30.0.1)(vite@8.0.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@25.9.5)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.12)))
@@ -2769,8 +2769,8 @@ packages:
   '@types/webgl2@0.0.4':
     resolution: {integrity: sha512-PACt1xdErJbMUOUweSrbVM7gSIYm1vTncW2hF6Os/EeWi6TXYAYMPp+8v6rzHmypE5gHrxaxZNXgMkJVIdZpHw==}
 
-  '@types/yauzl@2.10.3':
-    resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
+  '@types/yauzl@3.4.0':
+    resolution: {integrity: sha512-NRPn5w6h8dhcnmx3YIRQcqMywY/+nND/uOkJessedcrowO3C0AssHp3tMJpxKAwOhFOo0OV1y9VtsC5hbKKBAw==}
 
   '@typescript-eslint/eslint-plugin@8.67.0':
     resolution: {integrity: sha512-Un7Heoyj65NREbKAyIrFxeM143NZpExWmy1Nep4DLeQOeLlTeumPjoNKnBrU5D5moWXbPJgRa5Uwcdu0faVNGQ==}
@@ -7120,7 +7120,7 @@ snapshots:
 
   '@types/webgl2@0.0.4': {}
 
-  '@types/yauzl@2.10.3':
+  '@types/yauzl@3.4.0':
     dependencies:
       '@types/node': 25.9.5
 
