@@ -1,15 +1,5 @@
 <script lang="ts">
-	import {
-		UserRound,
-		Pencil,
-		FolderOpen,
-		Gavel,
-		Lock,
-		Save,
-		Loader,
-		UsersRound,
-		X,
-	} from '@lucide/svelte'
+	import { Pencil, FolderOpen, Gavel, Lock, Save, Loader, UsersRound, X } from '@lucide/svelte'
 	import { enhance } from '$app/forms'
 	import { rankMap, isStaff } from '$lib/ranks'
 	import { md } from '$lib/markdown'
@@ -113,7 +103,8 @@
 	}
 
 	const styles = {
-		sectionCard: 'border border-neutral-300 dark:border-neutral-700 rounded-xl p-3',
+		sectionCard:
+			'border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 flex flex-col min-h-0',
 		header: 'flex items-center gap-6 my-3',
 		label: 'text-sm font-bold text-accent-secondary dark:text-neutral-300 block',
 		pfpWrapper:
@@ -127,6 +118,273 @@
 <svelte:head>
 	<title>{data.private ? 'Private profile' : userProfile.username} - AmpMod</title>
 </svelte:head>
+
+{#if !data.private}
+	<div class="m-auto flex max-w-6xl flex-col gap-3 lg:p-8">
+		{#if data.isPrivate}
+			<div
+				class="flex items-center justify-between gap-2 rounded bg-amber-100/50 p-3 text-amber-900 dark:bg-amber-800/10 dark:text-amber-200/80"
+			>
+				Your profile is private. Only you and the AmpMod moderation team can see it.
+				<Button href="/settings/profile">Settings</Button>
+			</div>
+		{/if}
+
+		<header class={styles.header}>
+			<div class={styles.pfpWrapper}>
+				<img
+					src={getPfpPath(userProfile).full}
+					alt={userProfile.username}
+					class="h-full w-full object-cover"
+				/>
+
+				{#if canEdit}
+					<button
+						onclick={() => pfpInput?.click()}
+						class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
+						disabled={isUploadingPfp}
+					>
+						{#if isUploadingPfp}<Loader class="animate-spin" size={24} />{:else}<Pencil
+								size={24}
+							/>{/if}
+					</button>
+					<form
+						method="POST"
+						action="?/updatePfp"
+						enctype="multipart/form-data"
+						use:enhance={() => {
+							isUploadingPfp = true
+							return async () => {
+								isUploadingPfp = false
+								location.reload()
+							}
+						}}
+						class="hidden"
+					>
+						<input type="hidden" name="targetUserId" value={userProfile.id} />
+						<input
+							bind:this={pfpInput}
+							type="file"
+							name="avatar"
+							accept="image/*"
+							onchange={(e) => e.currentTarget.form?.requestSubmit()}
+						/>
+					</form>
+				{/if}
+			</div>
+
+			<div class="flex grow flex-col justify-center">
+				<div class="flex items-center gap-3">
+					<div class="flex w-full items-center gap-4">
+						{#if data.isOnline}
+							<span class="h-4 w-4 rounded-full bg-green-500" title="Online"></span>
+						{/if}
+						<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">
+							{userProfile.username}{#if userProfile.rank === 3}*{/if}
+						</h1>
+
+						<div class="grow"></div>
+
+						{#if data.availableActions?.includes('banUser') && !isOwnProfile}
+							<Button onclick={() => (isBanModalOpen = true)} class="flex items-center gap-2">
+								<Gavel size={24} />
+								{m.adminBan()}
+							</Button>
+						{/if}
+
+						{#if !isOwnProfile && data.user && data.availableActions.includes('follow')}
+							<form
+								method="POST"
+								action="?/toggleFollow"
+								use:enhance={() => {
+									return async ({ update }) => {
+										await update()
+									}
+								}}
+							>
+								<input type="hidden" name="targetUserId" value={userProfile.id} />
+								<Button
+									type="submit"
+									class={[
+										'flex items-center gap-2',
+										isFollowing && 'bg-neutral-500 hover:bg-neutral-600!',
+									]}
+								>
+									<UsersRound />
+									{isFollowing ? 'Unfollow' : 'Follow'}
+								</Button>
+							</form>
+						{/if}
+					</div>
+
+					{#if userStatus === 'banned' && data.availableActions?.includes('seeBanStatus')}
+						<span
+							class="rounded border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-xs font-bold text-red-500"
+							>{m.userBanned()}</span
+						>
+					{/if}
+				</div>
+
+				<div class="flex items-center gap-2 text-sm text-neutral-500/80">
+					<span>{rankMap[userProfile.rank ?? 0]}</span>
+					{#if data.canRankUp}
+						<button onclick={() => (isRankUpModalOpen = true)} class="link cursor-pointer">
+							(Rank up)
+						</button>
+					{/if}
+					<span>•</span>
+					<span>{m.joinedDate({ joinedDate })}</span>
+					{#if userProfile.scratchUsername}
+						<span>•</span>
+						<a href="https://scratch.mit.edu/users/{userProfile.scratchUsername}" class="link">
+							Scratch
+						</a>
+					{/if}
+				</div>
+			</div>
+		</header>
+
+		<div class="flex flex-col gap-6 lg:h-80 lg:flex-row lg:items-stretch">
+			<section class="{styles.sectionCard} flex-1">
+				<div
+					class="mb-2 flex items-center justify-between border-b border-neutral-500/50 pb-2 dark:border-neutral-700"
+				>
+					<span class={styles.label}>{m.aboutMe()}</span>
+					{#if canEdit && !isEditingBio}
+						<button
+							onclick={() => (isEditingBio = true)}
+							class="text-neutral-400 hover:text-accent"
+						>
+							<Pencil size={16} />
+						</button>
+					{/if}
+				</div>
+
+				{#if isEditingBio}
+					<form
+						method="POST"
+						action="?/updateBio"
+						use:enhance={() => {
+							return async ({ result, update }) => {
+								if (result.type === 'success') isEditingBio = false
+								await update()
+							}
+						}}
+						class="flex min-h-0 flex-1 flex-col overflow-hidden"
+					>
+						<input type="hidden" name="targetUserId" value={userProfile.id} />
+						<input type="hidden" name="bio" value={editedBio} />
+						<Tiptap bind:value={editedBio} placeholder={m.aboutMePlaceholderEdit()} />
+						<div class="mt-4 flex shrink-0 gap-2">
+							<button
+								type="submit"
+								class="flex items-center gap-3 rounded-full bg-accent px-4 py-1 text-sm font-bold text-white transition-colors hover:bg-accent-secondary"
+							>
+								<Save size={18} />
+								{m.save()}
+							</button>
+							<button
+								type="button"
+								onclick={() => (isEditingBio = false)}
+								class="text-sm text-neutral-500">{m.cancel()}</button
+							>
+						</div>
+					</form>
+				{:else}
+					<div
+						class="prose max-w-none flex-1 overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert prose-a:font-bold prose-a:text-accent prose-a:no-underline prose-a:hover:underline dark:prose-a:text-accent-light"
+					>
+						{#if userProfile.bio}
+							{@html DOMPurify.sanitize(md.render(userProfile.bio))}
+						{:else}
+							<i class="opacity-50">
+								{isOwnProfile ? m.aboutMePlaceholderEdit() : m.aboutMePlaceholder()}
+							</i>
+						{/if}
+					</div>
+				{/if}
+			</section>
+
+			<section
+				class="{styles.sectionCard} relative flex w-full shrink-0 flex-col overflow-hidden lg:w-100"
+			>
+				<div class="mb-4 flex items-center justify-between">
+					<span class={styles.label}>
+						{FEATURED_TITLES[userProfile.featuredProjectTitleIndex ?? 0]}
+					</span>
+					{#if isOwnProfile && data.availableActions?.includes('setProfileFeaturedProject')}
+						<button
+							onclick={() => (isProjectPickerOpen = true)}
+							class="text-neutral-400 transition-colors hover:text-accent"
+						>
+							<Pencil size={16} />
+						</button>
+					{/if}
+				</div>
+
+				{#if featuredProject}
+					<a
+						href="/projects/{featuredProject.id}"
+						class="group relative aspect-4/3 overflow-hidden rounded border border-neutral-200 dark:border-neutral-800"
+					>
+						<img
+							src={getPublicUrl(`projects/${featuredProject.id}/thumbnail.webp`)}
+							alt={featuredProject.title}
+							class="h-full w-full object-cover"
+						/>
+						<div
+							class="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent"
+						></div>
+						<div class="absolute bottom-0 p-4">
+							<h3 class="line-clamp-1 text-lg font-bold text-white">{featuredProject.title}</h3>
+						</div>
+					</a>
+				{:else}
+					<div
+						class="flex aspect-[4/3] min-h-[200px] grow items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700"
+					>
+						<div class="text-center text-neutral-400">
+							<FolderOpen class="mx-auto mb-2 opacity-20" size={32} />
+							<p class="text-xs">{m.noFeaturedProject()}</p>
+						</div>
+					</div>
+				{/if}
+			</section>
+		</div>
+		<div class="flex flex-col gap-2">
+			<Row title="Shared Projects" seeMore="/users/{userProfile.username}/projects">
+				<ProjectList projects={data.projects} emptyMessage="No projects yet." />
+			</Row>
+
+			<div class="grid grid-cols-1 gap-2 md:grid-cols-2">
+				<Row
+					title="Following ({followingCount})"
+					seeMore="/users/{userProfile.username}/following"
+					class="grow"
+				>
+					<UserList users={data.following} />
+				</Row>
+
+				<Row
+					title="Followers ({followerCount})"
+					seeMore="/users/{userProfile.username}/followers"
+					class="grow"
+				>
+					<UserList users={data.followers} />
+				</Row>
+			</div>
+			<h2 class="text-2xl font-bold">Comments</h2>
+
+			<ComingSoon />
+		</div>
+	</div>
+{:else}
+	<div class="m-auto my-20 flex max-w-6xl flex-col items-center gap-4 text-center">
+		<Lock size={48} />
+		<p>The owner of this account has hidden their profile from public view.</p>
+		<Button href="/">Back to homepage</Button>
+	</div>
+{/if}
 
 <Modal bind:open={isRankUpModalOpen} title="Rank Up!">
 	<div class="flex flex-col gap-4">
@@ -304,275 +562,3 @@
 		</form>
 	</div>
 </Modal>
-
-{#if !data.private}
-	<div class="m-auto flex max-w-6xl flex-col gap-3 lg:p-8">
-		{#if data.isPrivate}
-			<div
-				class="flex items-center justify-between gap-2 rounded bg-amber-100/50 p-3 text-amber-900 dark:bg-amber-800/10 dark:text-amber-200/80"
-			>
-				Your profile is private. Only you and the AmpMod moderation team can see it.
-				<Button href="/settings/profile">Settings</Button>
-			</div>
-		{/if}
-
-		<header class={styles.header}>
-			<div class={styles.pfpWrapper}>
-				<img
-					src={getPfpPath(userProfile).full}
-					alt={userProfile.username}
-					class="h-full w-full object-cover"
-				/>
-
-				{#if canEdit}
-					<button
-						onclick={() => pfpInput?.click()}
-						class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
-						disabled={isUploadingPfp}
-					>
-						{#if isUploadingPfp}<Loader class="animate-spin" size={24} />{:else}<Pencil
-								size={24}
-							/>{/if}
-					</button>
-					<form
-						method="POST"
-						action="?/updatePfp"
-						enctype="multipart/form-data"
-						use:enhance={() => {
-							isUploadingPfp = true
-							return async () => {
-								isUploadingPfp = false
-								location.reload()
-							}
-						}}
-						class="hidden"
-					>
-						<input type="hidden" name="targetUserId" value={userProfile.id} />
-						<input
-							bind:this={pfpInput}
-							type="file"
-							name="avatar"
-							accept="image/*"
-							onchange={(e) => e.currentTarget.form?.requestSubmit()}
-						/>
-					</form>
-				{/if}
-			</div>
-
-			<div class="flex grow flex-col justify-center">
-				<div class="flex items-center gap-3">
-					<div class="flex w-full items-center gap-4">
-						<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">
-							{userProfile.username}{#if userProfile.rank === 3}*{/if}
-						</h1>
-
-						<div class="grow"></div>
-
-						{#if isViewerStaff && !isOwnProfile}
-							<Button onclick={() => (isBanModalOpen = true)} class="flex items-center gap-2">
-								<Gavel size={24} />
-								{m.adminBan()}
-							</Button>
-						{/if}
-
-						{#if !isOwnProfile && data.user}
-							<form
-								method="POST"
-								action="?/toggleFollow"
-								use:enhance={() => {
-									return async ({ update }) => {
-										await update()
-									}
-								}}
-							>
-								<input type="hidden" name="targetUserId" value={userProfile.id} />
-								<Button
-									type="submit"
-									class={[
-										'flex items-center gap-2',
-										isFollowing && 'bg-neutral-500 hover:bg-neutral-600!',
-									]}
-								>
-									<UsersRound />
-									{isFollowing ? 'Unfollow' : 'Follow'}
-								</Button>
-							</form>
-						{/if}
-					</div>
-
-					{#if userStatus === 'banned'}
-						<span
-							class="rounded border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-xs font-bold text-red-500"
-							>{m.userBanned()}</span
-						>
-					{/if}
-				</div>
-
-				<div class="flex items-center gap-2 text-sm text-neutral-500/80">
-					<span class="font-medium">{rankMap[userProfile.rank ?? 0]}</span>
-					{#if data.canRankUp}
-						<button onclick={() => (isRankUpModalOpen = true)} class="link cursor-pointer">
-							(Rank up)
-						</button>
-					{/if}
-					{#if data.isOnline}
-						<span>•</span>
-						<span class="font-bold text-green-500">Online</span>
-					{/if}
-					<span>•</span>
-					<span>{m.joinedDate({ joinedDate })}</span>
-				</div>
-			</div>
-		</header>
-
-		<div class="flex h-80 flex-col gap-6 lg:flex-row lg:items-stretch">
-			<section class="{styles.sectionCard} flex-1">
-				<div
-					class="mb-2 flex items-center justify-between border-b border-neutral-500/50 pb-2 dark:border-neutral-700"
-				>
-					<span class={styles.label}>{m.aboutMe()}</span>
-					{#if canEdit && !isEditingBio}
-						<button
-							onclick={() => (isEditingBio = true)}
-							class="text-neutral-400 hover:text-accent"
-						>
-							<Pencil size={16} />
-						</button>
-					{/if}
-				</div>
-
-				{#if isEditingBio}
-					<form
-						method="POST"
-						action="?/updateBio"
-						use:enhance={() => {
-							return async ({ result, update }) => {
-								if (result.type === 'success') isEditingBio = false
-								await update()
-							}
-						}}
-						class="flex flex-col"
-					>
-						<input type="hidden" name="targetUserId" value={userProfile.id} />
-						<input type="hidden" name="bio" value={editedBio} />
-						<Tiptap bind:value={editedBio} placeholder={m.aboutMePlaceholderEdit()} />
-						<div class="mt-4 flex gap-2">
-							<button
-								type="submit"
-								class="flex items-center gap-3 rounded-full bg-accent px-4 py-1 text-sm font-bold text-white transition-colors hover:bg-accent-secondary"
-							>
-								<Save size={18} />
-								{m.save()}
-							</button>
-							<button
-								type="button"
-								onclick={() => (isEditingBio = false)}
-								class="text-sm text-neutral-500">{m.cancel()}</button
-							>
-						</div>
-					</form>
-				{:else}
-					<div
-						class="prose max-w-none flex-1 overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert prose-a:font-bold prose-a:text-accent prose-a:no-underline prose-a:hover:underline dark:prose-a:text-accent-light"
-					>
-						{#if userProfile.bio}
-							{@html DOMPurify.sanitize(md.render(userProfile.bio))}
-						{:else}
-							<i class="opacity-50">
-								{isOwnProfile ? m.aboutMePlaceholderEdit() : m.aboutMePlaceholder()}
-							</i>
-						{/if}
-					</div>
-				{/if}
-			</section>
-
-			<section
-				class="{styles.sectionCard} relative flex w-full shrink-0 flex-col overflow-hidden lg:w-100"
-			>
-				<div class="mb-4 flex items-center justify-between">
-					<span class={styles.label}
-						><span class={styles.label}>
-							{FEATURED_TITLES[userProfile.featuredProjectTitleIndex ?? 0]}
-						</span></span
-					>
-					{#if isOwnProfile}
-						<button
-							onclick={() => (isProjectPickerOpen = true)}
-							class="text-neutral-400 transition-colors hover:text-accent"
-						>
-							<Pencil size={16} />
-						</button>
-					{/if}
-				</div>
-
-				{#if featuredProject}
-					<a
-						href="/projects/{featuredProject.id}"
-						class="group relative aspect-4/3 overflow-hidden rounded border border-neutral-200 dark:border-neutral-800"
-					>
-						<img
-							src={getPublicUrl(`projects/${featuredProject.id}/thumbnail.webp`)}
-							alt={featuredProject.title}
-							class="h-full w-full object-cover"
-						/>
-						<div
-							class="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent"
-						></div>
-						<div class="absolute bottom-0 p-4">
-							<h3 class="line-clamp-1 text-lg font-bold text-white">{featuredProject.title}</h3>
-						</div>
-					</a>
-				{:else}
-					<div
-						class="flex aspect-[4/3] min-h-[200px] grow items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700"
-					>
-						<div class="text-center text-neutral-400">
-							<FolderOpen class="mx-auto mb-2 opacity-20" size={32} />
-							<p class="text-xs">{m.noFeaturedProject()}</p>
-							{#if isOwnProfile}
-								<button
-									onclick={() => (isProjectPickerOpen = true)}
-									class="mt-2 text-xs font-bold text-accent hover:underline"
-								>
-									Choose a project
-								</button>
-							{/if}
-						</div>
-					</div>
-				{/if}
-			</section>
-		</div>
-		<div class="flex flex-col gap-2">
-			<Row title="Shared Projects" seeMore="/users/{userProfile.username}/projects">
-				<ProjectList projects={data.projects} emptyMessage="No projects yet." />
-			</Row>
-
-			<div class="grid grid-cols-1 gap-2 md:grid-cols-2">
-				<Row
-					title="Following ({followingCount})"
-					seeMore="/users/{userProfile.username}/following"
-					class="grow"
-				>
-					<UserList users={data.following} />
-				</Row>
-
-				<Row
-					title="Followers ({followerCount})"
-					seeMore="/users/{userProfile.username}/followers"
-					class="grow"
-				>
-					<UserList users={data.followers} />
-				</Row>
-			</div>
-			<h2 class="text-2xl font-bold">Comments</h2>
-
-			<ComingSoon />
-		</div>
-	</div>
-{:else}
-	<div class="m-auto my-20 flex max-w-6xl flex-col items-center gap-4 text-center">
-		<Lock size={48} />
-		<p>The owner of this account has hidden their profile from public view.</p>
-		<Button href="/">Back to homepage</Button>
-	</div>
-{/if}

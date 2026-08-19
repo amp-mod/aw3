@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { enhance } from '$app/forms'
 	import { goto, invalidate, invalidateAll } from '$app/navigation'
-	import { page } from '$app/state'
 	import Button from '$lib/components/Button.svelte'
 	import { getLocale } from '$lib/paraglide/runtime.js'
 	import { Smartphone, Globe, Calendar, Tablet, Bot, Monitor } from '@lucide/svelte'
 	import Bowser from 'bowser'
-	import { fade, fly, scale, slide } from 'svelte/transition'
+	import { slide } from 'svelte/transition'
 
 	let { data } = $props()
 

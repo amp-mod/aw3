@@ -2,6 +2,8 @@
 title: AmpMod Privacy Policy
 ---
 
+**Updated on 2026-08-19.**
+
 The AmpMod project does not sell your personal information to third parties, use it to personalise ads,
 or train artificial intelligence or large language models on it. We do not have any interest in your
 personal data. Please read on for more information about how your data is handled here.
@@ -25,7 +27,7 @@ Such data will never reach any servers unless the extension is malicious.
 Simply loading an extension into the IDE does not mean we have to audit it. That only happens if you uploaded
 your project here. You are responsible for what extensions you use in your projects.
 
-## Website
+## AmpMod.org (outside of the IDE)
 
 This website may store cookies in your browser for the sole purposes of:
 
@@ -41,6 +43,10 @@ username must not contain your real name. Your email will not be used to send ma
 
 AmpMod stores a hash of your password so you can login. Since your password is hashed, we can't see
 it after you register.
+
+AmpMod uses Simple Analytics.  We chose Simple Analytics because it does not store or sell any of your
+personal information. Not even your IP address is stored by them, and cookies are not used by them.
+See their privacy policy at https://www.simpleanalytics.com/privacy-policy.
 
 ### For users under 13
 
@@ -66,12 +72,12 @@ Everything in the AmpMod IDE section applies here.
 The AmpMod app may make requests to [Codeberg](https://codeberg.org) on startup to check for new releases.
 You can disable this in Settings > Desktop Settings.
 
-## Analytics
+## Data deletion and export
 
-AmpMod may collect anonymous aggregated data for analytical purposes, such as how many people are using AmpMod
-per day.
+You are currently unable to delete your account from the site. If you want to delete your account or export
+data, see below. We will accept all requests until these features are added to the site.
 
 ## Contact
 
-Contact <ampelectrecuted@gmail.com> if you have any questions or want to delete or export any data stored on our
+Contact <ampelc@proton.me> if you have any questions or want to delete or export any data stored on our
 servers that you or your children own.

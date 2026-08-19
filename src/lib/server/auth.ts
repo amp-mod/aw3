@@ -8,7 +8,7 @@ import { dev } from '$app/environment'
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24
 
-export const sessionCookieName = 'THIS_COOKIE_IS_COATED_WITH_BITTERANT'
+export const sessionCookieName = 'aw3sessionid'
 
 export function generateSessionToken() {
 	const bytes = crypto.getRandomValues(new Uint8Array(18))
@@ -82,17 +82,47 @@ export async function invalidateSession(sessionId: string) {
 }
 
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date) {
-	event.cookies.set(
-		sessionCookieName,
-		'DONT_LEAK_THIS_COOKIE_ELSE_YOU_WILL_LOSE_YOUR_ACCOUNT..' + token,
-		{
-			httpOnly: true,
-			sameSite: 'lax',
-			expires: expiresAt,
-			path: '/',
-			secure: !dev,
-		},
+	event.cookies.set(sessionCookieName, 'Do_NOT_share_this..' + token, {
+		httpOnly: true,
+		sameSite: 'lax',
+		expires: expiresAt,
+		path: '/',
+		secure: !dev,
+	})
+}
+
+/**
+ * Migrates the pre-0.3 cookie (THIS_COOKIE_IS_COATED_WITH_BITTERANT) to the new cookie format.
+ * @param event
+ */
+export async function migrateOldCookieName(event: RequestEvent) {
+	if (!event.cookies.get('THIS_COOKIE_IS_COATED_WITH_BITTERANT')) {
+		return
+	}
+	const [existingSession] = await db
+		.select({ expiresAt: table.session.expiresAt })
+		.from(table.session)
+		.innerJoin(table.user, eq(table.session.userId, table.user.id))
+		.where(
+			eq(
+				table.session.id,
+				encodeHexLowerCase(
+					sha256(
+						new TextEncoder().encode(
+							event.cookies.get('THIS_COOKIE_IS_COATED_WITH_BITTERANT')?.split('..')[1] as string,
+						),
+					),
+				),
+			),
+		)
+		.limit(1)
+	const expiresAt = existingSession?.expiresAt ?? new Date(Date.now() + DAY_IN_MS * 30)
+	setSessionTokenCookie(
+		event,
+		event.cookies.get('THIS_COOKIE_IS_COATED_WITH_BITTERANT')?.split('..')[1] as string,
+		expiresAt,
 	)
+	event.cookies.delete('THIS_COOKIE_IS_COATED_WITH_BITTERANT', { path: '/' })
 }
 
 export function deleteSessionTokenCookie(event: RequestEvent) {

@@ -25,19 +25,17 @@
 	<!-- Wrap sidebar + main in a horizontal flex container -->
 	<div class="flex flex-1 overflow-hidden">
 		<!-- Sidebar -->
-		<aside
-			class="flex w-72 flex-col border-r border-black/10 bg-white dark:border-accent-tertiary dark:bg-accent-secondary"
-		>
+		<aside class="flex w-72 flex-col bg-neutral-200 p-4 dark:bg-neutral-800">
 			<!-- Navigation -->
-			<nav class="mt-3 flex flex-1 flex-col">
+			<nav class="flex flex-1 flex-col">
 				{#each navItems as item}
 					<a
 						href={item.href}
-						class={`mb-1 block border-t border-b border-black/10 px-3 py-2 text-right dark:border-accent-tertiary
+						class={`mb-1 block  rounded-xl px-3 py-2
               ${
 								page.url.pathname === item.href
-									? 'bg-accent-tertiary font-bold text-white dark:bg-white dark:text-accent-secondary'
-									: 'hover:bg-accent/20 dark:hover:bg-white/10'
+									? 'bg-neutral-300 font-bold dark:bg-neutral-700'
+									: 'hover:bg-neutral-300 dark:hover:bg-neutral-700'
 							}`}>{item.label}</a
 					>
 				{/each}

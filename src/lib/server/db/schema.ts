@@ -47,7 +47,6 @@ export const user = pgTable(
 		status: text('status').default('normal'),
 		bannedExpiry: timestamp('banned_expiry', { withTimezone: true, mode: 'date' }),
 		banReason: text('ban_reason'),
-		scratchLinked: boolean('scratch_linked').default(false),
 		scratchUsername: varchar('scratch_username', { length: 64 }).default(''),
 	},
 	(table) => [index('username_idx').on(table.username)],
@@ -266,6 +265,77 @@ export const report = pgTable('report', {
 	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
 })
 
+export const projectLike = pgTable(
+	'project_like',
+	{
+		userId: bigint('user_id', { mode: 'number' })
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		projectId: bigint('project_id', { mode: 'number' })
+			.notNull()
+			.references(() => project.id, { onDelete: 'cascade' }),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	},
+	(t) => [
+		primaryKey({ columns: [t.userId, t.projectId] }),
+		index('project_like_project_idx').on(t.projectId),
+		index('project_like_user_idx').on(t.userId),
+	],
+)
+
+export const projectView = pgTable(
+	'project_view',
+	{
+		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+		projectId: bigint('project_id', { mode: 'number' })
+			.notNull()
+			.references(() => project.id, { onDelete: 'cascade' }),
+		userId: bigint('user_id', { mode: 'number' }).references(() => user.id, {
+			onDelete: 'set null',
+		}),
+		// Anonymous browser identifier from cookie
+		visitorId: varchar('visitor_id', { length: 36 }),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	},
+	(t) => [
+		index('project_view_project_idx').on(t.projectId),
+		index('project_view_created_at_idx').on(t.createdAt),
+		// Ensures 1 view per user per project
+		index('unique_user_view_idx').on(t.projectId, t.userId),
+		// Ensures 1 view per visitor cookie per project
+		index('unique_visitor_view_idx').on(t.projectId, t.visitorId),
+	],
+)
+
+export const comment = pgTable(
+	'comment',
+	{
+		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+		authorId: bigint('author_id', { mode: 'number' })
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		projectId: bigint('project_id', { mode: 'number' }).references(() => project.id, {
+			onDelete: 'cascade',
+		}),
+		galleryId: bigint('gallery_id', { mode: 'number' }).references(() => gallery.id, {
+			onDelete: 'cascade',
+		}),
+		parentId: bigint('parent_id', { mode: 'number' }).references((): any => comment.id, {
+			onDelete: 'cascade',
+		}),
+		content: varchar({ length: 2000 }).notNull(),
+		isPinned: boolean('is_pinned').default(false).notNull(),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+		updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	},
+	(t) => [
+		index('comment_project_idx').on(t.projectId),
+		index('comment_gallery_idx').on(t.galleryId),
+		index('comment_author_idx').on(t.authorId),
+		index('comment_parent_idx').on(t.parentId),
+	],
+)
+
 // --- RELATIONS ---
 
 export const userRelations = relations(user, ({ many }) => ({
@@ -303,6 +373,8 @@ export const projectRelations = relations(project, ({ one, many }) => ({
 		references: [project.id],
 		relationName: 'remix_relation',
 	}),
+	likes: many(projectLike),
+	views: many(projectView),
 }))
 
 export const followRelations = relations(follow, ({ one }) => ({

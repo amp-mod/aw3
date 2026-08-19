@@ -9,6 +9,8 @@
 		Link,
 		Globe,
 		TriangleAlert,
+		AlertCircle,
+		CircleAlert,
 	} from '@lucide/svelte'
 	import CreateCardIcon from '$lib/assets/apple-cat-programming-sm.svg'
 	import HeroImg from '$lib/assets/apple-cat-programming.svg'
@@ -62,6 +64,18 @@
 	The integrated editor has not been added yet. Please click "Create Project" in this banner to
 	create your project, then you can export it and go to My Stuff &rarr; Create &rarr; Import .apz to
 	upload it.
+</Alert>
+<Alert
+	id="privacyPolicy-2026-08-19"
+	background="#ff4c4c"
+	button={{
+		url: '/privacy',
+		text: 'Privacy Policy',
+	}}
+	icon={CircleAlert}
+>
+	The privacy policy has been updated on 19/08/2026, due to the addition of analytics. Please read
+	it again.
 </Alert>
 {#if data.user && !data.user.scratchUsername}
 	<Alert

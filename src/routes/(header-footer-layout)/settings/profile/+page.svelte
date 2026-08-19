@@ -4,7 +4,7 @@
 	import { getPfpPath } from '$lib/storage-helpers.js'
 	import { Cat } from '@lucide/svelte'
 
-	let { data } = $props()
+	let { data, form } = $props()
 	let formElement = $state()
 
 	let isPrivate = $state(data.user.isPrivate)
@@ -87,6 +87,24 @@
 			},
 		)}
 	</form>
+	<h3 class="text-2xl font-semibold">Rename your account</h3>
+	{#if data.availableSettings.includes('username')}
+		<p>
+			<strong
+				>Warning: Renaming your account will break old links to your profile, including mentions in
+				bios, comments, and other content.</strong
+			>
+		</p>
+		<form method="POST" action="?/updateUsername" use:enhance class="flex flex-col gap-4">
+			{#if form?.error}
+				<p>{form.error}</p>
+			{/if}
+			<input class="input" type="text" name="username" placeholder="New username" required />
+			<Button type="submit">Rename account</Button>
+		</form>
+	{:else}
+		<p>Rank up to rename your account.</p>
+	{/if}
 	<h3 class="text-2xl font-semibold">Link to your Scratch profile</h3>
 	<p>When you link your AmpMod account to Scratch, a link to your Scratch profile will be added.</p>
 	<div>

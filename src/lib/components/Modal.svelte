@@ -2,7 +2,13 @@
 	import { Dialog } from 'bits-ui'
 	import { X } from '@lucide/svelte'
 
-	let { open = $bindable(false), title = '', canClose = true, children, forceMount } = $props()
+	let {
+		open = $bindable(false),
+		title = '',
+		canClose = true,
+		children,
+		forceMount = false,
+	} = $props()
 </script>
 
 <Dialog.Root bind:open>

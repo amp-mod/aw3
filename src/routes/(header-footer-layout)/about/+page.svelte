@@ -20,6 +20,9 @@
 		Check,
 		XIcon,
 		Minus,
+		CaseSensitive,
+		Brackets,
+		Square,
 	} from '@lucide/svelte'
 	import HeroImg from '$lib/assets/apple-cat-programming.svg'
 
@@ -76,19 +79,19 @@
 
 	const programmingFeatures = [
 		{
-			icon: ListTree,
+			icon: Brackets,
 			title: 'First-class lists',
-			desc: 'Treat lists as data objects. Store arrays in variables and handle nested structures.',
+			desc: 'AmpMod adds "arrays", a new alternative to lists that can store more than just text. You can even store arrays inside of arrays!',
 		},
 		{
-			icon: History,
+			icon: CaseSensitive,
 			title: 'Case sensitivity',
-			desc: 'Logic that respects casing. Essential for complex string parsing and precision logic.',
+			desc: 'In project settings, go to Danger Zone then turn on Case Sensitivity. Blocks will now distinguish uppercase and lowercase letters.',
 		},
 		{
 			icon: Puzzle,
 			title: 'Extensions',
-			desc: 'Dozens of built-in extensions to help make your project better.',
+			desc: 'From All Menus to Zip, we have everything you need to make a great project.',
 		},
 	]
 
@@ -96,12 +99,12 @@
 		{
 			icon: Type,
 			title: 'Custom fonts',
-			desc: 'Amplification and Comic added. Load .ttf/.otf/.woff2 files or system fonts.',
+			desc: 'Amplification and Comic are included fonts. Also, you can load .ttf/.otf/.woff2 files or system fonts.',
 		},
 		{
-			icon: Shapes,
+			icon: Square,
 			title: 'Rounded rectangle',
-			desc: 'Native support for rounded rectangles in the vector editor.',
+			desc: 'You can create a rounded rectangle shape by selecting the rounded rectangle tool.',
 		},
 		/*{
 			icon: Palette,
@@ -138,12 +141,12 @@
 			desc: 'Allows lists to be stored inside variables or other lists.',
 			scratch: { icon: NO },
 			tw: { icon: NO },
-			pmod: { icon: PARTIAL, note: 'Via Arrays extension' },
+			pmod: { icon: PARTIAL, note: 'Via extension' },
 			ampmod: { icon: YES, note: 'Built-in' },
 		},
 		{
 			name: 'Case sensitivity',
-			desc: 'Distinguishes between "A" and "a" in string logic.',
+			desc: 'Allows blocks to between uppercase and lowercase letters.',
 			scratch: { icon: NO },
 			tw: { icon: PARTIAL, note: 'Via extensions' },
 			pmod: { icon: PARTIAL, note: 'Via extensions' },
@@ -151,7 +154,7 @@
 		},
 		{
 			name: 'Compiler',
-			desc: 'Converts projects to JavaScript for massive speed gains.',
+			desc: 'Converts projects to JavaScript for noticeable speed gains.',
 			scratch: { icon: NO },
 			tw: { icon: YES },
 			pmod: { icon: PARTIAL, note: 'Outdated version' },
@@ -159,7 +162,7 @@
 		},
 		{
 			name: 'Custom fonts',
-			desc: 'Support for external font files in the paint editor.',
+			desc: 'Support for custom fonts.',
 			scratch: { icon: NO },
 			tw: { icon: YES },
 			pmod: { icon: YES },
@@ -167,7 +170,7 @@
 		},
 		{
 			name: 'Extensions',
-			desc: 'Additional blocks for physics, 3D, and web APIs.',
+			desc: 'Additional blocks from the gallery.',
 			scratch: { icon: PARTIAL, note: 'Official only' },
 			tw: { icon: YES },
 			pmod: { icon: YES },
@@ -204,14 +207,6 @@
 			tw: { icon: NO },
 			pmod: { icon: YES },
 			ampmod: { icon: YES },
-		},
-		{
-			name: 'Customer support',
-			desc: 'Contact via email.',
-			scratch: { icon: YES },
-			tw: { icon: NO },
-			pmod: { icon: NO },
-			ampmod: { icon: NO },
 		},
 	]
 </script>

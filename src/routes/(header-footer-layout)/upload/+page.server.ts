@@ -6,28 +6,28 @@ import sharp from 'sharp'
 import { storage } from '$lib/storage'
 import { acceptablePrefixes } from '$lib/security-manager.svelte'
 import type { PageServerLoad } from './$types'
+import { failIfCannotPerformAction } from '$lib/server/permissions'
 
 export const load: PageServerLoad = async ({ cookies, locals }) => {
-	// 1. Ensure user is logged in
-	if (!locals.user) throw error(401, 'Unauthorized')
+	failIfCannotPerformAction(locals.user, 'createProject')
 
 	// 2. Fetch the user's current link status from the DB
 	const dbUser = await db.query.user.findFirst({
 		where: eq(table.user.id, locals.user.id),
 		columns: {
 			scratchUsername: true,
-			scratchLinked: true,
 		},
 	})
 
 	return {
-		isLinked: !!dbUser?.scratchLinked,
+		isLinked: !!dbUser?.scratchUsername,
 		linkedUsername: dbUser?.scratchUsername,
 	}
 }
 
 export const actions: Actions = {
 	uploadProjectJson: async ({ request, locals }) => {
+		failIfCannotPerformAction(locals.user, 'createProject')
 		const { session, user } = locals
 		if (!session || !user) return fail(401, { message: 'Unauthorized' })
 
@@ -128,6 +128,7 @@ export const actions: Actions = {
 	},
 
 	uploadAsset: async ({ request, locals }) => {
+		failIfCannotPerformAction(locals.user, 'createProject')
 		const { session, user } = locals
 		if (!session || !user) return fail(401, { message: 'Unauthorized' })
 

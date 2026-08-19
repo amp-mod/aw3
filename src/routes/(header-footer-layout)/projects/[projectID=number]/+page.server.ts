@@ -1,11 +1,11 @@
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import { error, fail, redirect } from '@sveltejs/kit'
-import { eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import type { PageServerLoad, Actions } from './$types'
 import { storage } from '$lib/storage'
-import { form } from '$app/server'
 import { isProfane } from '$lib/server/bad-word-checker'
+import { failIfCannotPerformAction } from '$lib/server/permissions'
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const projectId = Number(params.projectID)
@@ -85,6 +85,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 export const actions: Actions = {
 	renameProject: async ({ request, params, locals }) => {
 		if (!locals.user) return fail(401, { message: 'Unauthorized' })
+		failIfCannotPerformAction(locals.user, 'renameProject')
 		const projectId = Number(params.projectID)
 		const formData = await request.formData()
 		const newTitle = formData.get('title')?.toString()
@@ -108,6 +109,7 @@ export const actions: Actions = {
 
 	editNotes: async ({ request, params, locals }) => {
 		if (!locals.user) return fail(401, { message: 'Unauthorized' })
+		failIfCannotPerformAction(locals.user, 'setProjectDescription')
 		const projectId = Number(params.projectID)
 		const formData = await request.formData()
 		const notes = formData.get('notes')?.toString() ?? ''
@@ -118,6 +120,9 @@ export const actions: Actions = {
 		if (project.userId !== locals.user.id && locals.user.rank < 2) {
 			return fail(403, { message: 'Forbidden' })
 		}
+		if (notes.length > 10000) {
+			return fail(400, { message: 'Notes are too long' })
+		}
 		if (isProfane(notes)) {
 			return fail(400, { message: 'Profanity detected' })
 		}
@@ -127,7 +132,8 @@ export const actions: Actions = {
 	},
 
 	featureProject: async ({ request, params, locals }) => {
-		if (!locals.user || locals.user.rank < 2) return fail(403, { message: 'Unauthorized' })
+		if (!locals.user) return fail(403, { message: 'Unauthorized' })
+		failIfCannotPerformAction(locals.user, 'featureProject')
 
 		const projectId = Number(params.projectID)
 		const formData = await request.formData()
@@ -152,7 +158,8 @@ export const actions: Actions = {
 	},
 
 	unfeatureProject: async ({ params, locals }) => {
-		if (!locals.user || locals.user.rank < 2) return fail(403, { message: 'Unauthorized' })
+		if (!locals.user) return fail(403, { message: 'Unauthorized' })
+		failIfCannotPerformAction(locals.user, 'featureProject')
 
 		const projectId = Number(params.projectID)
 		await db.delete(table.featuredProject).where(eq(table.featuredProject.projectId, projectId))
@@ -169,6 +176,7 @@ export const actions: Actions = {
 
 	remixProject: async ({ params, locals }) => {
 		if (!locals.user) return fail(401, { message: 'Unauthorized' })
+		failIfCannotPerformAction(locals.user, 'createProject')
 		const projectId = Number(params.projectID)
 
 		const project = await db.query.project.findFirst({ where: eq(table.project.id, projectId) })
@@ -223,6 +231,7 @@ export const actions: Actions = {
 
 	shareProject: async ({ params, locals }) => {
 		if (!locals.user) return fail(401, { message: 'Unauthorized' })
+		failIfCannotPerformAction(locals.user, 'shareProject')
 		const projectId = Number(params.projectID)
 
 		const project = await db.query.project.findFirst({ where: eq(table.project.id, projectId) })
@@ -249,7 +258,8 @@ export const actions: Actions = {
 	},
 
 	banProject: async ({ params, locals, request }) => {
-		if (!locals.user || locals.user.rank < 2) return fail(403, { message: 'Unauthorized' })
+		if (!locals.user) return fail(403, { message: 'Unauthorized' })
+		failIfCannotPerformAction(locals.user, 'banProject')
 		const projectId = Number(params.projectID)
 
 		const project = await db.query.project.findFirst({ where: eq(table.project.id, projectId) })
@@ -285,7 +295,8 @@ export const actions: Actions = {
 	},
 
 	unbanProject: async ({ params, locals, request }) => {
-		if (!locals.user || locals.user.rank < 2) return fail(403, { message: 'Unauthorized' })
+		if (!locals.user) return fail(403, { message: 'Unauthorized' })
+		failIfCannotPerformAction(locals.user, 'banProject')
 		const projectId = Number(params.projectID)
 
 		const project = await db.query.project.findFirst({ where: eq(table.project.id, projectId) })
@@ -307,7 +318,8 @@ export const actions: Actions = {
 	},
 
 	addModNoteToProject: async ({ params, locals, request }) => {
-		if (!locals.user || locals.user.rank < 2) return fail(403, { message: 'Unauthorized' })
+		if (!locals.user) return fail(403, { message: 'Unauthorized' })
+		failIfCannotPerformAction(locals.user, 'addModNoteToProject')
 		const projectId = Number(params.projectID)
 
 		const project = await db.query.project.findFirst({ where: eq(table.project.id, projectId) })

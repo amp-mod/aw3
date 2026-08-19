@@ -28,10 +28,15 @@ export const modals = $state<ModalState>({
 })
 
 export const acceptablePrefixes = [
+	// not adding raw.codeberg.page/ampmod/extensions/@pages here because
+	// * alongside ampmod.codeberg.page/extensions, it has been replaced with extensions.ampmod.org
+	// * codeberg no longer supports the original pages server
+	// * you can access any other repo by using path traversal, which means one can load any malicious
+	//   extension from codeberg
 	'https://ampmod.codeberg.page/extensions/',
-	'https://raw.codeberg.page/ampmod/extensions/@pages/',
 	'https://extensions.turbowarp.org/',
 	'https://pen-group.github.io/extensions/',
+	'https://extensions.ampmod.org/',
 	// localhost is useless on public site
 ]
 
@@ -99,7 +104,9 @@ export const SecurityManagerImplementation = {
 			})
 		} catch (e) {
 			console.error('Failed to fetch extension code for security review:', e)
-			return false
+			return await requestPermission('loadExtension', {
+				code: extensionURL,
+			})
 		}
 	},
 

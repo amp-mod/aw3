@@ -8,6 +8,7 @@ import { stripMarkdown } from '$lib/markdown'
 import { storage } from '$lib/storage'
 import sharp from 'sharp'
 import { desc } from 'drizzle-orm'
+import { canPerformAction, failIfCannotPerformAction } from '$lib/server/permissions'
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const { username } = params
@@ -27,7 +28,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			isPrivate: table.user.isPrivate,
 			featuredProjectId: table.user.featuredProjectId,
 			featuredProjectTitleIndex: table.user.featuredProjectTitleIndex,
-			...(isStaffMember
+			scratchUsername: table.user.scratchUsername,
+			...(canPerformAction(viewerRank, 'seeBanStatus')
 				? {
 						status: table.user.status,
 						bannedExpiry: table.user.bannedExpiry,
@@ -43,7 +45,11 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	const isOwnProfile = viewer?.id === userProfile.id
 
-	if (userProfile.isPrivate && !isStaffMember && !isOwnProfile) {
+	if (
+		userProfile.isPrivate &&
+		!canPerformAction(viewerRank, 'viewPrivateProfiles') &&
+		!isOwnProfile
+	) {
 		return { private: true, userProfile: { username: userProfile.username }, projects: [] }
 	}
 
@@ -71,7 +77,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.limit(10)
 
 	let canRankUp = false
-	if (isOwnProfile && (userProfile.rank ?? 0) === 0) {
+	if (isOwnProfile && (userProfile.rank ?? 0) === 0 && canPerformAction(viewerRank, 'rankUp')) {
 		const projectCountResult = await db
 			.select({ count: sql<number>`count(*)` })
 			.from(table.project)
@@ -118,8 +124,22 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	// Don't say "isOnline" on Scratch or you'll get banned!!
 	const isOnline = activeUsers.some((i) => i.username === userProfile.username)
 
+	const availableActions = [
+		'banUser',
+		'setProfileFeaturedProject',
+		'setPFP',
+		'setBio',
+		'follow',
+		'comment',
+		'rankUp',
+		'editOtherUsersProfile',
+		'viewPrivateProfiles',
+		'report',
+		'reportStaff',
+	].filter((action) => canPerformAction(viewer, action as any))
 	return {
 		userProfile,
+		availableActions,
 		isOnline,
 		featuredProject,
 		isOwnProfile,
@@ -139,6 +159,7 @@ export const actions: Actions = {
 	rankUp: async ({ locals }) => {
 		const user = locals.user
 		if (!user) return fail(401, { message: 'Unauthorized' })
+		failIfCannotPerformAction(user, 'rankUp')
 		if ((user.rank ?? 0) !== 0) return fail(400, { message: 'Already ranked up' })
 
 		const projectCountResult = await db
@@ -164,6 +185,7 @@ export const actions: Actions = {
 	toggleFollow: async ({ request, locals }) => {
 		const viewer = locals.user
 		if (!viewer) return fail(401, { message: 'Unauthorized' })
+		failIfCannotPerformAction(viewer, 'follow')
 		const formData = await request.formData()
 		const targetUserId = Number(formData.get('targetUserId'))
 		if (isNaN(targetUserId) || viewer.id === targetUserId)
@@ -194,6 +216,7 @@ export const actions: Actions = {
 	updatePfp: async ({ request, locals }) => {
 		const viewer = locals.user
 		if (!viewer) return fail(401, { message: 'Unauthorized' })
+		failIfCannotPerformAction(viewer, 'setPFP')
 		const formData = await request.formData()
 		const file = formData.get('avatar') as File
 		const targetUserId = Number(formData.get('targetUserId'))
@@ -211,7 +234,7 @@ export const actions: Actions = {
 				{ s: '32', d: 32 },
 				{ s: '48', d: 48 },
 				{ s: '64', d: 64 },
-				{ s: 'full', d: 728 },
+				{ s: 'full', d: 1024 },
 			]
 			const metadata = await sharp(buffer).metadata()
 
@@ -236,6 +259,7 @@ export const actions: Actions = {
 	updateBio: async ({ request, locals }) => {
 		const viewer = locals.user
 		if (!viewer) return fail(401, { message: 'Unauthorized' })
+		failIfCannotPerformAction(viewer, 'setBio')
 		const formData = await request.formData()
 		const newBio = formData.get('bio') as string
 		const targetUserId = Number(formData.get('targetUserId'))
@@ -258,7 +282,7 @@ export const actions: Actions = {
 
 	banUser: async ({ request, locals }) => {
 		const viewerRank = locals.user?.rank ?? 0
-		if (!locals.user || viewerRank < 2) return fail(403, { message: 'Insufficient permissions' })
+		failIfCannotPerformAction(locals.user, 'banUser')
 		const formData = await request.formData()
 		const targetUserId = Number(formData.get('targetUserId'))
 		const reason = (formData.get('reason') as string) || 'No reason provided'
@@ -296,6 +320,7 @@ export const actions: Actions = {
 	featureProject: async ({ request, locals }) => {
 		const viewer = locals.user
 		if (!viewer) return fail(401, { message: 'Unauthorized' })
+		failIfCannotPerformAction(viewer, 'setProfileFeaturedProject')
 
 		const formData = await request.formData()
 		const projectId = formData.get('projectId')

@@ -1,8 +1,9 @@
 import type { User } from './server/db/schema'
 import DefaultPFP from '$lib/assets/default-pfp.png'
 
+export const publicUrlRoot = import.meta.env.VITE_AW3_UPLOADS_BASE ?? '/uploads/'
 export const getPublicUrl = (path: string) => {
-	return `/uploads/${path}`
+	return `${publicUrlRoot}${path}`
 }
 
 /**

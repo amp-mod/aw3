@@ -7,6 +7,8 @@
 		Paperclip,
 		CopyPlus,
 		Hammer,
+		Pencil,
+		Save,
 	} from '@lucide/svelte'
 	import Button from '$lib/components/Button.svelte'
 	import ProjectRunner from '$lib/components/ProjectRunner.svelte'
@@ -18,9 +20,11 @@
 	import Modal from '$lib/components/Modal.svelte'
 	import { enhance } from '$app/forms'
 	import { md } from '$lib/markdown'
-	import { fade, slide } from 'svelte/transition'
-	import { acceptablePrefixes } from '$lib/security-manager.svelte'
+	import { slide } from 'svelte/transition'
 	import ComingSoon from '$lib/components/ComingSoon.svelte'
+	import DOMPurify from 'isomorphic-dompurify'
+	import Tiptap from '$lib/components/Tiptap.svelte'
+	import { m } from '$lib/paraglide/messages'
 
 	let { data } = $props()
 
@@ -31,6 +35,8 @@
 	const isMod = $derived(data.user && data.user.rank >= 2)
 
 	let loadedExtensions = $state([])
+	let isEditingNotes = $state(false)
+	let editedNotes = $state(project.notes || '')
 
 	// UI State
 	let titleValue = $state(data.project.title)
@@ -274,34 +280,60 @@
 				</div>
 			{/if}
 			<div class="grow">
-				{#if canEdit}
-					<div class="flex h-full flex-col gap-1">
-						<label for="project-notes-textarea" class={styles.label}>Notes and Credits</label>
-						<textarea
-							id="project-notes-textarea"
-							name="notes"
-							bind:value={notesValue}
-							oninput={handleNotesInput}
-							placeholder="How do you use this project? Did you use assets from other people? If so, credit them here."
-							class="{styles.inputBase} h-full w-full resize-none rounded-lg p-4 text-sm"
-						></textarea>
+				<div class="text-sm {styles.sectionCard} flex h-full flex-col gap-4">
+					<div class="flex justify-between">
+						<h2 class="text-lg font-bold text-neutral-800 dark:text-white">Notes and Credits</h2>
+						{#if canEdit && !isEditingNotes}
+							<button
+								onclick={() => (isEditingNotes = true)}
+								class="text-neutral-400 hover:text-accent"
+							>
+								<Pencil size={16} />
+							</button>
+						{/if}
 					</div>
-				{:else}
-					<div class="text-sm {styles.sectionCard} h-full">
-						<h2 class="mb-2 text-lg font-bold text-neutral-800 dark:text-white">
-							Notes and Credits
-						</h2>
+					{#if isEditingNotes}
+						<form
+							method="POST"
+							action="?/editNotes"
+							use:enhance={() => {
+								return async ({ result, update }) => {
+									if (result.type === 'success') isEditingNotes = false
+									await update()
+								}
+							}}
+							class="flex min-h-0 grow flex-col overflow-hidden"
+						>
+							<input type="hidden" name="projectID" value={project.id} />
+							<input type="hidden" name="notes" value={editedNotes} />
+							<Tiptap bind:value={editedNotes} />
+							<div class="mt-4 flex shrink-0 gap-2">
+								<button
+									type="submit"
+									class="flex items-center gap-3 rounded-full bg-accent px-4 py-1 text-sm font-bold text-white transition-colors hover:bg-accent-secondary"
+								>
+									<Save size={18} />
+									{m.save()}
+								</button>
+								<button
+									type="button"
+									onclick={() => (isEditingNotes = false)}
+									class="text-sm text-neutral-500">{m.cancel()}</button
+								>
+							</div>
+						</form>
+					{:else}
 						<div
 							class="prose flex-1 overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert prose-a:font-bold prose-a:text-accent prose-a:no-underline prose-a:hover:underline dark:prose-a:text-accent-light"
 						>
 							{#if project.notes}
-								{@html md.render(project.notes)}
+								{@html DOMPurify.sanitize(md.render(project.notes))}
 							{:else}
 								<span class="opacity-50">No project notes.</span>
 							{/if}
 						</div>
-					</div>
-				{/if}
+					{/if}
+				</div>
 			</div>
 		</aside>
 	</div>

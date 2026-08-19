@@ -10,16 +10,16 @@
 			links: [
 				{ href: '/about', label: m.about() },
 				// { href: '/about3d', label: 'About AmpMod 3D' },
-				{ href: '/desktop', label: 'Download' },
+				{ href: 'https://status.ampmod.org', label: 'AmpMod Services Status', external: true },
 				{ href: '/amp-mod', label: 'AmpMod \u2260 amp mods' },
 				{ href: '/faq', label: m.faq() },
 				//{ href: '/history', label: 'History of AmpMod' },
 				{ href: '/credits', label: m.credits() },
-				{
+				/*{
 					href: 'https://ampmod.flarum.cloud/t/applications',
 					label: 'Join AmpMod Team',
 					external: true,
-				},
+				},*/
 			],
 		},
 		{
@@ -28,7 +28,7 @@
 				{ href: '/explore/projects', label: m.exploreProjects() },
 				// { href: '/events', label: 'Ongoing Events' },
 				{ href: 'https://ampmod.flarum.cloud', label: 'AmpMod Forums', external: true },
-				{ href: 'https://ampmod.miraheze.org', label: m.footerWiki(), external: true },
+				{ href: 'https://wiki.ampmod.org', label: m.footerWiki(), external: true },
 				// Do not localise!
 				{ href: 'https://youtube.com/@ampmod', label: 'YouTube', external: true },
 			],
@@ -36,7 +36,7 @@
 		{
 			title: m.footerResources(),
 			links: [
-				{ href: 'https://extensions.ampmod.org', label:"Extension gallery", external: true },
+				{ href: 'https://extensions.ampmod.org', label: 'Extension gallery', external: true },
 				{ href: 'https://ampblog.flarum.cloud', label: m.footerBlog(), external: true },
 				{ href: '/source-code', label: m.sourceCode() },
 				{ href: '/help', label: 'Help Center' },
@@ -46,7 +46,7 @@
 		{
 			title: m.footerPolicy(),
 			links: [
-				{ href: '/guidelines', label: m.guidelines() },
+				//{ href: '/guidelines', label: m.guidelines() },
 				{ href: '/terms', label: m.termsOfService() },
 				{ href: '/privacy', label: m.privacyPolicy() },
 				//{ href: '/cookies', label: 'Cookie Notice' },

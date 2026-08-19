@@ -69,6 +69,7 @@
 	</form>
 </section>
 
+<!--
 <section>
 	<div class="mb-4 flex items-center gap-2 border-b border-black/5 pb-2 dark:border-white/5">
 		<ShieldCheck size={20} class="text-neutral-500" />
@@ -139,3 +140,4 @@
 		</div>
 	</div>
 </section>
+-->

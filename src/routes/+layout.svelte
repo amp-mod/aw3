@@ -8,10 +8,17 @@
 	import ToastContainer from '$lib/components/ToastContainer.svelte'
 	import { addToast } from '$lib/toast.svelte'
 	import ReportModal from '$lib/components/ReportModal.svelte'
+	import PatchNotes from '$lib/components/PatchNotes.svelte'
 
 	let { children, data } = $props()
+	function removePatchFromVersion(v: string) {
+		const version = v.split('-')[0].split('+')[0].split('.')
+
+		return `${version[0]}.${version[1]}`
+	}
 
 	onMount(() => {
+		document.getElementById('aw3-loading')?.remove()
 		if (data.sessionDeleted) {
 			console.warn('Session has been deleted!')
 			invalidateAll().then(() =>
@@ -20,10 +27,22 @@
 				}),
 			)
 		}
-		console.warn(
+		if (
+			localStorage.getItem('aw3_last_read_version') !==
+				removePatchFromVersion(import.meta.env.VITE_NPM_PACKAGE_VERSION) &&
+			data.user
+			//&& localStorage.getItem('aw3_last_read_version')
+		) {
+			modals.patchnotes = true
+		}
+		localStorage.setItem(
+			'aw3_last_read_version',
+			removePatchFromVersion(import.meta.env.VITE_NPM_PACKAGE_VERSION),
+		)
+		console.log(
 			'%cSTOP NOW!%cPasting code here can allow an attacker to LOG IN to your account. Read the AmpMod FAQ for more information.',
-			'font-size: 3em; font-weight: bold; display: block; font-family: sans-serif;',
-			'font-size: 1.5em; font-weight: bold; font-family: sans-serif;',
+			'font-size: 3em; font-weight: bold; display: block; color: red;',
+			'font-size: 1.5em; font-weight: bold;',
 		)
 	})
 </script>
@@ -36,5 +55,6 @@
 {@render children?.()}
 
 <LoginModal bind:open={modals.login} />
+<PatchNotes bind:open={modals.patchnotes} />
 <ReportModal />
 <ToastContainer />

@@ -13,9 +13,8 @@ import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import { eq } from 'drizzle-orm'
 
-import maintenanceHtml from './maintenance.html?raw'
+import cookieError from './failedToMigrateCookie.html?raw'
 
-const isMaintenanceMode = false
 let activeUsers: any[] = []
 
 const handleLocalhostConnection: Handle = async ({ event, resolve }) => {
@@ -57,6 +56,24 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		event.locals.user = null
 		event.locals.session = null
 		return resolve(event)
+	}
+	if (event.cookies.get('THIS_COOKIE_IS_COATED_WITH_BITTERANT')) {
+		try {
+			await auth.migrateOldCookieName(event)
+		} catch (e) {
+			console.error(e)
+			auth.invalidateSession(
+				event.cookies.get('THIS_COOKIE_IS_COATED_WITH_BITTERANT')?.split('..')[1] || '',
+			)
+			event.cookies.delete('THIS_COOKIE_IS_COATED_WITH_BITTERANT', { path: '/' })
+			return new Response(cookieError, {
+				status: 500,
+				headers: {
+					'Content-Type': 'text/html; charset=utf-8',
+					Refresh: `5; url=${event.url.pathname + event.url.search}`,
+				},
+			})
+		}
 	}
 	const sessionToken = event.cookies.get(auth.sessionCookieName)?.split('..')[1]
 
@@ -106,38 +123,6 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		})
 	}
 	event.locals.activeUsers = activeUsers
-	return resolve(event)
-}
-
-const handleMaintenance: Handle = async ({ event, resolve }) => {
-	if (isMaintenanceMode) {
-		const user = event.locals.user
-		const userRank = user?.rank ?? 0
-
-		// If user is unauthenticated or rank is less than 3, lock them out
-		if (userRank < 3) {
-			// Return JSON payload if the client requested JSON data or performed a mutation (POST, PUT, etc.)
-			if (
-				event.request.headers.get('accept')?.includes('application/json') ||
-				event.request.method !== 'GET'
-			) {
-				return new Response(JSON.stringify({ error: 'Service Unavailable due to maintenance.' }), {
-					status: 503,
-					headers: { 'Content-Type': 'application/json' },
-				})
-			}
-
-			// Fallback to the imported static HTML payload for standard browser visits
-			return new Response(
-				maintenanceHtml.replaceAll('{AW3VERSION}', import.meta.env.VITE_NPM_PACKAGE_VERSION),
-				{
-					status: 503,
-					headers: { 'Content-Type': 'text/html; charset=utf-8' },
-				},
-			)
-		}
-	}
-
 	return resolve(event)
 }
 
@@ -212,7 +197,6 @@ export const handle: Handle = sequence(
 	handleLocalhostConnection,
 	handleSetup,
 	handleAuth,
-	handleMaintenance,
 	handleBanned,
 	handleGuard,
 	handleParaglide,

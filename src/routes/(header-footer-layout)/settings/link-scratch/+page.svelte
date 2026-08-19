@@ -28,19 +28,20 @@
 </script>
 
 <div class="mb-6 flex items-center gap-3 pb-2">
-	<IconScratch class="text-[#855cd6]" />
 	<h3 class="text-2xl font-bold">Scratch account</h3>
+	<div class="grow"></div>
+	<span>
+		Linked to
+		<a
+			href="https://scratch.mit.edu/users/{data.linkedUsername}"
+			class="link text-lg"
+			target="_blank"
+			rel="noopener noreferer">@{data.linkedUsername}</a
+		>
+	</span>
 </div>
 
 {#if data.isLinked}
-	<p>
-		Linked to <a
-			href="https://scratch.mit.edu/users/{data.linkedUsername}"
-			class="link"
-			target="_blank"
-			rel="noopener noreferer">{data.linkedUsername}</a
-		>.
-	</p>
 	{#if projects.length > 0}
 		<div class="grid gap-3">
 			{#each projects as project}

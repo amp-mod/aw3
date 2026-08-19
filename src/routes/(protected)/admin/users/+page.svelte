@@ -15,12 +15,6 @@
 >
 	<div class="overflow-x-auto">
 		<table class="w-full text-left dark:text-neutral-300">
-			<thead>
-				<tr class="border-b border-black/10 dark:border-white/10">
-					<th class="pr-4 pb-3 font-semibold">Username</th>
-					<th class="pb-3 font-semibold">Rank & Actions</th>
-				</tr>
-			</thead>
 			<tbody class="divide-y divide-black/5 dark:divide-white/5">
 				{#each data.users as user}
 					<tr>

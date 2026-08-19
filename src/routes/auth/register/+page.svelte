@@ -120,7 +120,6 @@
 				<div in:fade={{ duration: 150 }} class="space-y-4">
 					<header class="mb-8">
 						<h1 class="text-3xl font-bold">Join AmpMod</h1>
-						<p class="mt-2 text-sm text-neutral-500">How do you want to sign up today?</p>
 					</header>
 
 					<button
@@ -137,7 +136,6 @@
 						</div>
 						<div class="flex-1">
 							<span class="block text-lg font-bold text-purple-600">Join with Scratch</span>
-							<span class="text-xs opacity-60">Instantly link your projects</span>
 						</div>
 						<ChevronRight class="opacity-30 transition-transform group-hover:translate-x-1" />
 					</button>
@@ -155,8 +153,7 @@
 							<UserRound />
 						</div>
 						<div class="flex-1">
-							<span class="block text-lg font-bold">Basic Join</span>
-							<span class="text-xs opacity-60">Classic account setup</span>
+							<span class="block text-lg font-bold">Join with username</span>
 						</div>
 						<ChevronRight class="opacity-30 transition-transform group-hover:translate-x-1" />
 					</button>
@@ -236,8 +233,11 @@
 			{:else if currentView === 'email'}
 				<div in:fly={{ x: 20, duration: 250 }} class="space-y-6">
 					<div>
-						<h1 class="text-2xl font-bold">Recovery Email</h1>
-						<p class="mt-1 text-sm text-neutral-500">Optional, but useful for password resets.</p>
+						<h1 class="text-2xl font-bold">Email</h1>
+						<p class="mt-1 text-sm text-neutral-500">
+							Optional, but required to reset your password. If you don't set this and you lose your
+							account, it will be permanently lost.
+						</p>
 					</div>
 
 					<div class="relative">
@@ -330,7 +330,7 @@
 		</div>
 
 		<!-- Persistent Footer (Terms) -->
-		{#if currentView !== 'welcome'}
+		{#if currentView === 'register-form' || currentView === 'scratch-verify'}
 			<div
 				class="border-t border-neutral-100 bg-neutral-50 px-10 py-6 text-center text-[11px] opacity-50 dark:border-neutral-700 dark:bg-neutral-900/50"
 			>

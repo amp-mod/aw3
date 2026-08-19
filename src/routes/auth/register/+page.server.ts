@@ -9,12 +9,12 @@ import { eq, sql } from 'drizzle-orm'
 import { isProfane } from '$lib/server/bad-word-checker'
 import { generateVerificationData, findVerificationToken } from '$lib/server/scratch-verify'
 import {
-	validateUsername,
 	validatePassword,
 	createNewUser,
 	establishSession,
 	clearScratchCookies,
 } from '../../../lib/server/signup-tools'
+import { isValidUsername } from '$lib/username'
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -41,7 +41,7 @@ export const actions: Actions = {
 		const username = (formData.get('username') as string)?.toLowerCase().trim() ?? ''
 		const password = formData.get('password')
 
-		if (!validateUsername(username) || isProfane(username, true)) {
+		if (!isValidUsername(username) || isProfane(username, true)) {
 			return fail(400, { message: 'Invalid username' })
 		}
 		if (!validatePassword(password)) {
@@ -82,7 +82,7 @@ export const actions: Actions = {
 		const username = formData.get('username')?.toString().toLowerCase().trim() ?? ''
 		const password = formData.get('password')?.toString() ?? ''
 
-		if (!validateUsername(username) || isProfane(username, true)) {
+		if (!isValidUsername(username) || isProfane(username, true)) {
 			return fail(400, { message: 'Invalid username' })
 		}
 		if (!validatePassword(password)) {
@@ -90,7 +90,7 @@ export const actions: Actions = {
 		}
 
 		const existing = await db.query.user.findFirst({
-			where: sql`${table.user.username} = ${username} OR (${table.user.scratchUsername} = ${username} AND ${table.user.scratchLinked} = true)`,
+			where: sql`${table.user.username} = ${username} OR (${table.user.scratchUsername} = ${username}`,
 		})
 		if (existing) return fail(400, { message: 'Username or Scratch account already in use' })
 
@@ -162,9 +162,9 @@ export const actions: Actions = {
 		const username = (formData.get('username') as string)?.toLowerCase().trim() ?? ''
 
 		if (isProfane(username, true)) {
-			return { available: false, message: 'Username is profane.' }
+			return { available: false, message: 'Username is possibly profane.' }
 		}
-		if (!validateUsername(username)) {
+		if (!isValidUsername(username)) {
 			return {
 				available: false,
 				message: 'Usernames must be 3-20 characters (lowercase, numbers, underscores, dashes).',

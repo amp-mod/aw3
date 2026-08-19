@@ -1,6 +1,7 @@
 import * as auth from '$lib/server/auth'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
+import { isValidUsername } from '$lib/username'
 import { eq, sql } from 'drizzle-orm'
 
 // --- PRIVATE HELPERS ---
@@ -12,6 +13,9 @@ export async function createNewUser(username: string, passwordHash: string, isSc
 			.where(eq(table.user.username, username))
 			.limit(1)
 
+		if (!isValidUsername(username)) {
+			return { error: 'Invalid username', status: 400 }
+		}
 		if (existing.length > 0) return { error: 'Username already exists', status: 409 }
 
 		const userCount = await tx.select({ count: sql<number>`count(*)` }).from(table.user)
@@ -24,7 +28,6 @@ export async function createNewUser(username: string, passwordHash: string, isSc
 				passwordHash,
 				rank: assignedRank,
 				scratchUsername: isScratch ? username : null,
-				scratchLinked: isScratch,
 			})
 			.returning({ id: table.user.id })
 		if (newUser.id !== 1) {

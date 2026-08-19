@@ -13,7 +13,7 @@
 	<div
 		class="mx-auto my-12 flex max-w-3xl grow flex-col items-center justify-center gap-4 text-center"
 	>
-		<FileX size={64} />
+		<!--		<FileX size={64} />
 		<p>
 			This page is unavailable because a server administrator has not set up the AmpMod editor on
 			this site properly.
@@ -21,14 +21,23 @@
 					class="link"
 					href={`https://ampmod.codeberg.page/${path}`}>ampmod.codeberg.page/{path}</a
 				>.{/if}
+		</p>-->
+		<p>
+			The editor has not been added to this website yet, but you can still access the editor on
+			another site.
 		</p>
+		{#if path == 'editor'}<p>
+				To upload your projects, go to File &rarr; Save to your computer, then go to My Stuff, click
+				"Create" (not in the nav bar), and click "Import .apz / .sb3".
+			</p>{/if}
+		<p>This warning will be removed before the AmpMod Website is fully released.</p>
 		<div class="flex gap-4">
 			{#if path}<Button href={`https://ampmod.codeberg.page/${path}`}
-					>Access on official site</Button
+					>Go to {`ampmod.codeberg.page/${path}`}</Button
 				>{/if}
 			<Button href="/">Back to homepage</Button>
 		</div>
 	</div>
 
-	<Footer noJS />
+	<!--	<Footer />-->
 </div>

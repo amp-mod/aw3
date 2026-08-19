@@ -32,7 +32,6 @@
 	let showEmojiMenu = $state(false)
 
 	// --- Emoji Data ---
-	// from forumoji source code
 	const forbidden = new Set([
 		'1f595',
 		'1f346',
@@ -50,7 +49,6 @@
 	const allEmojis = Object.keys(emojiDataRaw)
 		.map((char) => ({
 			char,
-			// Replace spaces with underscores and lowercase the name
 			name: (emojiNames[char]?.name || '').toLowerCase().replace(/\s+/g, '_'),
 			slug: char.codePointAt(0).toString(16).toLowerCase(),
 		}))
@@ -75,6 +73,7 @@
 
 		editor = new Editor({
 			element: editorElement!,
+			contentType: 'markdown',
 			extensions: [
 				StarterKit.configure({ heading: { levels: [2, 3] } }),
 				Markdown,
@@ -117,6 +116,13 @@
 												interactive: true,
 												trigger: 'manual',
 												placement: 'bottom-start',
+												onMount(instance) {
+													instance.popper.style.background = 'transparent'
+													const content = instance.popper.querySelector(
+														'.tippy-content',
+													) as HTMLElement
+													if (content) content.style.padding = '0'
+												},
 											})
 										},
 										onUpdate: (props) => {
@@ -142,7 +148,7 @@
 											return false
 										},
 										onExit: () => {
-											popup[0].destroy()
+											popup.destroy()
 											showEmojiMenu = false
 											emojiSearch = ''
 										},
@@ -156,18 +162,10 @@
 					name: 'mention',
 					priority: 101,
 					inclusive: false,
-					parseHTML() {
-						return [{ tag: 'span[data-mention]' }]
-					},
 					renderHTML() {
-						return [
-							'span',
-							{ class: 'text-accent font-medium underline mention', 'data-mention': '' },
-							0,
-						]
+						return ['span', { class: 'text-accent font-bold hover:underline cursor-pointer' }, 0]
 					},
 
-					// 1. Handle text that is pasted into the editor
 					addPasteRules() {
 						return [
 							markPasteRule({
@@ -177,7 +175,6 @@
 						]
 					},
 
-					// 2. Handle existing text and "live" typing without requiring a space
 					addProseMirrorPlugins() {
 						return [
 							new Plugin({
@@ -197,8 +194,7 @@
 
 												decorations.push(
 													Decoration.inline(start, end, {
-														class: 'text-accent font-medium underline mention',
-														'data-mention': 'true',
+														class: 'text-accent font-bold hover:underline cursor-pointer',
 													}),
 												)
 											}
@@ -214,7 +210,7 @@
 			content: value,
 			editorProps: {
 				attributes: {
-					class: `prose prose-sm dark:prose-invert focus:outline-none min-h-[180px] p-4 max-w-none ${className}`,
+					class: `flex-1 min-h-0 h-full w-full overflow-y-auto prose prose-sm dark:prose-invert focus:outline-none p-4 max-w-none ${className}`,
 					handleClick: (view, pos, event) => {
 						const target = event.target as HTMLElement
 						const link = target.closest('a')
@@ -260,23 +256,38 @@
 </script>
 
 <div
-	class="relative flex flex-col rounded-xl border border-neutral-300 bg-white dark:border-neutral-700 dark:bg-neutral-900"
+	class="relative flex min-h-0 w-full flex-1 grow flex-col overflow-hidden rounded-xl border border-neutral-300 bg-white dark:border-neutral-700 dark:bg-neutral-900"
 >
+	<!-- Toolbar -->
 	<div
-		class="flex flex-wrap items-center gap-1 border-b border-neutral-200 bg-neutral-50 p-1.5 dark:border-neutral-700 dark:bg-neutral-800/50"
+		class="flex shrink-0 flex-wrap items-center gap-1 border-b border-neutral-200 bg-neutral-50 p-0.5 dark:border-neutral-700 dark:bg-neutral-800/50"
 	>
-		<button type="button" onclick={() => cmd('toggleBold')} class="btn-tool"
-			><Bold size={16} /></button
+		<button
+			type="button"
+			onclick={() => cmd('toggleBold')}
+			class="flex h-8 w-8 items-center justify-center rounded text-neutral-600 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-700"
 		>
-		<button type="button" onclick={() => cmd('toggleItalic')} class="btn-tool"
-			><Italic size={16} /></button
+			<Bold size={16} />
+		</button>
+
+		<button
+			type="button"
+			onclick={() => cmd('toggleItalic')}
+			class="flex h-8 w-8 items-center justify-center rounded text-neutral-600 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-700"
 		>
+			<Italic size={16} />
+		</button>
+
 		<div class="mx-1 h-4 w-px bg-neutral-300 dark:bg-neutral-600"></div>
+
 		<button
 			type="button"
 			onclick={() => editor.chain().focus().insertContent(':').run()}
-			class="btn-tool"><Smile size={16} /></button
+			class="flex h-8 w-8 items-center justify-center rounded text-neutral-600 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-700"
 		>
+			<Smile size={16} />
+		</button>
+
 		<button
 			type="button"
 			onclick={() => {
@@ -286,40 +297,77 @@
 					editor.chain().focus().setLink({ href: url }).run()
 				}
 			}}
-			class="btn-tool"><LinkIcon size={16} /></button
+			class="flex h-8 w-8 items-center justify-center rounded text-neutral-600 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-700"
 		>
+			<LinkIcon size={16} />
+		</button>
+
 		<div class="mx-1 h-4 w-px bg-neutral-300 dark:bg-neutral-600"></div>
-		<button type="button" onclick={() => cmd('toggleHeading', { level: 2 })} class="btn-tool"
-			><Heading1 size={16} /></button
+
+		<button
+			type="button"
+			onclick={() => cmd('toggleHeading', { level: 2 })}
+			class="flex h-8 w-8 items-center justify-center rounded text-neutral-600 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-700"
 		>
-		<button type="button" onclick={() => cmd('toggleHeading', { level: 3 })} class="btn-tool"
-			><Heading2 size={16} /></button
+			<Heading1 size={16} />
+		</button>
+
+		<button
+			type="button"
+			onclick={() => cmd('toggleHeading', { level: 3 })}
+			class="flex h-8 w-8 items-center justify-center rounded text-neutral-600 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-700"
 		>
-		<button type="button" onclick={() => cmd('toggleBulletList')} class="btn-tool"
-			><List size={16} /></button
+			<Heading2 size={16} />
+		</button>
+
+		<button
+			type="button"
+			onclick={() => cmd('toggleBulletList')}
+			class="flex h-8 w-8 items-center justify-center rounded text-neutral-600 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-700"
 		>
-		<button type="button" onclick={() => cmd('toggleOrderedList')} class="btn-tool"
-			><ListOrdered size={16} /></button
+			<List size={16} />
+		</button>
+
+		<button
+			type="button"
+			onclick={() => cmd('toggleOrderedList')}
+			class="flex h-8 w-8 items-center justify-center rounded text-neutral-600 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-700"
 		>
-		<button type="button" onclick={() => cmd('toggleBlockquote')} class="btn-tool"
-			><Quote size={16} /></button
+			<ListOrdered size={16} />
+		</button>
+
+		<button
+			type="button"
+			onclick={() => cmd('toggleBlockquote')}
+			class="flex h-8 w-8 items-center justify-center rounded text-neutral-600 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-700"
 		>
+			<Quote size={16} />
+		</button>
+
 		<div class="grow"></div>
+
 		<button
 			type="button"
 			onclick={() => cmd('undo')}
-			class="btn-tool"
-			disabled={!editor?.can().undo()}><Undo size={16} /></button
+			class="flex h-8 w-8 items-center justify-center rounded text-neutral-600 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-700"
+			disabled={!editor?.can().undo()}
 		>
+			<Undo size={16} />
+		</button>
+
 		<button
 			type="button"
 			onclick={() => cmd('redo')}
-			class="btn-tool"
-			disabled={!editor?.can().redo()}><Redo size={16} /></button
+			class="flex h-8 w-8 items-center justify-center rounded text-neutral-600 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-700"
+			disabled={!editor?.can().redo()}
 		>
+			<Redo size={16} />
+		</button>
 	</div>
 
-	<div class="relative">
+	<!-- Main Content Wrapper -->
+	<div class="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+		<!-- Link Bubble Menu -->
 		<div
 			bind:this={linkMenuElement}
 			class="absolute z-50 flex items-center gap-1 rounded-lg border border-neutral-300 bg-white p-1.5 shadow-xl transition-opacity dark:border-neutral-600 dark:bg-neutral-800"
@@ -339,14 +387,16 @@
 				href={linkUrl}
 				target="_blank"
 				rel="noopener noreferrer"
-				class="p-1 text-neutral-500 hover:text-accent"><ExternalLink size={14} /></a
+				class="p-1 text-neutral-500 hover:text-accent"
 			>
+				<ExternalLink size={14} />
+			</a>
 		</div>
 
-		<!-- This element is picked up by Tippy and moved to the body/cursor -->
+		<!-- Emoji Search Floating Popup -->
 		<div
 			bind:this={emojiMenuElement}
-			class="scrollbar-hide z-50 flex max-h-48 w-56 flex-col overflow-y-auto rounded-lg border border-neutral-300 bg-white p-1 shadow-2xl dark:border-neutral-600 dark:bg-neutral-800"
+			class="z-50 flex max-h-48 w-56 flex-col overflow-y-auto rounded-lg border border-neutral-300 bg-white p-1 shadow-2xl [-ms-overflow-style:none] [scrollbar-width:none] dark:border-neutral-600 dark:bg-neutral-800 [&::-webkit-scrollbar]:hidden"
 			class:hidden={!showEmojiMenu || filteredEmoji.length === 0}
 		>
 			{#each filteredEmoji.slice(0, 10) as emoji}
@@ -361,10 +411,11 @@
 			{/each}
 		</div>
 
-		<div bind:this={editorElement}>
+		<!-- Editor Container Mounting Point -->
+		<div bind:this={editorElement} class="flex min-h-0 flex-1 flex-col">
 			{#if !isLoaded}
 				<div
-					class="flex h-[200px] items-center justify-center bg-neutral-50 dark:bg-neutral-900/50"
+					class="flex w-full flex-1 items-center justify-center bg-neutral-50 dark:bg-neutral-900/50"
 				>
 					<div
 						class="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent"
@@ -374,26 +425,3 @@
 		</div>
 	</div>
 </div>
-
-<style>
-	@reference '$lib/../app.css';
-	.btn-tool {
-		@apply flex h-8 w-8 items-center justify-center rounded text-neutral-600 transition-colors hover:bg-neutral-200 dark:text-neutral-400 dark:hover:bg-neutral-700;
-	}
-	.btn-tool:disabled {
-		@apply cursor-not-allowed opacity-30;
-	}
-	.scrollbar-hide::-webkit-scrollbar {
-		display: none;
-	}
-	:global(.prose) {
-		max-width: 100% !important;
-	}
-	/* Ensure Tippy container doesn't have default padding if needed */
-	:global(.tippy-box) {
-		background: transparent !important;
-	}
-	:global(.tippy-content) {
-		padding: 0 !important;
-	}
-</style>

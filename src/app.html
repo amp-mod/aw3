@@ -5,8 +5,6 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<!--
          unfortunately we can't really use anything looser due to custom extensions being a thing.
-         we plan to have a moderation system when a project with third-party extensions is loaded,
-         which should mitigate the issue.
          for now this attempts to match what the AmpMod compiler and most extensions need.
       -->
 		<meta
@@ -19,6 +17,12 @@
             img-src * data: blob:; 
             connect-src * data: blob:;
       "
+		/>
+		<!-- 100% privacy-first analytics -->
+		<script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+		<meta
+			name="description"
+			content="AmpMod is a block-based programming language built off TurboWarp that adds many small but meaningful features to make it even better, such as first-class lists, case sensitivity, and custom extensions."
 		/>
 		%sveltekit.head%
 	</head>

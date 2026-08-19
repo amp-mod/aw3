@@ -1,6 +1,6 @@
 import { fail, error } from '@sveltejs/kit'
 import type { Actions, PageServerLoad } from './$types'
-import { eq, and, ne } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import { generateVerificationData, findVerificationToken } from '$lib/server/scratch-verify'
@@ -14,7 +14,6 @@ export const load: PageServerLoad = async ({ cookies, locals }) => {
 		where: eq(table.user.id, locals.user.id),
 		columns: {
 			scratchUsername: true,
-			scratchLinked: true,
 		},
 	})
 
@@ -24,14 +23,14 @@ export const load: PageServerLoad = async ({ cookies, locals }) => {
 	const comment = cookies.get('scratch_comment')
 
 	let projects = []
-	if (dbUser?.scratchLinked && dbUser.scratchUsername) {
+	if (dbUser.scratchUsername) {
 		const res = await fetch(`https://api.scratch.mit.edu/users/${dbUser.scratchUsername}/projects`)
 		if (res.ok) projects = await res.json()
 	}
 
 	return {
 		// Data from DB
-		isLinked: !!dbUser?.scratchLinked,
+		isLinked: !!dbUser?.scratchUsername,
 		linkedUsername: dbUser?.scratchUsername,
 
 		// State management for the UI
@@ -51,48 +50,10 @@ export const actions: Actions = {
 		const username = formData.get('username')?.toString().trim()
 
 		if (!username) return fail(400, { message: 'Username is required' })
-		// easter egg collection
-		if (username === 'kaj') {
-			return fail(400, {
-				message: 'qwert320',
-			})
-		}
-		if (username === 'KajTheModerator') {
-			return fail(400, {
-				message: 'Paddle2See',
-			})
-		}
-		if (username === '8to16') {
-			return fail(400, {
-				message: 'Spocake or AmpElectrecuted, one username will win.',
-			})
-		}
-		if (username === 'AmpElectrecuted') {
-			return fail(400, {
-				message:
-					'We are here to mourn the loss of my Scratch account AmpElectrecuted. Rest in peace. 2025-2025',
-			})
-		}
-		if (username === 'Griffpatch-Academy') {
-			return fail(400, {
-				message:
-					'Griffpatch, please link YOUR account, not this promo one. Are you even Griffpatch in the first place? Sigh, impersonators these days...',
-			})
-		}
-		if (username === 'ScratchCat') {
-			return fail(400, {
-				message: 'Meow purr purr 2496 meow.',
-			})
-		}
-		if (username === '2l') {
-			return fail(400, {
-				message: 'We got 2 letter usernammes before GTA 6 :skull:',
-			})
-		}
 
 		// 1. Check if this Scratch account is already linked to someone else
 		const existingLink = await db.query.user.findFirst({
-			where: and(eq(table.user.scratchUsername, username), eq(table.user.scratchLinked, true)),
+			where: eq(table.user.scratchUsername, username),
 		})
 
 		if (existingLink) {
@@ -101,16 +62,8 @@ export const actions: Actions = {
 			})
 		}
 
-		// 2. Check if user is Scratch Team
 		const userResponse = await fetch(`https://api.scratch.mit.edu/users/${username}`)
 		if (!userResponse.ok) return fail(404, { message: 'Scratch user not found.' })
-
-		const userData = await userResponse.json()
-		if (userData.scratchteam === true) {
-			return fail(403, {
-				message: 'If you are a Scratch Team member, please contact us to link your account.',
-			})
-		}
 
 		const { token, fullComment } = generateVerificationData()
 
@@ -148,7 +101,6 @@ export const actions: Actions = {
 				.update(table.user)
 				.set({
 					scratchUsername: username,
-					scratchLinked: true,
 				})
 				.where(eq(table.user.id, locals.user.id))
 

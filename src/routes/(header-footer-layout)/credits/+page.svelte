@@ -1,15 +1,9 @@
 <script>
 	const { data } = $props()
 	const { UserData } = data
-
-	const totalContributors =
-		(UserData.contributors?.length || 0) +
-		(UserData.addonDevelopers?.length || 0) +
-		(UserData.extensionDevelopers?.length || 0) +
-		(UserData.tw?.length || 0)
 </script>
 
-{#snippet UserCard({ image, text, href = null, role = '' })}
+{#snippet UserCard({ image, text, href = null })}
 	<a
 		href={href ?? null}
 		target="_blank"
