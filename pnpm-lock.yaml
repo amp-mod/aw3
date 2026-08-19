@@ -96,8 +96,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0
       altcha-lib:
-        specifier: ^1.4.1
-        version: 1.4.1
+        specifier: ^2.0.0
+        version: 2.3.2(@sveltejs/kit@2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vite@8.0.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@25.9.5)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.12)))(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)(vite@8.0.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@25.9.5)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.12)))
       bad-words:
         specifier: ^4.1.5
         version: 4.1.5
@@ -1133,15 +1133,6 @@ packages:
   '@eslint/plugin-kit@0.7.2':
     resolution: {integrity: sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
-
-  '@exodus/bytes@1.15.0':
-    resolution: {integrity: sha512-UY0nlA+feH81UGSHv92sLEPLCeZFjXOuHhrIo0HQydScuQc8s0A7kL/UdgwgDq8g8ilksmuoF35YVTNphV2aBQ==}
-    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
-    peerDependencies:
-      '@noble/hashes': ^1.8.0 || ^2.0.0
-    peerDependenciesMeta:
-      '@noble/hashes':
-        optional: true
 
   '@exodus/bytes@1.15.1':
     resolution: {integrity: sha512-S6mL0yNB/Abt9Ei4tq8gDhcczc4S3+vQ4ra7vxnAf+YHC02srtqxKKZghx2Dq6p0e66THKwR6r8N6P95wEty7Q==}
@@ -2905,8 +2896,50 @@ packages:
   ajv@6.15.0:
     resolution: {integrity: sha512-fgFx7Hfoq60ytK2c7DhnF8jIvzYgOMxfugjLOSMHjLIPgenqa7S7oaagATUq99mV6IYvN2tRmC0wnTYX6iPbMw==}
 
-  altcha-lib@1.4.1:
-    resolution: {integrity: sha512-MAXP9tkQOA2SE9Gwoe3LAcZbcDpp3XzYc5GDVej/y3eMNaFG/eVnRY1/7SGFW0RPsViEjPf+hi5eANjuZrH1xA==}
+  altcha-lib@2.3.2:
+    resolution: {integrity: sha512-puJp4aPn/kK2t5Z3dQkbFTmPusaYPkdlrXB4feWZzdNIiC3sPndKMlcjQFUU3a+sVlUt6DJhfWK2+HiwDBbW1Q==}
+    hasBin: true
+    peerDependencies:
+      '@fastify/cookie': ^11.0.0
+      '@fastify/cors': ^11.0.0
+      '@fastify/formbody': ^8.0.0
+      '@nestjs/common': ^10.0.0 || ^11.0.0
+      '@nestjs/core': ^10.0.0 || ^11.0.0
+      '@nestjs/platform-express': ^10.0.0 || ^11.0.0
+      '@sveltejs/kit': ^2.0.0
+      cookie-parser: ^1.0.0
+      cors: ^2.0.0
+      express: ^4.0.0 || ^5.0.0
+      fastify: ^5.0.0
+      h3: ^2.0.0
+      hono: ^4.0.0
+    peerDependenciesMeta:
+      '@fastify/cookie':
+        optional: true
+      '@fastify/cors':
+        optional: true
+      '@fastify/formbody':
+        optional: true
+      '@nestjs/common':
+        optional: true
+      '@nestjs/core':
+        optional: true
+      '@nestjs/platform-express':
+        optional: true
+      '@sveltejs/kit':
+        optional: true
+      cookie-parser:
+        optional: true
+      cors:
+        optional: true
+      express:
+        optional: true
+      fastify:
+        optional: true
+      h3:
+        optional: true
+      hono:
+        optional: true
 
   altcha@2.3.0:
     resolution: {integrity: sha512-vl8I0dQvSQB7/Mx09XuWZ1+LdSP7vEda6OLbg9kUQ2ZO2LT7MzgUyLK7Iips+GAV6c0ntVcS1XWOqhEPpwbDhQ==}
@@ -4643,10 +4676,6 @@ packages:
     peerDependencies:
       typescript: '>=4.8.4'
 
-  ts-dedent@2.2.0:
-    resolution: {integrity: sha512-q5W7tVM71e2xjHZTlgfTDoPF/SmqKG5hddq9SzR49CH2hayqRKJtQ4mtRlSxKaJlR/+9rEM+mnBHf7I2/BQcpQ==}
-    engines: {node: '>=6.10'}
-
   ts-dedent@2.3.0:
     resolution: {integrity: sha512-JfJeIHke7y2egdGGgRAvpCwYFUsHlM2gPcrVOxFkznt/4uzQ7HFmvE63iFHVLBJNDuyDOQgijDK/tXH/f6Msjg==}
     engines: {node: '>=6.10'}
@@ -5638,8 +5667,6 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
-  '@exodus/bytes@1.15.0': {}
-
   '@exodus/bytes@1.15.1': {}
 
   '@floating-ui/core@1.8.0':
@@ -6576,7 +6603,7 @@ snapshots:
     dependencies:
       storybook: 10.5.9(@types/react@19.2.14)(prettier@3.9.6)(react@19.2.8)
       svelte: 5.56.9(@typescript-eslint/types@8.67.0)
-      ts-dedent: 2.2.0
+      ts-dedent: 2.3.0
       type-fest: 5.8.0
 
   '@storybook/sveltekit@10.5.9(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vite@8.0.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@25.9.5)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.12)))(esbuild@0.27.7)(rollup@4.62.4)(storybook@10.5.9(@types/react@19.2.14)(prettier@3.9.6)(react@19.2.8))(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vite@8.0.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@25.9.5)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.12))':
@@ -7285,7 +7312,9 @@ snapshots:
       json-schema-traverse: 0.4.1
       uri-js: 4.4.1
 
-  altcha-lib@1.4.1: {}
+  altcha-lib@2.3.2(@sveltejs/kit@2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vite@8.0.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@25.9.5)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.12)))(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)(vite@8.0.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@25.9.5)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.12))):
+    optionalDependencies:
+      '@sveltejs/kit': 2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vite@8.0.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@25.9.5)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.12)))(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)(vite@8.0.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@25.9.5)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.12))
 
   altcha@2.3.0:
     dependencies:
@@ -7952,7 +7981,7 @@ snapshots:
 
   html-encoding-sniffer@6.0.0:
     dependencies:
-      '@exodus/bytes': 1.15.0
+      '@exodus/bytes': 1.15.1
     transitivePeerDependencies:
       - '@noble/hashes'
 
@@ -8993,8 +9022,6 @@ snapshots:
     dependencies:
       typescript: 6.0.3
 
-  ts-dedent@2.2.0: {}
-
   ts-dedent@2.3.0: {}
 
   tslib@1.14.1: {}
@@ -9178,7 +9205,7 @@ snapshots:
 
   whatwg-url@16.0.1:
     dependencies:
-      '@exodus/bytes': 1.15.0
+      '@exodus/bytes': 1.15.1
       tr46: 6.0.0
       webidl-conversions: 8.0.1
     transitivePeerDependencies:
