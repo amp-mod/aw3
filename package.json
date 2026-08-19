@@ -47,7 +47,7 @@
 		"@turbowarp/types": "github:TurboWarp/types-tw#tw",
 		"@types/markdown-it": "^14.2.0",
 		"@types/node": "^25.9.5",
-		"@types/yauzl": "^2.10.3",
+		"@types/yauzl": "^3.0.0",
 		"@vitest/browser": "^4.1.10",
 		"drizzle-kit": "^0.31.10",
 		"drizzle-orm": "^0.45.2",
