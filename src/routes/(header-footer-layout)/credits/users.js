@@ -27,28 +27,30 @@ const fromHardcoded = ({ userID = '0', username, img = defaultPfp, href = null, 
 }
 
 // The lists below are in no particular order.
+// Imported from AmpMod, which itself is a fork of TurboWarp
 
 const contributors = [
 	{
-		username: 'AmpElectrecuted',
+		username: 'amp',
 		href: '/users/amp',
-		img: 'https://codeberg.org/avatars/7f3a7551574e090dcb16dc87d3e1d02ed0360f13e4b8a28acaa227e60ae6edea',
-		role: 'credits.roles.lead',
+		img: 'https://ampmod.org/uploads/aw3-avatars/3_64.webp',
 	},
 	{
-		userID: '82953483',
 		username: '50_scratch_tabs',
-		role: 'credits.roles.developer',
 	},
 	{
-		userID: '38055575',
-		username: 'o97doge',
-		role: 'credits.roles.bugfixer',
+		username: 'cat',
+        href: '/users/cat',
+		img: 'https://ampmod.org/uploads/aw3-avatars/2_64.webp',
 	},
 	{
-		userID: '157650703',
 		username: 'unconstructable13',
-		role: 'credits.roles.images',
+        href: '/users/unconstructable13',
+		img: 'https://ampmod.org/uploads/aw3-avatars/25_64.webp',
+	},
+	{
+		username: 'gvyoutube',
+        href: '/users/gvyoutube',
 	},
 ].map(fromHardcoded)
 
