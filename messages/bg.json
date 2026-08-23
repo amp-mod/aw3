@@ -68,7 +68,7 @@
     "sourceCodeFlarum": "Сайта на Flarum",
     "sourceCodeCloudvar": "Сървърът с Облачните Променливи на АмпМод",
     "learnMore": "Научете Повече",
-    "adminBanDesc": "Ще блокирате {uesrname}. Моля, кажете причина и време.",
+    "adminBanDesc": "Ще блокирате {username}. Моля, кажете причина и време.",
     "sourceCodeCloudvarTw": "GitHub (Внедряване на Turbowarp)",
     "sourceCodeWikiDesc": "АмпМод Уики е захранен от МедияУики, същия безплатен софтуер, който Уикипедия ползва.",
     "sourceCodeCloudvarDesc": "Сървърът за облачните променливи на АмпМод е базиран от облачния сървър на TurboWarp.",
