@@ -2,17 +2,19 @@
 	import { onMount, onDestroy } from 'svelte'
 	import { fade } from 'svelte/transition'
 	import { enhance } from '$app/forms'
-	import { browser } from '$app/environment'
 	import JSZip from 'jszip'
 	import Button from '$lib/components/Button.svelte'
 	import { Image as ImageIcon, Upload } from '@lucide/svelte'
 	import { addToast } from '$lib/toast.svelte'
 	import { goto } from '$app/navigation'
+	import Modal from '$lib/components/Modal.svelte'
+	import Tiptap from '$lib/components/Tiptap.svelte'
 
 	let { data } = $props()
 
 	let loading = $state(false)
 	let isScratchImport = $state(false)
+	let scratchId = $state('')
 	let error = $state('')
 	let hasFile = $state(false)
 
@@ -20,6 +22,9 @@
 	let notesAndCredits = $state('')
 	let projectJsonText = $state('')
 	let projectJson = $state<any>(null)
+	let isUploading = $state(false)
+	let progress = $state(0)
+	let progressText = $state('')
 
 	// Store extracted raw assets for multi-step upload
 	let extractedAssets = $state<{ name: string; file: File }[]>([])
@@ -79,7 +84,7 @@
 
 			let zip = new JSZip()
 			let jsonText = ''
-			let newExtractedAssets: { name: string; file: File }[] = []
+			let newExtractedAssets: { name: string; file?: File; fetchUrl?: string }[] = []
 
 			if (isZip) {
 				const contents = await zip.loadAsync(buffer)
@@ -123,7 +128,7 @@
 									const url = URL.createObjectURL(assetBlob)
 									const { width, height } = await getImageDimensions(url)
 
-									if (width >= 200 || height >= 200) {
+									if (ext === 'svg' || width >= 200 || height >= 200) {
 										let priority = asset.name.toLowerCase().includes('thumbnail') ? 100 : 0
 										foundThumbnails.push({ name: asset.name, url, priority, mimeType })
 									} else {
@@ -132,6 +137,39 @@
 								}
 							}
 						}
+					}
+				}
+			} else {
+				// Non-ZIP / Scratch Import: Just record CDN fetch URLs for lazy loading during upload
+				const uniqueAssets = new Map<string, { asset: any; isCostume: boolean }>()
+
+				for (const target of projectJson.targets || []) {
+					for (const costume of target.costumes || []) {
+						const ext =
+							costume.dataFormat || (costume.md5ext ? costume.md5ext.split('.').pop() : 'png')
+						const fileName = costume.md5ext || `${costume.assetId}.${ext}`
+						if (!uniqueAssets.has(fileName)) {
+							uniqueAssets.set(fileName, { asset: costume, isCostume: true })
+						}
+					}
+					for (const sound of target.sounds || []) {
+						const ext = sound.dataFormat || (sound.md5ext ? sound.md5ext.split('.').pop() : 'wav')
+						const fileName = sound.md5ext || `${sound.assetId}.${ext}`
+						if (!uniqueAssets.has(fileName)) {
+							uniqueAssets.set(fileName, { asset: sound, isCostume: false })
+						}
+					}
+				}
+
+				for (const [fileName, { asset, isCostume }] of uniqueAssets.entries()) {
+					const fetchUrl = `https://assets.scratch.mit.edu/${fileName}`
+					newExtractedAssets.push({ name: fileName, fetchUrl })
+
+					if (isCostume) {
+						const ext = fileName.split('.').pop() || 'png'
+						const mimeType = getMimeType(ext)
+						let priority = asset.name.toLowerCase().includes('thumbnail') ? 100 : 0
+						foundThumbnails.push({ name: asset.name, url: fetchUrl, priority, mimeType })
 					}
 				}
 			}
@@ -152,7 +190,6 @@
 			console.error(err)
 		}
 	}
-
 	async function handleFileSelection(file: File | Blob) {
 		error = ''
 		hasFile = true
@@ -162,7 +199,7 @@
 
 	onMount(async () => {
 		const params = new URLSearchParams(window.location.search)
-		const scratchId = params.get('scratch_id')
+		scratchId = params.get('scratch_id')
 		if (scratchId) {
 			loading = true
 			isScratchImport = true
@@ -172,14 +209,25 @@
 				const metadata = await metaResp.json()
 
 				if (metadata.author?.username?.toLowerCase() !== data.linkedUsername?.toLowerCase()) {
-					throw new Error(`Ownership mismatch. Verified as ${data.linkedUsername}.`)
+					throw new Error('You are not the verified creator of this project.')
 				}
 
 				title = metadata.title || ''
 
+				notesAndCredits = ''
 				const instructions = metadata.instructions || ''
 				const credits = metadata.description || ''
-				notesAndCredits = [instructions, credits].filter(Boolean).join('\n\n')
+
+				if (instructions) {
+					notesAndCredits += `## Instructions\n${instructions}`
+				}
+
+				if (credits) {
+					if (notesAndCredits) {
+						notesAndCredits += `\n\n`
+					}
+					notesAndCredits += `## Notes and Credits\n${credits}`
+				}
 
 				if (metadata.image) {
 					const scratchThumb = {
@@ -196,7 +244,10 @@
 					`https://projects.scratch.mit.edu/${scratchId}?token=${metadata.project_token}`,
 				)
 				const buffer = await dataResp.arrayBuffer()
-				await handleFileSelection(new Blob([buffer]))
+				const scratchFile = new File([buffer], `${scratchId}.sb3`, {
+					type: 'application/x.scratch.sb3',
+				})
+				await handleFileSelection(scratchFile)
 			} catch (err: any) {
 				error = err.message
 				addToast({ type: 'failure', text: error })
@@ -228,24 +279,52 @@
 	action="?/uploadProjectJson"
 	use:enhance={() => {
 		loading = true
+		progress = 0
+		progressText = 'Uploading project data...'
+		isUploading = true
+
 		return async ({ result }) => {
 			try {
 				if (result.type === 'success' && result.data?.success) {
 					const projectId = result.data.projectId
 
 					// Upload extracted assets one by one
-					const concurrencyLimit = 4
+					const concurrencyLimit = 6
 					let assetIndex = 0
 
 					async function uploadWorker() {
 						while (assetIndex < extractedAssets.length) {
 							const currentIndex = assetIndex++
 							const asset = extractedAssets[currentIndex]
+							progress = (currentIndex / extractedAssets.length) * 100
+							progressText = `Uploading assets (${currentIndex + 1}/${extractedAssets.length})...`
+
+							let fileToUpload = asset.file
+
+							// Fetch from Scratch CDN on-the-fly right before uploading
+							if (!fileToUpload && asset.fetchUrl) {
+								try {
+									const res = await fetch(asset.fetchUrl)
+									if (res.ok) {
+										const blob = await res.blob()
+										const ext = asset.name.split('.').pop() || 'png'
+										fileToUpload = new File([blob], asset.name, { type: getMimeType(ext) })
+									} else {
+										console.error(`Failed to download remote asset: ${asset.name} (${res.status})`)
+										continue
+									}
+								} catch (err) {
+									console.error(`Error fetching asset ${asset.name}:`, err)
+									continue
+								}
+							}
+
+							if (!fileToUpload) continue
 
 							const assetFormData = new FormData()
 							assetFormData.append('projectId', projectId)
 							assetFormData.append('name', asset.name)
-							assetFormData.append('asset', asset.file)
+							assetFormData.append('asset', fileToUpload)
 
 							const assetResp = await fetch('?/uploadAsset', {
 								method: 'POST',
@@ -257,7 +336,6 @@
 							}
 						}
 					}
-
 					const workers = Array(Math.min(concurrencyLimit, extractedAssets.length))
 						.fill(0)
 						.map(() => uploadWorker())
@@ -266,12 +344,14 @@
 					goto(`/projects/${projectId}`)
 				} else if (result.type === 'failure') {
 					loading = false
+					isUploading = false
 					addToast({ type: 'failure', text: result.data?.message ?? 'Upload failed' })
 				}
 			} catch (err: any) {
 				loading = false
-				console.error('Multi-step upload sequence error:', err)
+				console.error(err)
 				addToast({ type: 'failure', text: 'An error occurred uploading project assets.' })
+				isUploading = false
 			}
 		}
 	}}
@@ -279,32 +359,20 @@
 >
 	<input bind:this={jsonInput} name="projectJson" type="file" class="hidden" required />
 	<input bind:this={customThumbInput} name="thumbnail" type="file" class="hidden" />
+	<input class="hidden" name="scratchProjectID" value={scratchId} />
 
-	{#if !isScratchImport}
-		<div
-			class="flex flex-col gap-4 rounded border-l-4 border-l-accent bg-neutral-100 p-4 dark:bg-neutral-800"
-		>
-			<h2 class="text-2xl font-bold">Upload Project</h2>
-			{#if error}<div class="text-sm font-bold text-red-500">{error}</div>{/if}
-			<div class="flex flex-col gap-2">
-				<p>On this page you can upload a project to AmpMod.</p>
-				<p>
-					<b
-						>The AmpMod Website does not support programming languages other than Scratch 3.0,
-						TurboWarp or AmpMod.</b
-					>
-				</p>
-				<p>
-					By uploading you agree to the <a href="/terms" class="link text-accent underline"
-						>terms of service</a
-					>.
-				</p>
-				<p>
-					Using the online AmpMod editor? Consider using the "Upload" button there to
-					auto-screenshot a thumbnail.
-				</p>
-			</div>
-			<div class="relative flex items-center gap-3">
+	<div
+		class="flex flex-col gap-4 rounded border-l-4 border-l-accent bg-neutral-100 p-4 dark:bg-neutral-800"
+	>
+		<h2 class="text-2xl font-bold">Upload Project</h2>
+		{#if error}<div class="text-sm font-bold text-red-500">{error}</div>{/if}
+		<div class="flex flex-col gap-2">
+			<p>On this page you can upload a project to AmpMod.</p>
+		</div>
+		<div class="relative flex items-center gap-3">
+			{#if isScratchImport}
+				<p><i>Project loaded from Scratch.</i></p>
+			{:else}
 				<input
 					type="file"
 					accept=".apz,.sb3"
@@ -321,9 +389,9 @@
 						>{jsonInput?.files?.[0]?.name ?? 'No file selected'}</span
 					>
 				</div>
-			</div>
+			{/if}
 		</div>
-	{/if}
+	</div>
 
 	{#if hasFile}
 		<div
@@ -332,7 +400,7 @@
 		>
 			<h3 class="text-xl font-bold">Project Details</h3>
 
-			{#if projectJson?.meta?.platform && projectJson.meta.platform?.name !== 'TurboWarp' && projectJson.meta.platform?.name !== 'AmpMod'}
+			{#if projectJson?.meta?.platform && projectJson.meta.platform?.name !== 'TurboWarp' && projectJson.meta.platform?.name !== 'AmpMod' && !isScratchImport}
 				<div class="rounded bg-red-500 p-3 text-sm font-bold text-white">
 					<p>
 						This project was created for {projectJson.meta.platform.name}. Incompatible projects are
@@ -365,7 +433,12 @@
 									? 'scale-105 border-accent'
 									: 'border-transparent opacity-60 hover:opacity-100'}"
 							>
-								<img src={thumb.url} alt="costume" class="h-full w-full object-cover" />
+								<img
+									src={thumb.url}
+									alt="costume"
+									class="h-full w-full object-cover"
+									loading="lazy"
+								/>
 							</button>
 						{/each}
 						<label
@@ -407,13 +480,10 @@
 
 			<div class="flex flex-col gap-2">
 				<label for="notes" class="text-sm font-semibold">Notes and Credits</label>
-				<textarea
-					id="notes"
-					name="notes"
-					bind:value={notesAndCredits}
-					placeholder="How did you make this? Did you use other assets?"
-					class="min-h-[150px] w-full rounded border p-2 outline-none dark:bg-neutral-900"
-				></textarea>
+				<textarea id="notes" name="notes" bind:value={notesAndCredits} hidden></textarea>
+				<div class="flex h-96">
+					<Tiptap bind:value={notesAndCredits} />
+				</div>
 			</div>
 
 			<div class="flex justify-end pt-4">
@@ -424,3 +494,15 @@
 		</div>
 	{/if}
 </form>
+
+<Modal bind:open={isUploading} title="Uploading Project" canClose={false}>
+	<div class="flex flex-col gap-4">
+		<div class="flex h-4 w-full items-stretch rounded-full bg-neutral-100 dark:bg-neutral-700">
+			<div
+				class="h-4 rounded-full bg-accent transition-all dark:bg-accent-light"
+				style="width: {progress}%;"
+			></div>
+		</div>
+		<p>{progressText}</p>
+	</div>
+</Modal>

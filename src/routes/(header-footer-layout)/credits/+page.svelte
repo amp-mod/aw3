@@ -1,6 +1,7 @@
 <script>
 	const { data } = $props()
 	const { UserData } = data
+	import defaultPFP from '$lib/assets/default-pfp.png'
 </script>
 
 {#snippet UserCard({ image, text, href = null })}
@@ -12,7 +13,7 @@
 	>
 		<img
 			loading="lazy"
-			src={image}
+			src={image || defaultPFP}
 			alt={text}
 			width="60"
 			height="60"
@@ -38,7 +39,7 @@
 		<section class="mx-auto max-w-[900px] px-[1em] min-[480px]:px-[1em] md:px-[1.5em]">
 			<p class="leading-[1.5] italic opacity-80">
 				Individual contributors are listed in no particular order. The order is randomized each
-				visit. Users who only made very minor contributions are not included.
+				visit.
 			</p>
 		</section>
 
@@ -50,6 +51,19 @@
 			</h2>
 			<div class="grid grid-cols-5 gap-[12px]">
 				{#each UserData.contributors as user}
+					{@render UserCard(user)}
+				{/each}
+			</div>
+		</section>
+
+		<section class="mx-auto max-w-[900px] px-[1em] min-[480px]:px-[1em] md:px-[1.5em]">
+			<h2
+				class="mb-4 border-b border-neutral-200 pb-2 text-2xl font-semibold dark:border-neutral-700"
+			>
+				Server Hosting
+			</h2>
+			<div class="grid grid-cols-5 gap-[12px]">
+				{#each UserData.serverAdmins as user}
 					{@render UserCard(user)}
 				{/each}
 			</div>
@@ -145,10 +159,13 @@
 		</section>
 
 		<section class="mx-auto max-w-[900px] px-[1em] min-[480px]:px-[1em] md:px-[1.5em]">
-			<h2 class="mb-2 text-2xl font-semibold">Art</h2>
+			<h2 class="mb-2 text-2xl font-semibold">Icons and other images</h2>
 			<p class="leading-[1.5]">
 				Some images use content from Openclipart, licensed under the CC0 license. Even though the
 				images are public domain, we would still like to attribute.
+			</p>
+			<p class="leading-[1.5]">
+				The remix icon is from Scratch-WWW and is licenced under BSD-3-Clause.
 			</p>
 		</section>
 	</main>

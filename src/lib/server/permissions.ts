@@ -21,6 +21,7 @@ const rankPerms = Object.freeze({
 	setProjectDescription: NEW_AMPMODDER,
 	connectOAuth: NEW_AMPMODDER,
 	createOAuthApp: ADMINISTRATOR, // currently oauth will only be used for logging into Wiki and Forums
+	setFrame: NEW_AMPMODDER,
 
 	// features that require ranking up
 	renameAccount: AMPMODDER,

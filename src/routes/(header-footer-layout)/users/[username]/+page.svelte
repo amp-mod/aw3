@@ -14,6 +14,7 @@
 	import { getPfpPath, getPublicUrl } from '$lib/storage-helpers.js'
 	import ProjectList from '$lib/components/ProjectList.svelte'
 	import ComingSoon from '$lib/components/ComingSoon.svelte'
+	import PFP from '$lib/components/PFP.svelte'
 
 	export const FEATURED_TITLES = [
 		'Featured Project', // Index 0
@@ -36,7 +37,7 @@
 	const isFollowing = $derived(data.isFollowing ?? false)
 	const followerCount = $derived(data.followerCount ?? 0)
 	const followingCount = $derived(data.followingCount ?? 0)
-	const { isOwnProfile, isViewerStaff } = $derived(data)
+	const { isOwnProfile } = $derived(data)
 
 	let userStatus = $state(data.userProfile?.status)
 	let isEditingBio = $state(false)
@@ -107,8 +108,7 @@
 			'border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 flex flex-col min-h-0',
 		header: 'flex items-center gap-6 my-3',
 		label: 'text-sm font-bold text-accent-secondary dark:text-neutral-300 block',
-		pfpWrapper:
-			'relative group h-24 w-24 shrink-0 overflow-hidden rounded-xl border-2 border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900',
+		pfpWrapper: 'relative group shrink-0',
 		modalLabel: 'mb-1 block text-xs font-bold text-neutral-500',
 		modalInput:
 			'w-full rounded-lg border border-neutral-300 bg-neutral-50 p-2.5 text-sm outline-none focus:ring-2 focus:ring-accent dark:border-neutral-700 dark:bg-neutral-900',
@@ -132,16 +132,12 @@
 
 		<header class={styles.header}>
 			<div class={styles.pfpWrapper}>
-				<img
-					src={getPfpPath(userProfile).full}
-					alt={userProfile.username}
-					class="h-full w-full object-cover"
-				/>
+				<PFP user={userProfile} size={96} />
 
 				{#if canEdit}
 					<button
 						onclick={() => pfpInput?.click()}
-						class="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
+						class="absolute inset-0 flex flex-col items-center justify-center rounded-md bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
 						disabled={isUploadingPfp}
 					>
 						{#if isUploadingPfp}<Loader class="animate-spin" size={24} />{:else}<Pencil

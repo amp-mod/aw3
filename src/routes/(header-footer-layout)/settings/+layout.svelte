@@ -1,20 +1,17 @@
 <script lang="ts">
 	import {
 		ExternalLink,
-		UserRound,
-		Palette,
-		Key,
+		SquareUserRound,
 		Puzzle,
 		Paintbrush,
 		SquareAsterisk,
-		Asterisk,
-		Shield,
+		IdCard,
 		LogIn,
+		Cat,
 	} from '@lucide/svelte'
 	import { page } from '$app/state'
 	import LoginModal from '$lib/components/LoginModal.svelte'
 	import { m } from '$lib/paraglide/messages.js'
-	import ScratchLogo from '~icons/simple-icons/scratch'
 
 	const { data, children } = $props()
 
@@ -34,14 +31,21 @@
 			label: 'Profile',
 			href: '/settings/profile',
 			restricted: true,
-			icon: UserRound,
+			icon: IdCard,
+		},
+		{
+			id: 'frames',
+			label: 'Frames',
+			href: '/settings/frames',
+			restricted: true,
+			icon: SquareUserRound,
 		},
 		{
 			id: 'link-scratch',
 			label: 'Scratch account',
 			href: '/settings/link-scratch',
 			restricted: true,
-			icon: ScratchLogo,
+			icon: Cat,
 		},
 		{
 			id: 'auth',

@@ -29,16 +29,18 @@
 
 <div class="mb-6 flex items-center gap-3 pb-2">
 	<h3 class="text-2xl font-bold">Scratch account</h3>
-	<div class="grow"></div>
-	<span>
-		Linked to
-		<a
-			href="https://scratch.mit.edu/users/{data.linkedUsername}"
-			class="link text-lg"
-			target="_blank"
-			rel="noopener noreferer">@{data.linkedUsername}</a
-		>
-	</span>
+	{#if data.linkedUsername}
+		<div class="grow"></div>
+		<span>
+			Linked to
+			<a
+				href="https://scratch.mit.edu/users/{data.linkedUsername}"
+				class="link text-lg"
+				target="_blank"
+				rel="noopener noreferer">@{data.linkedUsername}</a
+			>
+		</span>
+	{/if}
 </div>
 
 {#if data.isLinked}

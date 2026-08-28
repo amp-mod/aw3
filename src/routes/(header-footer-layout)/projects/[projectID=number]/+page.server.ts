@@ -26,6 +26,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			status: true,
 			moderatorNote: true,
 			original: true,
+			scratchProjectID: true,
 		},
 	})
 
@@ -70,6 +71,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			username: author?.username ?? 'Unknown User',
 			id: author?.id,
 			hasPFP: author?.hasPFP,
+			frame: author?.frame,
 		},
 		isRemix: !!project.original,
 		originalProject: originalProjectIfRemixed

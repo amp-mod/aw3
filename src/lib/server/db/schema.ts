@@ -48,6 +48,8 @@ export const user = pgTable(
 		bannedExpiry: timestamp('banned_expiry', { withTimezone: true, mode: 'date' }),
 		banReason: text('ban_reason'),
 		scratchUsername: varchar('scratch_username', { length: 64 }).default(''),
+		verified: boolean('verified').default(false),
+		frame: varchar({ length: 32 }),
 	},
 	(table) => [index('username_idx').on(table.username)],
 )
@@ -87,6 +89,7 @@ export const project = pgTable(
 			onDelete: 'set null',
 			onUpdate: 'cascade',
 		}),
+		scratchProjectID: text(),
 		searchIndex: tsvector('search_index'),
 	},
 	(table) => [

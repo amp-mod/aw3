@@ -25,6 +25,8 @@
 	import DOMPurify from 'isomorphic-dompurify'
 	import Tiptap from '$lib/components/Tiptap.svelte'
 	import { m } from '$lib/paraglide/messages'
+	import PFP from '$lib/components/PFP.svelte'
+	import Remix from '$lib/icon-components/remix-gray.svelte'
 
 	let { data } = $props()
 
@@ -192,11 +194,7 @@
 	<header class="flex flex-col items-center gap-1 border-neutral-200 pb-6 dark:border-neutral-800">
 		<div class="flex w-full gap-2">
 			<a href="/users/{author.username}" title={author.username} class="shrink-0">
-				<img
-					src={getPfpPath(author)['64']}
-					class="h-12 w-12 rounded border border-black/10 object-fill dark:border-white/20"
-					alt={author.username}
-				/>
+				<PFP user={author} size={48} />
 			</a>
 
 			<div class="flex w-full flex-col gap-2">
@@ -242,7 +240,7 @@
 					<form method="POST" action="?/remixProject" class="flex" use:enhance>
 						<input type="hidden" name="projectId" value={project.id} />
 						<Button type="submit" class="flex h-12 items-center gap-2">
-							<CopyPlus /> Remix
+							<Remix /> Remix
 						</Button>
 					</form>
 				{/if}
@@ -272,68 +270,75 @@
 						Thanks to <a href="/users/{data.originalProject?.author?.username}" class="link">
 							{data.originalProject?.author?.username}
 						</a>
-						for
+						for the original project:
 						<a href="/projects/{data.originalProject?.id}" class="link">
 							{data.originalProject?.title}
 						</a>
 					</p>
 				</div>
 			{/if}
-			<div class="grow">
-				<div class="text-sm {styles.sectionCard} flex h-full flex-col gap-4">
-					<div class="flex justify-between">
-						<h2 class="text-lg font-bold text-neutral-800 dark:text-white">Notes and Credits</h2>
-						{#if canEdit && !isEditingNotes}
-							<button
-								onclick={() => (isEditingNotes = true)}
-								class="text-neutral-400 hover:text-accent"
-							>
-								<Pencil size={16} />
-							</button>
-						{/if}
-					</div>
-					{#if isEditingNotes}
-						<form
-							method="POST"
-							action="?/editNotes"
-							use:enhance={() => {
-								return async ({ result, update }) => {
-									if (result.type === 'success') isEditingNotes = false
-									await update()
-								}
-							}}
-							class="flex min-h-0 grow flex-col overflow-hidden"
+			{#if data.scratchProjectID}
+				<div class="{styles.sectionCard} text-sm">
+					<p>
+						Project imported from <a href="https://scratch.mit.edu/projects/{data.scratchProjectID}"
+							>scratch.mit.edu/projects/{data.scratchProjectID}</a
 						>
-							<input type="hidden" name="projectID" value={project.id} />
-							<input type="hidden" name="notes" value={editedNotes} />
-							<Tiptap bind:value={editedNotes} />
-							<div class="mt-4 flex shrink-0 gap-2">
-								<button
-									type="submit"
-									class="flex items-center gap-3 rounded-full bg-accent px-4 py-1 text-sm font-bold text-white transition-colors hover:bg-accent-secondary"
-								>
-									<Save size={18} />
-									{m.save()}
-								</button>
-								<button
-									type="button"
-									onclick={() => (isEditingNotes = false)}
-									class="text-sm text-neutral-500">{m.cancel()}</button
-								>
-							</div>
-						</form>
-					{:else}
-						<div
-							class="prose flex-1 overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert prose-a:font-bold prose-a:text-accent prose-a:no-underline prose-a:hover:underline dark:prose-a:text-accent-light"
+					</p>
+				</div>
+			{/if}
+			<div class="text-sm {styles.sectionCard} flex grow flex-col gap-4">
+				<div class="flex justify-between">
+					<h2 class="text-lg font-bold text-neutral-800 dark:text-white">Notes and Credits</h2>
+					{#if canEdit && !isEditingNotes}
+						<button
+							onclick={() => (isEditingNotes = true)}
+							class="text-neutral-400 hover:text-accent"
 						>
-							{#if project.notes}
-								{@html DOMPurify.sanitize(md.render(project.notes))}
-							{:else}
-								<span class="opacity-50">No project notes.</span>
-							{/if}
-						</div>
+							<Pencil size={16} />
+						</button>
 					{/if}
 				</div>
+				{#if isEditingNotes}
+					<form
+						method="POST"
+						action="?/editNotes"
+						use:enhance={() => {
+							return async ({ result, update }) => {
+								if (result.type === 'success') isEditingNotes = false
+								await update()
+							}
+						}}
+						class="flex min-h-0 grow flex-col overflow-hidden"
+					>
+						<input type="hidden" name="projectID" value={project.id} />
+						<input type="hidden" name="notes" value={editedNotes} />
+						<Tiptap bind:value={editedNotes} />
+						<div class="mt-4 flex shrink-0 gap-2">
+							<button
+								type="submit"
+								class="flex items-center gap-3 rounded-full bg-accent px-4 py-1 text-sm font-bold text-white transition-colors hover:bg-accent-secondary"
+							>
+								<Save size={18} />
+								{m.save()}
+							</button>
+							<button
+								type="button"
+								onclick={() => (isEditingNotes = false)}
+								class="text-sm text-neutral-500">{m.cancel()}</button
+							>
+						</div>
+					</form>
+				{:else}
+					<div
+						class="prose flex-1 overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert prose-a:font-bold prose-a:text-accent prose-a:no-underline prose-a:hover:underline dark:prose-a:text-accent-light"
+					>
+						{#if project.notes}
+							{@html DOMPurify.sanitize(md.render(project.notes))}
+						{:else}
+							<span class="opacity-50">No project notes.</span>
+						{/if}
+					</div>
+				{/if}
 			</div>
 		</aside>
 	</div>

@@ -9,40 +9,27 @@
 <Modal bind:open title="The AmpMod website has been updated!">
 	<div class="prose dark:prose-invert prose-a:text-accent prose-a:underline">
 		<h2>What's new?</h2>
-		<p>
-			Unfortunately, despite us previously promising to, comments have not yet been added due to a
-			lack of time to add them. We will add them in the next version.
-		</p>
+		<p>This update is unrelated to AmpMod editor 0.4.</p>
 		<ul>
 			<li>
-				<a href="https://simpleanalytics.com">Simple Analytics</a> have been added. Simple Analytics is
-				a free, privacy-respecting analytics system that does not store or sell any of your personal information.
+				Cool new profile picture frames have been added! Go to settings to choose between the Apple
+				Cat, Dango, Kitten and AmpElectrecuted frames.
 			</li>
-			<li>You can now rename your account in <a href="/settings/profile">profile settings</a>.</li>
-			<li>The site is now rendered server-side.</li>
+			<!-- DOESN'T WORK<li>
+				Projects imported from Scratch will now link to the Scratch project on their page. Projects
+				imported prior to website 0.4 will not have this though, because we didn't store their
+				Scratch project ID.
+			</li>-->
+			<li>A dialogue will now show the progress of your project being uploaded.</li>
 			<li>
-				A red dot on your navigation bar will now show when you are ready to rank your account up to
-				AmpModder.
+				The Notes and Credits text area on the upload page now uses rich text, just like on the
+				project page.
 			</li>
 			<li>
-				The permission system for AmpMod has been completely redone, so the site should load faster.
-			</li>
-			<li>AI slop text has been rewritten on the about page.</li>
-			<li>
-				The project notes and credits now use a rich text editor, just like About Me on profile
-				pages.
+				Line breaks have been added to the rich text editor. Press Shift+Enter when editing your
+				profile's About Me or a project's Notes and Credits to enter one!
 			</li>
 		</ul>
-		<h2>Note on usernames</h2>
-		<p>
-			Usernames can no longer start or end with an underscore, or contain multiple consecutive
-			underscores. This is to prevent errors when logging into the AmpMod Wiki when we make that
-			possible, as the AmpMod Wiki software does not support these types.
-		</p>
-		<p>
-			No accounts on ampmod.org are affected by this, but it may be important if you plan to rename
-			your account using the new feature, or if you are creating an alternate account.
-		</p>
 	</div>
 	<Button
 		type="button"

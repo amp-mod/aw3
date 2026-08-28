@@ -57,4 +57,20 @@
 		The website uses a different version of AmpMod from the editor. It doesn't render everything the
 		exact same way. The full AmpMod player can be accessed in the Editor.
 	</p>
+	<h2>Infrequently Asked Questions</h2>
+	<h3>Why is AmpMod green?</h3>
+	<p>
+		Back in the day, the creator of AmpMod used browser extensions to make the Scratch website and
+		editor green, mostly as a joke related to Scratch's main colour changing from blue to purple in
+		2023. This carried over to AmpMod's source code.
+	</p>
+	<h3>How do I pronounce AmpMod?</h3>
+	<p>AmpMod is pronounced as "amp mod". "Amp" should not be spelt out.</p>
+	<h3>Why is it called AmpMod?</h3>
+	<p>
+		Historically, AmpMod was called UltiBlocks, and was intended to be the "Ultimate Scratch Mod".
+		However, it sounded a bit too dream-chasing, so we changed it to AmpMod. "Amp" comes from the
+		username of AmpElectrecuted, who created AmpMod, which itself stands for "a Mario player" (an
+		older username) but later got shortened. As for "Mod", it should be obvious.
+	</p>
 </div>

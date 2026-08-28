@@ -36,9 +36,14 @@ export const actions: Actions = {
 		const customThumb = formData.get('thumbnail') as File
 		const title = (formData.get('title') as string) || 'Untitled'
 		const notes = (formData.get('notes') as string) || ''
+		const scratchProjectID = formData.get('scratchProjectID') as string
 
 		if (!jsonFile || jsonFile.size === 0) {
-			return fail(400, { message: 'No project configuration provided' })
+			return fail(400, { message: 'No project data provided' })
+		}
+
+		if (scratchProjectID && !/^[0-9]+$/.test(scratchProjectID)) {
+			return fail(400, { message: 'Invalid Project ID' })
 		}
 
 		try {
@@ -97,6 +102,7 @@ export const actions: Actions = {
                         coalesce(${title.slice(0, 150)}, '') || ' ' || 
                         coalesce(${notes.slice(0, 2000)}, '')
                     )`,
+					scratchProjectID,
 				})
 				.returning()
 
@@ -123,7 +129,7 @@ export const actions: Actions = {
 			return { success: true, projectId }
 		} catch (e) {
 			console.error(e)
-			return fail(500, { message: 'Failed to upload project.json' })
+			return fail(500, { message: 'Failed to upload project data' })
 		}
 	},
 

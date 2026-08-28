@@ -29,6 +29,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			featuredProjectId: table.user.featuredProjectId,
 			featuredProjectTitleIndex: table.user.featuredProjectTitleIndex,
 			scratchUsername: table.user.scratchUsername,
+			frame: table.user.frame,
 			...(canPerformAction(viewerRank, 'seeBanStatus')
 				? {
 						status: table.user.status,
@@ -108,14 +109,24 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.from(table.follow)
 
 	const followers = await db
-		.select({ username: table.user.username, id: table.user.id, hasPFP: table.user.hasPFP })
+		.select({
+			username: table.user.username,
+			id: table.user.id,
+			hasPFP: table.user.hasPFP,
+			frame: table.user.frame,
+		})
 		.from(table.follow)
 		.leftJoin(table.user, eq(table.follow.followerId, table.user.id))
 		.where(eq(table.follow.followingId, userProfile.id))
 		.limit(12)
 
 	const following = await db
-		.select({ username: table.user.username, id: table.user.id, hasPFP: table.user.hasPFP })
+		.select({
+			username: table.user.username,
+			id: table.user.id,
+			hasPFP: table.user.hasPFP,
+			frame: table.user.frame,
+		})
 		.from(table.follow)
 		.leftJoin(table.user, eq(table.follow.followingId, table.user.id))
 		.where(eq(table.follow.followerId, userProfile.id))
@@ -124,19 +135,23 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	// Don't say "isOnline" on Scratch or you'll get banned!!
 	const isOnline = activeUsers.some((i) => i.username === userProfile.username)
 
-	const availableActions = [
-		'banUser',
-		'setProfileFeaturedProject',
-		'setPFP',
-		'setBio',
-		'follow',
-		'comment',
-		'rankUp',
-		'editOtherUsersProfile',
-		'viewPrivateProfiles',
-		'report',
-		'reportStaff',
-	].filter((action) => canPerformAction(viewer, action as any))
+	const availableActions = (
+		viewer
+			? [
+					'banUser',
+					'setProfileFeaturedProject',
+					'setPFP',
+					'setBio',
+					'follow',
+					'comment',
+					'rankUp',
+					'editOtherUsersProfile',
+					'viewPrivateProfiles',
+					'report',
+					'reportStaff',
+				]
+			: []
+	).filter((action) => canPerformAction(viewer, action as any))
 	return {
 		userProfile,
 		availableActions,
@@ -240,7 +255,7 @@ export const actions: Actions = {
 
 			await Promise.all(
 				sizes.map(async ({ s, d }) => {
-					let p = sharp(buffer, { animated: true }).rotate()
+					let p = sharp(buffer, { animated: true, density: 800 }).rotate()
 					if ((metadata.width ?? 0) > d || (metadata.height ?? 0) > d)
 						p = p.resize(d, d, { fit: 'inside' })
 					const res = await p

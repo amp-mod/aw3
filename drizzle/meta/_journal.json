@@ -15,6 +15,20 @@
       "when": 1785695405063,
       "tag": "0001_dazzling_marvex",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787174333469,
+      "tag": "0002_moaning_strong_guy",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1787940421501,
+      "tag": "0003_unusual_solo",
+      "breakpoints": true
     }
   ]
 }

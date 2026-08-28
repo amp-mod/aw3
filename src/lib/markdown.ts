@@ -5,6 +5,7 @@ export const md = new MarkdownIt({
 	html: false,
 	linkify: true,
 	typographer: true,
+	breaks: true,
 })
 
 // --- Shorthand Links (P@123 and G@123) ---

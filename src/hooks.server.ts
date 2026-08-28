@@ -12,10 +12,44 @@ import bannedPermittedPaths from '$lib/banned-permitted-paths'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import { eq } from 'drizzle-orm'
+import crypto from 'node:crypto'
 
 import cookieError from './failedToMigrateCookie.html?raw'
 
 let activeUsers: any[] = []
+
+const AI_BOT_USER_AGENTS = [
+	'ClaudeBot',
+	'meta-externalagent',
+	'OpenAI',
+	'GPTBot',
+	'Googlebot-extended',
+	'Bytespider',
+	'CCBot',
+]
+
+export const handleAIBots: Handle = async ({ event, resolve }) => {
+	const errorPage = `<p>Scraping AmpMod to train Large Language Models is prohibited by our Terms of Service.</p><p>If you are an AI bot, this site is not for you. If this is in error, contact <script>document.write(atob('==QZt5ibvR3byBHQjxWZw1WY'.split('').reverse().join('')))</script> to resolve this issue.</p>`
+
+	const userAgent = event.request.headers.get('user-agent') || ''
+
+	const isAIBot = AI_BOT_USER_AGENTS.some((bot) =>
+		userAgent.toLowerCase().includes(bot.toLowerCase()),
+	)
+
+	if (isAIBot) {
+		return new Response(errorPage, {
+			status: 403,
+			headers: {
+				'Content-Type': 'text/html',
+				// Immutably cache the response for 1 year
+				'Cache-Control': 'public, max-age=31536000, immutable',
+			},
+		})
+	}
+
+	return resolve(event)
+}
 
 const handleLocalhostConnection: Handle = async ({ event, resolve }) => {
 	const isScratchPath = event.url.pathname === '/scratch_gui_connection'
@@ -194,6 +228,7 @@ const handleSetup: Handle = async ({ event, resolve }) => {
 }
 
 export const handle: Handle = sequence(
+	handleAIBots,
 	handleLocalhostConnection,
 	handleSetup,
 	handleAuth,

@@ -31,6 +31,7 @@ export const load: PageServerLoad = async () => {
 		extensionDevelopers: seededShuffle(UserData.extensionDevelopers, seed),
 		docs: seededShuffle(UserData.docs, seed),
 		contributors: seededShuffle(UserData.contributors, seed),
+		serverAdmins: seededShuffle(UserData.serverAdmins, seed),
 	}
 
 	return {

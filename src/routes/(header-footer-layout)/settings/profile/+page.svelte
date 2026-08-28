@@ -108,6 +108,8 @@
 	<h3 class="text-2xl font-semibold">Link to your Scratch profile</h3>
 	<p>When you link your AmpMod account to Scratch, a link to your Scratch profile will be added.</p>
 	<div>
-		<Button class="flex items-center gap-2"><Cat />Go to Scratch linking settings</Button>
+		<Button class="inline-flex items-center gap-2" href="/settings/link-scratch"
+			><Cat />Go to Scratch linking settings</Button
+		>
 	</div>
 </div>

@@ -5,48 +5,36 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Error - AmpMod</title>
 		<style>
-			:root {
-				--bg-color: #ffffff;
-				--text-color: #1a1a1a;
-				--link-color: #2e7d32;
-				--link-hover: #1b5e20;
-			}
-
-			@media (prefers-color-scheme: dark) {
-				:root {
-					--bg-color: #141414;
-					--text-color: #ffffff;
-					--link-color: #77ce84;
-					--link-hover: #a2dfab;
-				}
-			}
-
 			body {
 				font-family: sans-serif;
-				display: flex;
-				flex-direction: column;
-				margin: auto;
-				padding: 20px;
-				max-width: 600px;
-				background: var(--bg-color);
-				color: var(--text-color);
+				padding: 10px;
+				background: #4fa55c;
+				color: white;
+			}
+			a {
+				color: inherit;
+			}
+			h1 {
+				font-size: 2.5rem;
+				margin-bottom: 10px;
+			}
+			p {
+				font-size: 1.2rem;
+				color: white;
 			}
 			.container {
-				display: flex;
-				flex-direction: column;
-				padding: 5px 10px;
-				background: #f002;
-				border-radius: 6px;
-				border: 1px red solid;
+				max-width: 900px;
+				margin: 0 auto;
 			}
 		</style>
 	</head>
 	<body>
 		<div class="container">
-			<p>An error occured.</p>
+			<h1>Oops!</h1>
+			<p>An unknown error occured.</p>
 			<p>
-				If this error keeps showing even after reloading, please check the AmpMod status page for
-				more information on potential outages.
+				For more information about a potential error, visit the
+				<a href="https://status.ampmod.org">AmpMod Services Status page</a>.
 			</p>
 		</div>
 	</body>

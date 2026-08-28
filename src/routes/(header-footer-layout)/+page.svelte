@@ -9,8 +9,6 @@
 		Link,
 		Globe,
 		TriangleAlert,
-		AlertCircle,
-		CircleAlert,
 	} from '@lucide/svelte'
 	import CreateCardIcon from '$lib/assets/apple-cat-programming-sm.svg'
 	import HeroImg from '$lib/assets/apple-cat-programming.svg'
@@ -22,6 +20,7 @@
 	import Row from '$lib/components/Row.svelte'
 	import Alert from '$lib/components/Alert.svelte'
 	import ComingSoon from '$lib/components/ComingSoon.svelte'
+	import PFP from '$lib/components/PFP.svelte'
 
 	let { data } = $props()
 	const discussions = data.blogDiscussions ?? []
@@ -64,18 +63,6 @@
 	The integrated editor has not been added yet. Please click "Create Project" in this banner to
 	create your project, then you can export it and go to My Stuff &rarr; Create &rarr; Import .apz to
 	upload it.
-</Alert>
-<Alert
-	id="privacyPolicy-2026-08-19"
-	background="#ff4c4c"
-	button={{
-		url: '/privacy',
-		text: 'Privacy Policy',
-	}}
-	icon={CircleAlert}
->
-	The privacy policy has been updated on 19/08/2026, due to the addition of analytics. Please read
-	it again.
 </Alert>
 {#if data.user && !data.user.scratchUsername}
 	<Alert
@@ -123,13 +110,7 @@
 <div class="m-auto flex min-h-80 max-w-6xl gap-3 p-8">
 	<div class="flex grow basis-0 flex-col items-center justify-center gap-3 text-center">
 		{#if data.user}
-			<img
-				src={getPfpPath(data.user)['64']}
-				alt="Your user icon"
-				height={72}
-				width={72}
-				class="h-18 w-18 rounded-lg border border-neutral-500/20 object-cover"
-			/>
+			<PFP user={data.user} size={72} />
 			<h1 class="text-2xl font-bold">Hello, {data.user.username}!</h1>
 			<div class="flex items-center justify-center gap-1">
 				<Button href="/projects/editor" data-sveltekit-reload>{m.createProject()}</Button>

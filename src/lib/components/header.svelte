@@ -15,7 +15,7 @@
 	} from '@lucide/svelte'
 	import { m } from '$lib/paraglide/messages'
 	import { invalidateAll } from '$app/navigation'
-	import { getPfpPath } from '$lib/storage-helpers'
+	import PFP from '$lib/components/PFP.svelte'
 
 	let { admin = false, data } = $props()
 	let menuOpen = $state(false)
@@ -182,11 +182,7 @@
 							<NavigationMenu.Trigger>
 								{#snippet child({ props })}
 									<button {...props} class="header-link flex items-center gap-2">
-										<img
-											src={getPfpPath(data.user)['24']}
-											class="h-6 w-6 rounded border border-black/10 bg-white object-cover"
-											alt="User icon"
-										/>
+										<PFP user={data.user} size={24} />
 										<div class="hidden max-w-30 overflow-hidden text-ellipsis sm:block">
 											{data.user.username}
 										</div>

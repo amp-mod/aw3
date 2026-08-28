@@ -67,6 +67,7 @@
 		const { Link } = await import('@tiptap/extension-link')
 		const BubbleMenu = (await import('@tiptap/extension-bubble-menu')).BubbleMenu
 		const Suggestion = (await import('@tiptap/suggestion')).default
+		const HardBreak = (await import('@tiptap/extension-hard-break')).default
 		const tippy = (await import('tippy.js')).default
 		const { Plugin, PluginKey } = await import('@tiptap/pm/state')
 		const { Decoration, DecorationSet } = await import('@tiptap/pm/view')
@@ -77,6 +78,7 @@
 			extensions: [
 				StarterKit.configure({ heading: { levels: [2, 3] } }),
 				Markdown,
+				HardBreak,
 				Link.configure({
 					openOnClick: false,
 					HTMLAttributes: { class: 'text-accent underline cursor-pointer' },
@@ -396,7 +398,7 @@
 		<!-- Emoji Search Floating Popup -->
 		<div
 			bind:this={emojiMenuElement}
-			class="z-50 flex max-h-48 w-56 flex-col overflow-y-auto rounded-lg border border-neutral-300 bg-white p-1 shadow-2xl [-ms-overflow-style:none] [scrollbar-width:none] dark:border-neutral-600 dark:bg-neutral-800 [&::-webkit-scrollbar]:hidden"
+			class="z-50 flex max-h-48 w-56 [scrollbar-width:none] flex-col overflow-y-auto rounded-lg border border-neutral-300 bg-white p-1 shadow-2xl [-ms-overflow-style:none] dark:border-neutral-600 dark:bg-neutral-800 [&::-webkit-scrollbar]:hidden"
 			class:hidden={!showEmojiMenu || filteredEmoji.length === 0}
 		>
 			{#each filteredEmoji.slice(0, 10) as emoji}
