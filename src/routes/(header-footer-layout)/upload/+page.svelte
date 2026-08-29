@@ -162,7 +162,7 @@
 				}
 
 				for (const [fileName, { asset, isCostume }] of uniqueAssets.entries()) {
-					const fetchUrl = `https://assets.scratch.mit.edu/${fileName}`
+					const fetchUrl = `https://assets.scratch.mit.edu/internalapi/asset/${fileName}/get/`
 					newExtractedAssets.push({ name: fileName, fetchUrl })
 
 					if (isCostume) {
@@ -289,7 +289,7 @@
 					const projectId = result.data.projectId
 
 					// Upload extracted assets one by one
-					const concurrencyLimit = 6
+					const concurrencyLimit = isScratchImport ? 6 : 12
 					let assetIndex = 0
 
 					async function uploadWorker() {
