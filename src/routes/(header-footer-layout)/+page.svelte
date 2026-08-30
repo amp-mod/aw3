@@ -29,7 +29,7 @@
 		button_normal:
 			'inline-flex rounded-xl px-5 py-2 items-center gap-2 text-2xl font-semibold bg-green-100 text-accent',
 		button_small:
-			'inline-flex rounded-full bg-accent px-4 py-2 min-w-32 sm:min-w-48 items-center justify-center gap-2 font-bold text-white md:hover:min-w-52 transition-all',
+			'inline-flex rounded-full bg-accent px-4 py-2 min-w-32 sm:min-w-48 items-center justify-center gap-2 font-bold text-white transition-all',
 		tab: 'cursor-pointer rounded-t-lg border border-neutral-300 bg-neutral-100 px-3 h-8 text-neutral-600 outline-none border-b-0 flex items-center gap-3 data-[state=active]:border-b-transparent data-[state=active]:bg-white data-[state=active]:text-accent-secondary data-[state=active]:h-10 dark:border-neutral-500 dark:bg-neutral-800 dark:text-neutral-300 dark:data-[state=active]:bg-neutral-700 dark:data-[state=active]:text-white',
 		card: 'flex flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-accent h-50 justify-center',
 	}
@@ -49,20 +49,6 @@
 	icon={Globe}
 >
 	Welcome to the brand-new AmpMod website! This site is currently in beta and might have bugs.
-</Alert>
-<Alert
-	id="aw3-no-editor"
-	background="#6c6cff"
-	button={{
-		url: 'https://ampmod.codeberg.page/editor',
-		text: 'Create Project',
-	}}
-	icon={TriangleAlert}
-	closable={false}
->
-	The integrated editor has not been added yet. Please click "Create Project" in this banner to
-	create your project, then you can export it and go to My Stuff &rarr; Create &rarr; Import .apz to
-	upload it.
 </Alert>
 {#if data.user && !data.user.scratchUsername}
 	<Alert
@@ -108,8 +94,8 @@
 {/if}
 
 <div class="m-auto flex min-h-80 max-w-6xl gap-3 p-8">
-	<div class="flex grow basis-0 flex-col items-center justify-center gap-3 text-center">
-		{#if data.user}
+	{#if data.user}
+		<div class="flex grow basis-0 flex-col items-center justify-center gap-3 text-center">
 			<PFP user={data.user} size={72} />
 			<h1 class="text-2xl font-bold">Hello, {data.user.username}!</h1>
 			<div class="flex items-center justify-center gap-1">
@@ -117,13 +103,8 @@
 				<Button href={`/users/${data.user.username}`}>{m.myProfile()}</Button>
 				<Button href="/mystuff">{m.myStuff()}</Button>
 			</div>
-		{:else}
-			<h1 class="text-2xl font-bold">Welcome!</h1>
-			<p class="text-neutral-500 dark:text-neutral-400">
-				Join the community to share your projects.
-			</p>
-		{/if}
-	</div>
+		</div>
+	{/if}
 
 	<div class="flex grow basis-0 flex-col gap-3">
 		<Tabs.Root

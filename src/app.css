@@ -1,13 +1,13 @@
 @layer theme, base, components, utilities, aw3;
 
 @import 'tailwindcss';
-@import '@fontsource-variable/geist';
+@import '@fontsource-variable/inter';
 @plugin '@tailwindcss/typography';
 @import '@fontsource/pixelify-sans';
 
 @theme {
 	--font-pixelify: 'Pixelify Sans';
-	--font-sans: 'Geist Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	--font-sans: 'Inter Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
 	--color-accent: #4fa55c;
 	--color-accent-secondary: #3e834a;

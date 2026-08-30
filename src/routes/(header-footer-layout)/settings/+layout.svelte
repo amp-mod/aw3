@@ -11,6 +11,8 @@
 		Mail,
 		Camera,
 		ScanSquare,
+		Share,
+		Share2,
 	} from '@lucide/svelte'
 	import { page } from '$app/state'
 	import LoginModal from '$lib/components/LoginModal.svelte'
@@ -49,6 +51,13 @@
 			href: '/settings/link-scratch',
 			restricted: true,
 			icon: Cat,
+		},
+		{
+			id: 'invite',
+			label: 'Invite users',
+			href: '/settings/invite',
+			restricted: true,
+			icon: Share2,
 		},
 		{
 			id: 'frames',

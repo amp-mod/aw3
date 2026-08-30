@@ -1,7 +1,7 @@
 {
 	"name": "@ampmod/aw3",
 	"private": true,
-	"version": "0.4.2",
+	"version": "0.4.3",
 	"type": "module",
 	"license": "AGPL-3.0-or-later",
 	"scripts": {
@@ -108,6 +108,7 @@
 		"dompurify": "^3.4.13",
 		"emoji-picker-element": "^1.29.1",
 		"geoip-lite": "^2.0.3",
+		"iovalkey": "^0.4.0",
 		"isomorphic-dompurify": "^3.22.0",
 		"jszip": "^3.10.1",
 		"markdown-it": "^14.3.0",

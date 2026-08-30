@@ -145,14 +145,57 @@ export const actions: Actions = {
 			where: eq(table.featuredProject.projectId, projectId),
 		})
 
+		const project = await db.query.project.findFirst({
+			where: eq(table.project.id, projectId),
+			columns: {
+				id: true,
+				title: true,
+				userId: true,
+				status: true,
+			},
+		})
+
+		if (!project) {
+			throw error(404, { message: 'Project not found' })
+		}
+		if (project.status !== 'shared') {
+			const isOwner = locals.user?.id === project.userId
+
+			if (!isOwner) {
+				throw error(404, { message: 'Project not found' })
+			}
+		}
+
+		const author = await db.query.user.findFirst({
+			where: eq(table.user.id, project.userId),
+		})
+
 		if (!existing) {
 			await db.insert(table.featuredProject).values({ projectId, why })
+			let changedRank = false
+
+			// Check author rank and promote if rank is 0
+			if (author && author.rank === 0) {
+				await db.update(table.user).set({ rank: 1 }).where(eq(table.user.id, author.id))
+				changedRank = true
+			}
+
 			await db.insert(table.auditLog).values({
 				action: 'feature_project',
 				actorId: locals.user.id,
 				targetId: projectId,
 				targetType: 'project',
 				extra: { why },
+			})
+
+			await db.insert(table.notification).values({
+				recipientId: project.userId,
+				type: 'featured',
+				metadata: {
+					projID: project.id,
+					projTitle: project.title,
+					changedRank,
+				},
 			})
 		}
 
@@ -290,7 +333,6 @@ export const actions: Actions = {
 				projTitle: project.title,
 				title: `${message}`,
 			},
-			link: `/projects/${project.id}`,
 		})
 
 		return { success: true }
@@ -341,6 +383,40 @@ export const actions: Actions = {
 			targetId: projectId,
 			targetType: 'project',
 			extra: { note },
+		})
+
+		return { success: true }
+	},
+	report: async ({ params, locals, request }) => {
+		if (!locals.user) return fail(403, { message: 'Unauthorized' })
+		failIfCannotPerformAction(locals.user, 'report')
+
+		const formData = await request.formData()
+		const targetId = Number(params.projectID)
+		const targetType = 'project'
+		const category = formData.get('category')?.toString() ?? ''
+		const reason = formData.get('reason')?.toString() ?? ''
+
+		if (!targetId || !targetType || !category || !reason) {
+			return fail(400, { message: 'Missing required report fields' })
+		}
+
+		// Insert into the report table using your exact schema column names
+		await db.insert(table.report).values({
+			itemId: targetId,
+			itemType: targetType,
+			chosenReason: category,
+			description: reason,
+			creator: locals.user.id,
+		})
+
+		// Log the action to audit trail
+		await db.insert(table.auditLog).values({
+			action: 'create_report',
+			actorId: locals.user.id,
+			targetId,
+			targetType,
+			extra: { category, reason },
 		})
 
 		return { success: true }

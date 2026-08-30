@@ -12,9 +12,11 @@ import bannedPermittedPaths from '$lib/banned-permitted-paths'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import { eq } from 'drizzle-orm'
-import crypto from 'node:crypto'
+import { valkey } from '$lib/server/valkey'
+import { env } from '$env/dynamic/private'
 
 import cookieError from './failedToMigrateCookie.html?raw'
+import tailscaleError from './connectToTailscale.html?raw'
 
 let activeUsers: any[] = []
 
@@ -27,6 +29,36 @@ const AI_BOT_USER_AGENTS = [
 	'Bytespider',
 	'CCBot',
 ]
+
+async function getAndUpdateActiveUsers(username?: string) {
+	const now = Date.now()
+	const inactiveTimestamp = now - 5 * 60 * 1000 // 5 minutes ago
+
+	const pipeline = valkey.pipeline()
+	// Clean up entries older than 5 mins
+	pipeline.zremrangebyscore('active_users', 0, inactiveTimestamp)
+
+	// Add/update current user's timestamp if authenticated
+	if (username) {
+		pipeline.zadd('active_users', now, username)
+	}
+
+	// Fetch remaining active users sorted by most recent
+	pipeline.zrevrangebyscore('active_users', '+inf', inactiveTimestamp, 'WITHSCORES')
+
+	const results = await pipeline.exec()
+	const rawActiveUsers = (results?.[2]?.[1] as string[]) || []
+	const activeUsers: { username: string; time: number }[] = []
+
+	for (let i = 0; i < rawActiveUsers.length; i += 2) {
+		activeUsers.push({
+			username: rawActiveUsers[i],
+			time: parseInt(rawActiveUsers[i + 1], 10),
+		})
+	}
+
+	return activeUsers
+}
 
 export const handleAIBots: Handle = async ({ event, resolve }) => {
 	const errorPage = `<p>Scraping AmpMod to train Large Language Models is prohibited by our Terms of Service.</p><p>If you are an AI bot, this site is not for you. If this is in error, contact <script>document.write(atob('==QZt5ibvR3byBHQjxWZw1WY'.split('').reverse().join('')))</script> to resolve this issue.</p>`
@@ -91,6 +123,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		event.locals.session = null
 		return resolve(event)
 	}
+
 	if (event.cookies.get('THIS_COOKIE_IS_COATED_WITH_BITTERANT')) {
 		try {
 			await auth.migrateOldCookieName(event)
@@ -114,17 +147,24 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	if (!sessionToken) {
 		event.locals.user = null
 		event.locals.session = null
-		const inactiveTimestamp = Date.now() - 5 * 60 * 1000
-		activeUsers = activeUsers.filter((item) => item.time > inactiveTimestamp)
-		event.locals.activeUsers = activeUsers
+		event.locals.activeUsers = await getAndUpdateActiveUsers()
 
 		return resolve(event)
 	}
 
 	const { session, user } = await auth.validateSessionToken(sessionToken)
 
+	const currentIp = event.getClientAddress()
+	if (env.ADMIN_MANDATORY_IP && user.rank === 3 && currentIp !== env.ADMIN_MANDATORY_IP) {
+		return new Response(tailscaleError, {
+			status: 500,
+			headers: {
+				'Content-Type': 'text/html; charset=utf-8',
+			},
+		})
+	}
+
 	if (session) {
-		const currentIp = event.getClientAddress()
 		const currentUserAgent = event.request.headers.get('user-agent')
 
 		if (session.ip !== currentIp && session.userAgent !== currentUserAgent) {
@@ -145,18 +185,10 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		auth.deleteSessionTokenCookie(event)
 	}
 
-	const inactiveTimestamp = Date.now() - 5 * 60 * 1000
-	activeUsers = activeUsers.filter((item) => item.time > inactiveTimestamp)
 	event.locals.user = user
 	event.locals.session = session
-	if (user) {
-		activeUsers = activeUsers.filter((item) => item.username !== user.username)
-		activeUsers.unshift({
-			username: user.username,
-			time: Date.now(),
-		})
-	}
-	event.locals.activeUsers = activeUsers
+	event.locals.activeUsers = await getAndUpdateActiveUsers(user?.username)
+
 	return resolve(event)
 }
 
@@ -165,7 +197,7 @@ export const handleGuard: Handle = async ({ event, resolve }) => {
 	const isNotGet = event.request.method !== 'GET'
 
 	if (isAdminRoute && isNotGet) {
-		const hasRank = event.locals.user?.rank === 3
+		const hasRank = event.locals.user?.rank >= 2
 
 		if (!event.locals.user || !hasRank) {
 			throw error(404, 'Not Found')

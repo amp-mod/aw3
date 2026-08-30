@@ -1,5 +1,5 @@
-import { error, fail, type Actions } from '@sveltejs/kit'
-import { eq, sql, and } from 'drizzle-orm'
+import { error, fail, redirect, type Actions } from '@sveltejs/kit'
+import { eq, sql, and, gt } from 'drizzle-orm'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import type { PageServerLoad } from './$types'
@@ -16,7 +16,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const viewer = locals.user
 	const viewerRank = viewer?.rank ?? 0
 	const isStaffMember = viewerRank >= 2
-
 	const [userProfile] = await db
 		.select({
 			id: table.user.id,
@@ -42,7 +41,33 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.where(eq(table.user.username, username))
 		.limit(1)
 
-	if (!userProfile) throw error(404, { message: 'User not found' })
+	if (!userProfile) {
+		const [userRedirect] = await db
+			.select({
+				redirectToUserId: table.userRedirects.redirectToUserId,
+			})
+			.from(table.userRedirects)
+			.where(
+				and(
+					eq(table.userRedirects.fromUsername, username.toLowerCase()),
+					gt(table.userRedirects.expiresAt, new Date()),
+				),
+			)
+			.limit(1)
+
+		if (userRedirect) {
+			const [targetUser] = await db
+				.select({ username: table.user.username })
+				.from(table.user)
+				.where(eq(table.user.id, userRedirect.redirectToUserId))
+				.limit(1)
+
+			if (targetUser) {
+				throw redirect(301, `/users/${targetUser.username}`)
+			}
+		}
+		throw error(404, { message: 'User not found' })
+	}
 
 	const isOwnProfile = viewer?.id === userProfile.id
 

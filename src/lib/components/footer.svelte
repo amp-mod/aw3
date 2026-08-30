@@ -46,7 +46,7 @@
 		{
 			title: m.footerPolicy(),
 			links: [
-				//{ href: '/guidelines', label: m.guidelines() },
+				{ href: '/guidelines', label: m.guidelines() },
 				{ href: '/terms', label: m.termsOfService() },
 				{ href: '/privacy', label: m.privacyPolicy() },
 				//{ href: '/cookies', label: 'Cookie Notice' },

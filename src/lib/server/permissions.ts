@@ -29,7 +29,7 @@ const rankPerms = Object.freeze({
 	// moderation
 	report: NEW_AMPMODDER,
 	reportStaff: AMPMODDER,
-	accessAdminPanel: ADMINISTRATOR,
+	accessAdminPanel: MODERATOR,
 	banProject: MODERATOR,
 	banUser: MODERATOR,
 	editOtherUsersProfile: MODERATOR,
@@ -37,6 +37,9 @@ const rankPerms = Object.freeze({
 	seeBanStatus: MODERATOR,
 	featureProject: MODERATOR,
 	addModNoteToProject: MODERATOR,
+	changeRankToLowerThan3: MODERATOR,
+	changeRankTo3OrHigher: ADMINISTRATOR,
+	changePassword: ADMINISTRATOR,
 })
 
 /**
@@ -51,7 +54,7 @@ export function canPerformAction(user: User, action: keyof typeof rankPerms) {
 
 	const minimumRank = rankPerms[action] ?? Infinity
 
-	return minimumRank <= (user.rank ?? -1)
+	return minimumRank <= (user.rank ?? Number.MAX_SAFE_INTEGER)
 }
 
 /**

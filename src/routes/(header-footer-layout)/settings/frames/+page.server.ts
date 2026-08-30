@@ -5,6 +5,7 @@ import * as table from '$lib/server/db/schema'
 import type { PageServerLoad } from './$types'
 import { failIfCannotPerformAction, canPerformAction } from '$lib/server/permissions'
 import { frames } from '$lib/frames'
+import { regenerateUserProfileCache } from '$lib/server/auth'
 
 export const actions: Actions = {
 	setFrame: async ({ request, locals }) => {
@@ -27,6 +28,8 @@ export const actions: Actions = {
 			console.error(e)
 			return fail(500, { message: 'Failed to update frame.' })
 		}
+
+		regenerateUserProfileCache(locals.user.id)
 
 		return {
 			success: true,

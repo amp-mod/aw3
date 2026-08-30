@@ -130,14 +130,24 @@
 									{note.issuer?.username}
 								</a> followed you
 							{:else if note.type === 'featured'}
-								<a class="link" href="/projects/{note.metadata?.projID}"
+								Your project, <a class="link" href="/projects/{note.metadata?.projID}"
 									>{note.metadata?.projTitle}</a
-								> has been featured
+								>, has been featured! {#if note.metadata?.changedRank}As a result, you have
+									automatically ranked up to AmpModder.{/if}
 							{:else if note.type === 'project_banned'}
 								{#if note.metadata?.projID}
 									<p class="font-bold">
 										Your project, <a class="link" href="/projects/{note.metadata?.projID}"
 											>{note.metadata?.projTitle}</a
+										> has been banned by a moderator.
+									</p>
+									<p>{note.metadata?.title}</p>
+								{/if}
+							{:else if note.type === 'gallery_banned'}
+								{#if note.metadata?.galleryID}
+									<p class="font-bold">
+										Your gallery, <a class="link" href="/studios/{note.metadata?.galleryID}"
+											>{note.metadata?.galleryTitle}</a
 										> has been banned by a moderator.
 									</p>
 									<p>{note.metadata?.title}</p>

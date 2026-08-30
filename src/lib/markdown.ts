@@ -1,5 +1,5 @@
 import MarkdownIt from 'markdown-it'
-import AppleCat from '$lib/assets/apple-cat.svg'
+import { EMOJI_MAP } from './emojis'
 
 export const md = new MarkdownIt({
 	html: false,
@@ -42,8 +42,38 @@ md.inline.ruler.after('link', 'shorthand', (state, silent) => {
 	state.pos += id.length + 2
 	return true
 })
+// --- Custom Emoji Ruler (:emoji_name:) ---
+md.inline.ruler.after('link', 'custom_emoji', (state, silent) => {
+	const pos = state.pos
+	const src = state.src
+
+	// 1. Must start with ':' (0x3A)
+	if (src.charCodeAt(pos) !== 0x3a) return false
+
+	// 2. Match pattern :emoji_name:
+	const tail = src.slice(pos + 1)
+	const match = tail.match(/^([a-zA-Z0-9_-]+):/)
+	if (!match) return false
+
+	const emojiKey = match[1].toLowerCase()
+	const emojiSrc = EMOJI_MAP[emojiKey]
+
+	// If the emoji doesn't exist in our map, leave it as plain text
+	if (!emojiSrc) return false
+
+	if (!silent) {
+		// Push an HTML self-closing image token
+		const token = state.push('html_inline', '', 0)
+		token.content = `<img src="${emojiSrc}" alt=":${emojiKey}:" title=":${emojiKey}:" height="1em" />`
+	}
+
+	// Move position forward by emoji length + 2 colons (:name:)
+	state.pos += emojiKey.length + 2
+	return true
+})
+
 // --- Mentions (@username) ---
-md.inline.ruler.after('shorthand', 'mention', (state, silent) => {
+md.inline.ruler.after('shorthand', 'custom_emoji', (state, silent) => {
 	const pos = state.pos
 	if (state.src.charCodeAt(pos) !== 0x40 /* @ */) return false
 

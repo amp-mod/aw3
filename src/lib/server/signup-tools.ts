@@ -2,7 +2,7 @@ import * as auth from '$lib/server/auth'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import { isValidUsername } from '$lib/username'
-import { eq, sql } from 'drizzle-orm'
+import { eq, sql, and, gt } from 'drizzle-orm'
 
 // --- PRIVATE HELPERS ---
 export async function createNewUser(username: string, passwordHash: string, isScratch = false) {
@@ -17,6 +17,20 @@ export async function createNewUser(username: string, passwordHash: string, isSc
 			return { error: 'Invalid username', status: 400 }
 		}
 		if (existing.length > 0) return { error: 'Username already exists', status: 409 }
+		const activeRedirect = await tx
+			.select({ id: table.userRedirects.id })
+			.from(table.userRedirects)
+			.where(
+				and(
+					eq(table.userRedirects.fromUsername, username),
+					gt(table.userRedirects.expiresAt, new Date()),
+				),
+			)
+			.limit(1)
+
+		if (activeRedirect.length > 0) {
+			return { error: 'Username is currently reserved by a redirected account', status: 409 }
+		}
 
 		const userCount = await tx.select({ count: sql<number>`count(*)` }).from(table.user)
 		const assignedRank = Number(userCount[0].count) === 0 ? 3 : 0

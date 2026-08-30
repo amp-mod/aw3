@@ -45,7 +45,7 @@
 	<title>My Stuff - AmpMod</title>
 </svelte:head>
 
-<div class="mx-auto my-12 mb-24 flex max-w-5xl flex-col gap-8 px-4 text-black dark:text-white">
+<div class="mx-auto my-12 mb-24 flex max-w-5xl flex-col gap-8 px-4">
 	<header class="flex flex-col gap-8">
 		<div class="flex items-center justify-between">
 			<h1 class="text-3xl font-bold">{m.myStuff()}</h1>

@@ -6,6 +6,7 @@ import type { PageServerLoad } from './$types'
 import { validateUsername } from '$lib/server/signup-tools'
 import { failIfCannotPerformAction, canPerformAction } from '$lib/server/permissions'
 import { isProfane } from '$lib/server/bad-word-checker'
+import { regenerateUserProfileCache } from '$lib/server/auth'
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -25,9 +26,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 		availableSettings.push('username')
 	}
 
+	const canUpdateUsername =
+		(Date.now() - new Date(locals.user.usernameUpdatedAt).getTime()) / (1000 * 60 * 60 * 24) > 14 ||
+		locals.user.rank >= 2
+
 	return {
 		settings: userSettings,
 		availableSettings,
+		canUpdateUsername,
 	}
 }
 
@@ -41,13 +47,16 @@ export const actions: Actions = {
 		const updates: Partial<typeof table.user.$inferSelect> = {
 			isPrivate: false,
 		}
-		if (Object.keys(updates).length === 0) {
-			return fail(400, { message: 'No changes provided' })
-		}
 
 		if (formData.has('isPrivate')) {
 			updates.isPrivate = formData.has('isPrivate')
 		}
+
+		if (Object.keys(updates).length === 0) {
+			return fail(400, { message: 'No changes provided' })
+		}
+
+		regenerateUserProfileCache(locals.user.id)
 
 		try {
 			await db.update(table.user).set(updates).where(eq(table.user.id, locals.user.id))
@@ -74,15 +83,33 @@ export const actions: Actions = {
 			return fail(400, { message: 'Your new username is invalid' })
 		}
 
+		const oldUsername = locals.user.username.toLowerCase()
+		if (oldUsername === newUsername) {
+			return fail(400, { message: 'New username must be different from current username' })
+		}
+
+		const expiresAt = new Date()
+		expiresAt.setDate(expiresAt.getDate() + 14)
+
 		try {
-			await db
-				.update(table.user)
-				.set({ username: newUsername })
-				.where(eq(table.user.id, locals.user.id))
+			await db.transaction(async (tx) => {
+				// Update user table
+				await tx
+					.update(table.user)
+					.set({ username: newUsername, usernameUpdatedAt: new Date() })
+					.where(eq(table.user.id, locals.user.id))
+
+				await tx.insert(table.userRedirects).values({
+					fromUsername: oldUsername,
+					redirectToUserId: locals.user.id,
+					expiresAt,
+				})
+			})
 		} catch (e) {
 			console.error(e)
 			return fail(500, { message: 'Failed to update username. It may already be taken.' })
 		}
+		regenerateUserProfileCache(locals.user.id)
 
 		return {
 			success: true,

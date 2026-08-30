@@ -24,6 +24,14 @@
 			isPending = false
 		}
 	}
+
+	let daysRemaining = $derived(() => {
+		if (!data.user?.usernameUpdatedAt) return 0
+		const updatedTime = new Date(data.user.usernameUpdatedAt).getTime()
+		const fourteenDaysInMs = 14 * 24 * 60 * 60 * 1000
+		const diffInMs = updatedTime + fourteenDaysInMs - Date.now()
+		return Math.max(0, Math.ceil(diffInMs / (1000 * 60 * 60 * 24)))
+	})
 </script>
 
 {#snippet settingToggle(id, name, label, description, bindValue)}
@@ -87,14 +95,15 @@
 			},
 		)}
 	</form>
-	<h3 class="text-2xl font-semibold">Rename your account</h3>
-	{#if data.availableSettings.includes('username')}
+	<h3 class="text-2xl font-semibold">Username</h3>
+	{#if data.availableSettings.includes('username') && data.canUpdateUsername}
 		<p>
 			<strong
 				>Warning: Renaming your account will break old links to your profile, including mentions in
 				bios, comments, and other content.</strong
 			>
 		</p>
+		<p>After renaming your account, you will be unable to rename it again for the next 2 weeks.</p>
 		<form method="POST" action="?/updateUsername" use:enhance class="flex flex-col gap-4">
 			{#if form?.error}
 				<p>{form.error}</p>
@@ -102,8 +111,21 @@
 			<input class="input" type="text" name="username" placeholder="New username" required />
 			<Button type="submit">Rename account</Button>
 		</form>
-	{:else}
-		<p>Rank up to rename your account.</p>
+	{:else if !data.canUpdateUsername}
+		<p>
+			You already changed your username. You can change it again in {daysRemaining()}
+			{daysRemaining() === 1 ? 'day' : 'days'}.
+		</p>
+		<p>
+			During this period, your old username will redirect to your new one, and nobody else can use
+			it.
+		</p>
+		<p>
+			If you urgently need to change your username, please contact AmpMod support to skip this
+			cooldown.
+		</p>
+	{:else if !data.availableSettings.includes('username')}
+		<p>Rank up to rename your account</p>
 	{/if}
 	<h3 class="text-2xl font-semibold">Link to your Scratch profile</h3>
 	<p>When you link your AmpMod account to Scratch, a link to your Scratch profile will be added.</p>

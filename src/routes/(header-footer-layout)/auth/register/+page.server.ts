@@ -3,7 +3,7 @@ import { fail, redirect } from '@sveltejs/kit'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import type { Actions, PageServerLoad } from './$types'
-import { eq, sql } from 'drizzle-orm'
+import { eq, sql, and, gt } from 'drizzle-orm'
 import { isProfane } from '$lib/server/bad-word-checker'
 import { generateVerificationData, findVerificationToken } from '$lib/server/scratch-verify'
 import {
@@ -23,12 +23,33 @@ export const load: PageServerLoad = async (event) => {
 	const token = event.cookies.get('s_reg_token')
 	const comment = event.cookies.get('s_reg_comment')
 
+	// Capture invite code from ?inv= URL query parameter
+	const inviteCode = event.url.searchParams.get('inv') ?? ''
+
+	// Lookup the owner user object by inviteId
+	let inviteOwner = null
+	if (inviteCode) {
+		const owner = await db.query.user.findFirst({
+			where: eq(table.user.inviteId, inviteCode),
+			columns: {
+				id: true,
+				username: true,
+				hasPFP: true,
+			},
+		})
+		if (owner) {
+			inviteOwner = owner
+		}
+	}
+
 	return {
 		isNew: event.locals.isNewAw3,
 		scratchStep: scratchUsername ? 2 : 1,
 		scratchUsername,
 		verificationToken: token,
 		verificationComment: comment,
+		inviteCode,
+		inviteOwner,
 	}
 }
 
@@ -38,6 +59,7 @@ export const actions: Actions = {
 		// Normalize to lowercase immediately
 		const username = (formData.get('username') as string)?.toLowerCase().trim() ?? ''
 		const password = formData.get('password')
+		const inviteCode = (formData.get('inviteCode') as string)?.trim() ?? ''
 
 		if (!isValidUsername(username) || isProfane(username, true)) {
 			return fail(400, { message: 'Invalid username' })
@@ -73,8 +95,29 @@ export const actions: Actions = {
 		})
 
 		try {
-			const result = await createNewUser(username, passwordHash)
+			const result = await createNewUser(username, passwordHash, false)
 			if ('error' in result) return fail(result.status, { message: result.error })
+
+			if (inviteCode) {
+				const inviter = await db.query.user.findFirst({
+					where: eq(table.user.inviteId, inviteCode),
+					columns: { id: true },
+				})
+				if (inviter) {
+					await db
+						.update(table.user)
+						.set({ inviter: inviter.id })
+						.where(eq(table.user.id, result.newUser.id))
+
+					await db
+						.insert(table.follow)
+						.values({
+							followerId: result.newUser.id,
+							followingId: inviter.id,
+						})
+						.onConflictDoNothing()
+				}
+			}
 
 			await establishSession(event, result.newUser.id)
 		} catch (e) {
@@ -90,6 +133,7 @@ export const actions: Actions = {
 		// Normalize to lowercase immediately
 		const username = formData.get('username')?.toString().toLowerCase().trim() ?? ''
 		const password = formData.get('password')?.toString() ?? ''
+		const inviteCode = formData.get('inviteCode')?.toString().trim() ?? ''
 
 		if (!isValidUsername(username) || isProfane(username, true)) {
 			return fail(400, { message: 'Invalid username' })
@@ -99,7 +143,7 @@ export const actions: Actions = {
 		}
 
 		const existing = await db.query.user.findFirst({
-			where: sql`${table.user.username} = ${username} OR (${table.user.scratchUsername} = ${username}`,
+			where: sql`${table.user.username} = ${username} OR ${table.user.scratchUsername} = ${username}`,
 		})
 		if (existing) return fail(400, { message: 'Username or Scratch account already in use' })
 
@@ -123,6 +167,9 @@ export const actions: Actions = {
 		cookies.set('s_reg_token', token, opts)
 		cookies.set('s_reg_comment', fullComment, opts)
 		cookies.set('s_reg_pw', passwordHash, opts)
+		if (inviteCode) {
+			cookies.set('s_reg_invite', inviteCode, opts)
+		}
 
 		return {
 			scratchStep: 2,
@@ -137,6 +184,7 @@ export const actions: Actions = {
 		const username = cookies.get('s_reg_user') // Already lowercased from Step 1
 		const expectedToken = cookies.get('s_reg_token')
 		const passwordHash = cookies.get('s_reg_pw')
+		const inviteCode = cookies.get('s_reg_invite')
 
 		if (!username || !expectedToken || !passwordHash) {
 			return fail(400, { message: 'Session expired. Please start over.' })
@@ -148,11 +196,12 @@ export const actions: Actions = {
 				return fail(400, { message: 'Verification failed. Could not find the comment.' })
 			}
 
-			const result = await createNewUser(username, passwordHash, true)
+			const result = await createNewUser(username, passwordHash, true, inviteCode || undefined)
 			if ('error' in result) return fail(result.status, { message: result.error })
 
 			await establishSession(event, result.newUser.id)
 			clearScratchCookies(cookies)
+			cookies.delete('s_reg_invite', { path: '/' })
 		} catch (e) {
 			console.error(e)
 			return fail(500, { message: 'Finalization failed.' })
@@ -163,6 +212,7 @@ export const actions: Actions = {
 
 	resetScratch: async ({ cookies }) => {
 		clearScratchCookies(cookies)
+		cookies.delete('s_reg_invite', { path: '/' })
 		return { scratchStep: 1 }
 	},
 
@@ -186,9 +236,31 @@ export const actions: Actions = {
 			.where(eq(table.user.username, username))
 			.limit(1)
 
+		if (existingUser.length > 0) {
+			return { available: false, message: 'Username taken.' }
+		}
+
+		const activeRedirect = await db
+			.select({ id: table.userRedirects.id })
+			.from(table.userRedirects)
+			.where(
+				and(
+					eq(table.userRedirects.fromUsername, username),
+					gt(table.userRedirects.expiresAt, new Date()),
+				),
+			)
+			.limit(1)
+
+		if (activeRedirect.length > 0) {
+			return {
+				available: false,
+				message: 'This username is currently reserved because a user changed their username.',
+			}
+		}
+
 		return {
-			available: existingUser.length === 0,
-			message: existingUser.length > 0 ? 'Username taken.' : '',
+			available: true,
+			message: '',
 		}
 	},
 }

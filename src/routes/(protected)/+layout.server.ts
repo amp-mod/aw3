@@ -1,9 +1,6 @@
-import { getRequestEvent } from '$app/server'
+import { canPerformAction } from '$lib/server/permissions'
 import { error } from '@sveltejs/kit'
 
-export function load() {
-	const user = getRequestEvent().locals.user
-	if (!user || user.rank !== 3) {
-		throw error(404)
-	}
+export function load({ locals }) {
+	if (!canPerformAction(locals.user, 'accessAdminPanel')) throw error(403)
 }

@@ -147,10 +147,17 @@
 				<div in:fade={{ duration: 150 }} class="space-y-2">
 					<header class="mb-8 flex-col gap-4 flex text-center">
 						<h1 class="text-3xl font-bold">Welcome to AmpMod!</h1>
-						<p>
-							If you have a Scratch account, you can move from Scratch to AmpMod by importing your
-							profile.
-						</p>
+						{#if data.inviteOwner}
+							<p>
+								<a href="/users/{data.inviteOwner.username}">{data.inviteOwner.username}</a> invited you.
+								You will automatically follow them when you sign up. Say hello to them!
+							</p>
+						{:else}
+							<p>
+								If you have a Scratch account, you can move from Scratch to AmpMod by importing your
+								profile.
+							</p>
+						{/if}
 					</header>
 
 					<noscript>You need JavaScript to sign up.</noscript>
@@ -293,6 +300,9 @@
 							name="email"
 							value={email}
 						/>
+						{#if data.inviteCode}
+							<input type="hidden" value={data.inviteCode} name="inviteCode" />
+						{/if}
 						{#if import.meta.env.VITE_TURNSTILE_SITE_KEY && browser}
 							<div id="cf-turnstile" data-sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}></div>
 						{/if}

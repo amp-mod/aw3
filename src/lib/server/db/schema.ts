@@ -13,6 +13,7 @@ import {
 	primaryKey,
 	bigint,
 	customType,
+	uuid,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
@@ -50,6 +51,12 @@ export const user = pgTable(
 		scratchUsername: varchar('scratch_username', { length: 64 }).default(''),
 		verified: boolean('verified').default(false),
 		frame: varchar({ length: 32 }),
+		usernameUpdatedAt: timestamp({ withTimezone: true, mode: 'date' })
+			.notNull()
+			.default(new Date(0)),
+		hasFeaturedProject: boolean().default(false),
+		inviteId: uuid().defaultRandom(),
+		inviter: integer().references(() => user.id, { onDelete: 'cascade' }),
 	},
 	(table) => [index('username_idx').on(table.username)],
 )
@@ -266,6 +273,10 @@ export const report = pgTable('report', {
 	chosenReason: varchar({ length: 64 }),
 	description: varchar({ length: 1000 }),
 	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+	creator: bigint('user_id', { mode: 'number' })
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
 })
 
 export const projectLike = pgTable(
@@ -393,13 +404,30 @@ export const followRelations = relations(follow, ({ one }) => ({
 	}),
 }))
 
+export const userRedirects = pgTable(
+	'user_redirects',
+	{
+		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+		fromUsername: varchar('from_username', { length: 20 }).notNull().unique(),
+		redirectToUserId: bigint('redirect_to_user_id', { mode: 'number' })
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
+		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	},
+	(table) => [
+		index('user_redirect_from_idx').on(table.fromUsername),
+		index('user_redirect_expires_idx').on(table.expiresAt),
+	],
+)
+
 // --- TYPES ---
 export type Authenticator = typeof authenticator.$inferSelect
 export type User = typeof user.$inferSelect
 export type Session = typeof session.$inferSelect
 export type Project = typeof project.$inferSelect
-export type Gallery = typeof gallery.$inferSelect
-export type GalleryCurator = typeof galleryCurators.$inferSelect
+export type gallery = typeof gallery.$inferSelect
+export type galleryCurator = typeof galleryCurators.$inferSelect
 export type ProjectToGallery = typeof projectsToGalleries.$inferSelect
 export type AuditLog = typeof auditLog.$inferSelect
 export type FeaturedProject = typeof featuredProject.$inferSelect
@@ -407,3 +435,4 @@ export type FeaturedGallery = typeof featuredGallery.$inferSelect
 export type Config = typeof config.$inferSelect
 export type Follow = typeof follow.$inferSelect
 export type Notification = typeof notification.$inferSelect
+export type UserRedirects = typeof userRedirects.$inferSelect

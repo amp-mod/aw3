@@ -352,12 +352,11 @@
 		</p>
 		{#if isMod}
 			{#if data.isFeatured}
-				<form method="POST" action="?/unfeatureProject">
+				<form method="POST" action="?/unfeatureProject" use:enhance>
 					<Button type="submit">Unfeature</Button>
 				</form>
 			{:else}
-				<form method="POST" action="?/featureProject" class="flex">
-					<input name="why" type="text" placeholder="Why feature this?" hidden />
+				<form method="POST" action="?/featureProject" use:enhance class="flex">
 					<Button type="submit">Feature</Button>
 				</form>
 			{/if}
@@ -373,7 +372,7 @@
 		</Button>
 		{#if data.user && data.user.id !== project.userId}
 			<Button
-				onclick={() => reportState.open(project.id, 'project', project.title)}
+				onclick={() => reportState.open('project', project.title)}
 				class="flex items-center gap-2"
 			>
 				<MessageSquareWarning /> Report
@@ -447,8 +446,7 @@
 			readonly
 			class="input"
 			value={`<iframe src="${window.location.href}/embed" title="AmpMod project" style="border: none;"></iframe>`}
-			onfocus={(e) => e.currentTarget.select()}
-		></textarea>
+			onfocus={(e) => e.currentTarget.select()}></textarea>
 		<Button
 			onclick={() => {
 				navigator.clipboard.writeText(
