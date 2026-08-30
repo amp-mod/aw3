@@ -90,7 +90,7 @@
 </div>
 
 <div class="flex flex-col gap-4">
-	{#each data.sessions as session (session.sha256ofID)}
+	{#each data.sessions as session (session.id)}
 		{@const DeviceIcon = getSessionDetails(session.userAgent).icon}
 		<div
 			class="flex items-center justify-between rounded border border-black/5 p-4 transition-colors dark:border-white/5 dark:bg-neutral-800/50"
@@ -132,7 +132,7 @@
 					}
 				}}
 			>
-				<input type="hidden" name="sha256ofID" value={session.sha256ofID} />
+				<input type="hidden" name="id" value={session.id} />
 				<Button type="submit">
 					{session.isCurrent ? 'Logout' : 'Revoke'}
 				</Button>

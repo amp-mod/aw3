@@ -7,6 +7,9 @@ export function isValidUsername(username: string) {
 	if (username.endsWith('_')) return false
 	if (/[_]{2,}/.test(username)) return false
 
+	// "playerXXXX" usernames are reserved for anonymous users using cloud vars
+	if (/^player[0-9]{4}$/i.test(username)) return false
+
 	// only allow certain characters
 	return /^[A-Za-z0-9\-_]+$/.test(username)
 }

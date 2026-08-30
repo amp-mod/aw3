@@ -12,6 +12,13 @@ declare global {
 			isNewAw3: boolean | null
 		}
 	} // interface Error {}
+	interface Window {
+		onloadTurnstileCallback?: () => void
+		turnstile?: {
+			render: (container: string | HTMLElement, options: Record<string, any>) => string
+			remove: (id: string) => void
+		}
+	}
 } // interface Locals {}
 // interface PageData {}
 

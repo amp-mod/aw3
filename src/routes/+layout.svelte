@@ -14,7 +14,9 @@
 	function removePatchFromVersion(v: string) {
 		const version = v.split('-')[0].split('+')[0].split('.')
 
-		return `${version[0]}.${version[1]}`
+		// TODO: Website and editor versions are being unified, so until AmpMod 0.5 is released,
+		// we will include the patch version. When AmpMod 0.5 is released, we will remove this.
+		return `${version[0]}.${version[1]}.${version[2]}`
 	}
 
 	onMount(() => {

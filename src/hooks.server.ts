@@ -224,7 +224,7 @@ const handleSetup: Handle = async ({ event, resolve }) => {
 	} else {
 		isInitialized = true
 	}
-	if (isRegisterPath) return resolve(event)
+	return resolve(event)
 }
 
 export const handle: Handle = sequence(

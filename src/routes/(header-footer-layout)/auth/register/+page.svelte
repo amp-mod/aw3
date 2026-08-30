@@ -5,7 +5,6 @@
 		ArrowLeft,
 		TriangleAlert,
 		CircleCheck,
-		UserRound,
 		ChevronRight,
 		Mail,
 		ShieldCheck,
@@ -17,13 +16,14 @@
 	import TwAdvanced from './tw-advanced.svelte'
 	import type { ActionData, PageData } from './$types'
 	import { browser } from '$app/environment'
+	import { onDestroy } from 'svelte'
+	import MigrateScratchBanner from './migrate-scratch-banner.svg'
 
 	let { form = $bindable(), data }: { form: ActionData; data: PageData } = $props()
 
-	// Views: 'choice' | 'credentials' | 'email' | 'scratch-verify' | 'welcome'
-	let currentView = $state<'choice' | 'credentials' | 'email' | 'scratch-verify' | 'welcome'>(
-		'choice',
-	)
+	let currentView = $state<
+		'choice' | 'credentials' | 'email' | 'scratch-verify' | 'register-form' | 'welcome'
+	>('choice')
 	let regMode = $state<'standard' | 'scratch'>('standard')
 	let submitting = $state(false)
 
@@ -49,6 +49,23 @@
 	})
 
 	$effect(() => {
+		if (currentView == 'email' && import.meta.env.VITE_TURNSTILE_SITE_KEY) {
+			window.onloadTurnstileCallback = () => {
+				if (window.turnstile) {
+					turnstileId = window.turnstile.render('#cf-turnstile', {
+						sitekey: import.meta.env.VITE_TURNSTILE_SITE_KEY,
+						callback: (receivedToken: string) => {
+							turnstileToken = receivedToken
+						},
+					})
+				}
+			}
+
+			if (window.turnstile) {
+				window.onloadTurnstileCallback()
+			}
+		}
+
 		if (username.length < 3) {
 			usernameAvailable = null
 			return
@@ -89,19 +106,29 @@
 		else if (currentView === 'email') currentView = 'credentials'
 	}
 
-	if (browser) {
-		import('altcha')
-	}
+	let turnstileId: any
+	let turnstileToken = $state('')
+
+	onDestroy(() => {
+		if (browser && window.turnstile && turnstileId) {
+			window.turnstile.remove(turnstileId)
+		}
+	})
 </script>
 
-<div class="flex min-h-screen flex-col items-center bg-accent px-4 py-12">
-	<a href="/" class="mb-8 text-white transition-opacity hover:opacity-80" aria-label="Home"
-		><TwAdvanced /></a
-	>
+<svelte:head>
+	{#if import.meta.env.VITE_TURNSTILE_SITE_KEY}
+		<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+	{/if}
+</svelte:head>
 
+<div class="flex flex-col items-center px-4 py-12">
 	<div
-		class="flex w-full max-w-xl flex-col overflow-hidden rounded-2xl bg-white dark:bg-neutral-800"
+		class="flex w-full max-w-xl flex-col overflow-hidden rounded-2xl bg-white dark:bg-neutral-800 border-2 border-neutral-500/50"
 	>
+		{#if currentView === 'choice'}
+			<img src={MigrateScratchBanner} alt="" aria-hidden="true" />
+		{/if}
 		<!-- Top Navigation -->
 		<div class="flex shrink-0 items-center px-6 py-2 dark:border-neutral-700">
 			{#if currentView !== 'choice' && currentView !== 'welcome' && currentView !== 'scratch-verify'}
@@ -115,45 +142,51 @@
 			{/if}
 		</div>
 
-		<div class="flex-1 p-10">
+		<div class="flex-1 px-10 py-4">
 			{#if currentView === 'choice'}
-				<div in:fade={{ duration: 150 }} class="space-y-4">
-					<header class="mb-8">
-						<h1 class="text-3xl font-bold">Join AmpMod</h1>
+				<div in:fade={{ duration: 150 }} class="space-y-2">
+					<header class="mb-8 flex-col gap-4 flex text-center">
+						<h1 class="text-3xl font-bold">Welcome to AmpMod!</h1>
+						<p>
+							If you have a Scratch account, you can move from Scratch to AmpMod by importing your
+							profile.
+						</p>
 					</header>
 
+					<noscript>You need JavaScript to sign up.</noscript>
+
 					<button
-						class="group flex w-full items-center gap-5 rounded-xl border-2 border-orange-500/20 bg-orange-500/5 p-6 text-left transition-all hover:border-orange-500"
+						class="group flex w-full items-center gap-5 rounded-xl border-2 border-orange-500/20 bg-orange-500/5 p-3 text-left transition-all hover:border-orange-500"
 						onclick={() => {
 							regMode = 'scratch'
 							currentView = 'credentials'
 						}}
 					>
 						<div
-							class="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500 text-white transition-transform group-hover:scale-110"
+							class="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500 text-white transition-transform group-hover:scale-110"
 						>
 							<Scratch />
 						</div>
-						<div class="flex-1">
-							<span class="block text-lg font-bold text-purple-600">Join with Scratch</span>
+						<div class="flex-1 flex flex-col gap-1">
+							<span class="block text-lg font-bold">Migrate your Scratch account</span>
 						</div>
 						<ChevronRight class="opacity-30 transition-transform group-hover:translate-x-1" />
 					</button>
 
 					<button
-						class="group flex w-full items-center gap-5 rounded-xl border-2 border-neutral-100 bg-neutral-50 p-6 text-left transition-all hover:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-900"
+						class="group flex w-full items-center gap-5 rounded-xl border-2 border-neutral-100 bg-neutral-50 p-3 text-left transition-all hover:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-900"
 						onclick={() => {
 							regMode = 'standard'
 							currentView = 'credentials'
 						}}
 					>
 						<div
-							class="flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-200 text-neutral-500 transition-transform group-hover:scale-110 dark:bg-neutral-700"
+							class="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-200 text-neutral-500 transition-transform group-hover:scale-110 dark:bg-neutral-700"
 						>
-							<UserRound />
+							<TwAdvanced />
 						</div>
 						<div class="flex-1">
-							<span class="block text-lg font-bold">Join with username</span>
+							<span class="block text-lg font-bold">Create account</span>
 						</div>
 						<ChevronRight class="opacity-30 transition-transform group-hover:translate-x-1" />
 					</button>
@@ -253,20 +286,21 @@
 					<form id="register-form" method="POST" action="?/register" use:enhance={handleEnhance}>
 						<input type="hidden" name="username" value={username} /><input
 							type="hidden"
-							name="password"
-							value={password}
-						/><input type="hidden" name="email" value={email} />
-						<!-- Re-added Altcha here -->
-						{#if browser}
-							<altcha-widget
-								name="altcha"
-								auto="onsubmit"
-								challengeurl="/auth/_altcha"
-								hidelogo
-								hidefooter
-							></altcha-widget>
+							name="turnstileToken"
+							value={turnstileToken}
+						/><input type="hidden" name="password" value={password} /><input
+							type="hidden"
+							name="email"
+							value={email}
+						/>
+						{#if import.meta.env.VITE_TURNSTILE_SITE_KEY && browser}
+							<div id="cf-turnstile" data-sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}></div>
 						{/if}
-						<Button type="submit" class="w-full py-4 text-lg" disabled={submitting}>
+						<Button
+							type="submit"
+							class="w-full py-4 text-lg"
+							disabled={submitting || (import.meta.env.VITE_TURNSTILE_SITE_KEY && !turnstileToken)}
+						>
 							{#if submitting}<Loader class="mx-auto animate-spin" size={20} />{:else}Join{/if}
 						</Button>
 					</form>
@@ -330,23 +364,16 @@
 		</div>
 
 		<!-- Persistent Footer (Terms) -->
-		{#if currentView === 'register-form' || currentView === 'scratch-verify'}
+		{#if currentView === 'email' || currentView === 'scratch-verify'}
 			<div
 				class="border-t border-neutral-100 bg-neutral-50 px-10 py-6 text-center text-[11px] opacity-50 dark:border-neutral-700 dark:bg-neutral-900/50"
 			>
-				By continuing, you agree to our <a
-					href="/terms"
-					class="underline transition-colors hover:text-accent">Terms of Service</a
+				By continuing, you agree to our <a href="/terms" class="underline hover:text-accent"
+					>Terms of Service</a
 				>
 				and
-				<a href="/privacy" class="underline transition-colors hover:text-accent">Privacy Policy</a>.
+				<a href="/privacy" class="underline hover:text-accent">Privacy Policy</a>.
 			</div>
 		{/if}
 	</div>
-
-	<footer class="mt-8 flex gap-6 text-xs font-medium text-white/40">
-		<a href="/auth/register/educator" class="transition-colors hover:text-white">Educator signup</a>
-		<span>&bull;</span>
-		<a href="/help" class="transition-colors hover:text-white">Need help?</a>
-	</footer>
 </div>

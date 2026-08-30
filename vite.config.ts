@@ -13,8 +13,8 @@ export default defineConfig({
 		'import.meta.env.VITE_NPM_PACKAGE_VERSION': JSON.stringify(pkg.version),
 	},
 	plugins: [
-		tailwindcss(),
 		sveltekit(),
+		tailwindcss(),
 		paraglideVitePlugin({
 			project: './project.inlang',
 			outdir: './src/lib/paraglide',

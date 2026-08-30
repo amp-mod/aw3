@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, and } from 'drizzle-orm'
 import { error, fail, redirect } from '@sveltejs/kit'
 import type { PageServerLoad, Actions } from './$types'
 import { invalidateSession, deleteSessionTokenCookie } from '$lib/server/auth'
@@ -55,9 +55,6 @@ export const load: PageServerLoad = async (event) => {
 					...s,
 					location,
 					isCurrent: s.id === currentSession.id,
-					// Security: We send a hash of the ID to the client, not the raw session token
-					sha256ofID: encodeHexLowerCase(sha256(new TextEncoder().encode(s.id))),
-					id: undefined, // Strip the actual session ID
 					index,
 				}
 			})
@@ -75,22 +72,13 @@ export const actions: Actions = {
 		if (!user || !currentSession) throw error(401)
 
 		const formData = await event.request.formData()
-		const targetHash = formData.get('sha256ofID')
-
-		if (typeof targetHash !== 'string') {
-			return fail(400, { message: 'Invalid session hash' })
-		}
+		const targetID = formData.get('id') as string
 
 		// Find the actual session ID by re-hashing user sessions
-		const userSessions = await db
+		const [sessionToRevoke] = await db
 			.select()
 			.from(table.session)
-			.where(eq(table.session.userId, user.id))
-
-		const sessionToRevoke = userSessions.find((s) => {
-			const hash = encodeHexLowerCase(sha256(new TextEncoder().encode(s.id)))
-			return hash === targetHash
-		})
+			.where(eq(table.session.id, targetID))
 
 		if (!sessionToRevoke) {
 			return fail(404, { message: 'Session not found' })

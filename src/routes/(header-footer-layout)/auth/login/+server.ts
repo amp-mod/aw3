@@ -7,17 +7,10 @@ import * as table from '$lib/server/db/schema'
 import type { RequestHandler } from './$types'
 
 export const POST: RequestHandler = async (event) => {
-	const ip = event.getClientAddress()
+	const ip = event.getClientAddress() ?? '127.0.0.1'
 	const formData = await event.request.formData()
 	const username = formData.get('username')
 	const password = formData.get('password')
-
-	if (!validateUsername(username)) {
-		return json({ message: 'Invalid username (3-20 chars, alphanumeric only)' }, { status: 400 })
-	}
-	if (!validatePassword(password)) {
-		return json({ message: 'Invalid password (min 6 characters)' }, { status: 400 })
-	}
 
 	const results = await db.select().from(table.user).where(eq(table.user.username, username))
 	const existingUser = results.at(0)
@@ -42,22 +35,9 @@ export const POST: RequestHandler = async (event) => {
 		sessionToken,
 		existingUser.id,
 		ip,
-		event.request.headers.get('user-agent'),
+		event.request.headers.get('user-agent') ?? '',
 	)
 	auth.setSessionTokenCookie(event, sessionToken, session.expiresAt)
 
 	return json({ success: true })
-}
-
-function validateUsername(username: unknown): username is string {
-	return (
-		typeof username === 'string' &&
-		username.length >= 3 &&
-		username.length <= 20 &&
-		/^[a-z0-9_-]+$/.test(username)
-	)
-}
-
-function validatePassword(password: unknown): password is string {
-	return typeof password === 'string' && password.length >= 6 && password.length <= 255
 }

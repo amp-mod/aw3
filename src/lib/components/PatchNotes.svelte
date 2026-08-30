@@ -8,27 +8,23 @@
 
 <Modal bind:open title="The AmpMod website has been updated!">
 	<div class="prose dark:prose-invert prose-a:text-accent prose-a:underline">
+		<p>
+			Version 0.4.2 of this site is still unrelated to AmpMod editor 0.4. It should be obvious.
+			We've said that before.
+		</p>
+		<p>
+			However, version 0.5 of the website <em>will</em> be related to AmpMod editor 0.5, because we are
+			unifying the release schedule of them. That's why this release isn't called 0.5.
+		</p>
 		<h2>What's new?</h2>
-		<p>This update is unrelated to AmpMod editor 0.4.</p>
 		<ul>
+			<!--<li>You can now invite users to AmpMod! Send a link to another user on other sites. When they sign up, they will automatically become an AmpModder (if you also are).</li>-->
+			<li>The signup form has been redesigned slightly.</li>
 			<li>
-				Cool new profile picture frames have been added! Go to settings to choose between the Apple
-				Cat, Dango, Kitten and AmpElectrecuted frames.
+				Altcha has been replaced with Cloudflare Turnstile. This is because Altcha was broken,
+				preventing new users from signing up.
 			</li>
-			<!-- DOESN'T WORK<li>
-				Projects imported from Scratch will now link to the Scratch project on their page. Projects
-				imported prior to website 0.4 will not have this though, because we didn't store their
-				Scratch project ID.
-			</li>-->
-			<li>A dialogue will now show the progress of your project being uploaded.</li>
-			<li>
-				The Notes and Credits text area on the upload page now uses rich text, just like on the
-				project page.
-			</li>
-			<li>
-				Line breaks have been added to the rich text editor. Press Shift+Enter when editing your
-				profile's About Me or a project's Notes and Credits to enter one!
-			</li>
+			<li>A new frame, "TV", has been added.</li>
 		</ul>
 	</div>
 	<Button

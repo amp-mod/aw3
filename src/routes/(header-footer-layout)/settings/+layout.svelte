@@ -8,6 +8,9 @@
 		IdCard,
 		LogIn,
 		Cat,
+		Mail,
+		Camera,
+		ScanSquare,
 	} from '@lucide/svelte'
 	import { page } from '$app/state'
 	import LoginModal from '$lib/components/LoginModal.svelte'
@@ -28,24 +31,31 @@
 		{ label: 'Account', restricted: true },
 		{
 			id: 'profile',
-			label: 'Profile',
+			label: 'My profile',
 			href: '/settings/profile',
 			restricted: true,
 			icon: IdCard,
 		},
-		{
-			id: 'frames',
-			label: 'Frames',
-			href: '/settings/frames',
+		/* Coming soon! {
+			id: 'invite',
+			label: 'Invite users',
+			href: '/settings/invite',
 			restricted: true,
-			icon: SquareUserRound,
-		},
+			icon: Mail,
+		},*/
 		{
 			id: 'link-scratch',
 			label: 'Scratch account',
 			href: '/settings/link-scratch',
 			restricted: true,
 			icon: Cat,
+		},
+		{
+			id: 'frames',
+			label: 'Frames',
+			href: '/settings/frames',
+			restricted: true,
+			icon: ScanSquare,
 		},
 		{
 			id: 'auth',

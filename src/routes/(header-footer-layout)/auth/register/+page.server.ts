@@ -3,8 +3,6 @@ import { fail, redirect } from '@sveltejs/kit'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import type { Actions, PageServerLoad } from './$types'
-import { verifySolution } from 'altcha-lib'
-import { hmacKey } from '$lib/server/hmac'
 import { eq, sql } from 'drizzle-orm'
 import { isProfane } from '$lib/server/bad-word-checker'
 import { generateVerificationData, findVerificationToken } from '$lib/server/scratch-verify'
@@ -13,7 +11,7 @@ import {
 	createNewUser,
 	establishSession,
 	clearScratchCookies,
-} from '../../../lib/server/signup-tools'
+} from '$lib/server/signup-tools'
 import { isValidUsername } from '$lib/username'
 
 export const load: PageServerLoad = async (event) => {
@@ -48,13 +46,24 @@ export const actions: Actions = {
 			return fail(400, { message: 'Invalid password' })
 		}
 
-		const altchaPayload = formData.get('altcha')
-		if (!altchaPayload || typeof altchaPayload !== 'string') {
-			return fail(400, { message: 'Missing CAPTCHA payload' })
+		if (import.meta.env.TURNSTILE_SECRET_KEY) {
+			const turnstileToken = formData.get('turnstileToken')
+			const verifyResponse = await fetch(
+				'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+				{
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						secret: import.meta.env.TURNSTILE_SECRET_KEY,
+						response: turnstileToken,
+					}),
+				},
+			)
+			const outcome = await verifyResponse.json()
+			if (!outcome.success) {
+				return fail(400, { error: 'CAPTCHA failed' })
+			}
 		}
-
-		const ok = await verifySolution(altchaPayload, hmacKey)
-		if (!ok) return fail(400, { message: 'CAPTCHA failed' })
 
 		const passwordHash = await hash(password as string, {
 			memoryCost: 19456,

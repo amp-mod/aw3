@@ -255,7 +255,7 @@ export const actions: Actions = {
 
 			await Promise.all(
 				sizes.map(async ({ s, d }) => {
-					let p = sharp(buffer, { animated: true, density: 800 }).rotate()
+					let p = sharp(buffer, { animated: true, density: 100 }).rotate()
 					if ((metadata.width ?? 0) > d || (metadata.height ?? 0) > d)
 						p = p.resize(d, d, { fit: 'inside' })
 					const res = await p

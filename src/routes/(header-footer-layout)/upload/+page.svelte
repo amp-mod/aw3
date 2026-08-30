@@ -289,7 +289,7 @@
 					const projectId = result.data.projectId
 
 					// Upload extracted assets one by one
-					const concurrencyLimit = isScratchImport ? 6 : 12
+					const concurrencyLimit = isScratchImport ? 15 : 30
 					let assetIndex = 0
 
 					async function uploadWorker() {
@@ -320,15 +320,9 @@
 							}
 
 							if (!fileToUpload) continue
-
-							const assetFormData = new FormData()
-							assetFormData.append('projectId', projectId)
-							assetFormData.append('name', asset.name)
-							assetFormData.append('asset', fileToUpload)
-
-							const assetResp = await fetch('?/uploadAsset', {
+							const assetResp = await fetch(`/projects/${projectId}/upload/${asset.name}`, {
 								method: 'POST',
-								body: assetFormData,
+								body: fileToUpload,
 							})
 
 							if (!assetResp.ok) {

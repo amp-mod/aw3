@@ -132,38 +132,4 @@ export const actions: Actions = {
 			return fail(500, { message: 'Failed to upload project data' })
 		}
 	},
-
-	uploadAsset: async ({ request, locals }) => {
-		failIfCannotPerformAction(locals.user, 'createProject')
-		const { session, user } = locals
-		if (!session || !user) return fail(401, { message: 'Unauthorized' })
-
-		const formData = await request.formData()
-		const projectId = formData.get('projectId') as string
-		const assetFile = formData.get('asset') as File
-		const assetName = formData.get('name') as string
-
-		if (!projectId || !assetFile || !assetName) {
-			return fail(400, { message: 'Missing project ID, asset file, or name' })
-		}
-
-		// Verify project ownership
-		const project = await db.query.project.findFirst({
-			where: eq(table.project.id, projectId),
-			columns: { userId: true },
-		})
-
-		if (!project || project.userId !== user.id) {
-			return fail(403, { message: 'Unauthorized to modify this project' })
-		}
-
-		try {
-			const buffer = Buffer.from(await assetFile.arrayBuffer())
-			await storage.write(`projects/${projectId}/${assetName}`, buffer)
-			return { success: true }
-		} catch (e) {
-			console.error(e)
-			return fail(500, { message: 'Failed to upload asset' })
-		}
-	},
 }
