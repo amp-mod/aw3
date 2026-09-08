@@ -16,7 +16,7 @@
 				//{ href: '/history', label: 'History of AmpMod' },
 				{ href: '/credits', label: m.credits() },
 				/*{
-					href: 'https://ampmod.flarum.cloud/t/applications',
+					href: 'https://forums.ampmod.org/t/applications',
 					label: 'Join AmpMod Team',
 					external: true,
 				},*/
@@ -27,7 +27,7 @@
 			links: [
 				{ href: '/explore/projects', label: m.exploreProjects() },
 				// { href: '/events', label: 'Ongoing Events' },
-				{ href: 'https://ampmod.flarum.cloud', label: 'AmpMod Forums', external: true },
+				{ href: 'https://forums.ampmod.org', label: 'AmpMod Forums', external: true },
 				{ href: 'https://wiki.ampmod.org', label: m.footerWiki(), external: true },
 				// Do not localise!
 				{ href: 'https://youtube.com/@ampmod', label: 'YouTube', external: true },

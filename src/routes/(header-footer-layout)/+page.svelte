@@ -42,7 +42,7 @@
 	id="aw3"
 	background="#49b049"
 	button={{
-		url: 'https://ampmod.flarum.cloud/t/suggestions',
+		url: 'https://forums.ampmod.org/t/suggestions',
 		text: 'Share feedback on forums',
 	}}
 	icon={Globe}
