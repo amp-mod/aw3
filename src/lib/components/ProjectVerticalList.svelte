@@ -8,8 +8,8 @@
 
 <div class={gridStyle}>
 	{#each projects as project (project.id)}
-		<Project {project} vertical />
+		<Project {project} actions={project.actions ?? []} vertical />
 	{:else}
-		<p class="text-xs italic text-neutral-500 py-4">{emptyMessage}</p>
+		<p class="py-4 text-xs italic text-neutral-500">{emptyMessage}</p>
 	{/each}
 </div>

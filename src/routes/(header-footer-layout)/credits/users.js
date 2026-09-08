@@ -32,7 +32,7 @@ const fromHardcoded = ({ userID = '0', username, img = defaultPfp, href = null, 
 const contributors = [
 	{
 		username: 'amp',
-		href: '/users/amp',
+		href: '/@amp',
 		img: 'https://ampmod.org/uploads/aw3-avatars/3_64.webp',
 	},
 	{
@@ -40,29 +40,29 @@ const contributors = [
 	},
 	{
 		username: 'cat',
-		href: '/users/cat',
+		href: '/@cat',
 		img: 'https://ampmod.org/uploads/aw3-avatars/2_64.webp',
 	},
 	{
 		username: 'unconstructable13',
-		href: '/users/unconstructable13',
+		href: '/@unconstructable13',
 		img: 'https://ampmod.org/uploads/aw3-avatars/25_64.webp',
 	},
 	{
 		username: 'gvyoutube',
-		href: '/users/gvyoutube',
+		href: '/@gvyoutube',
 	},
 ].map(fromHardcoded)
 
 const serverAdmins = [
 	{
 		username: 'amp',
-		href: '/users/amp',
+		href: '/@amp',
 		img: 'https://ampmod.org/uploads/aw3-avatars/3_64.webp',
 	},
 	{
 		username: 'oisthebestletter',
-		href: '/users/oisthebestletter',
+		href: '/@oisthebestletter',
 		img: 'https://ampmod.org/uploads/aw3-avatars/4_64.webp',
 	},
 ].map(fromHardcoded)

@@ -4,12 +4,12 @@ import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import { eq, desc, and, ne, ilike } from 'drizzle-orm'
 
-type ProjectType = 'shared' | 'unshared'
+type ProjectType = 'shared' | 'unshared' | 'all'
 
 export const getMyProjects = query(
 	v.object({
 		page: v.number(),
-		type: v.picklist(['shared', 'unshared'] as const),
+		type: v.picklist(['all', 'shared', 'unshared'] as const),
 		search: v.optional(v.string()),
 	}),
 	async ({ page, type, search }) => {
@@ -23,6 +23,7 @@ export const getMyProjects = query(
 		const offset = (page - 1) * limit
 
 		const typeConditions = {
+			all: true,
 			shared: eq(table.project.status, 'shared'),
 			unshared: ne(table.project.status, 'shared'),
 		}

@@ -224,6 +224,7 @@
 			scaffolding.appendTo(iframeContainer)
 
 			const vm = scaffolding.vm
+			// @ts-expect-error
 			window.vm = vm
 			console.log(
 				'Globals: Access the VM by typing vm. To see compiled code, type vm.enableDebug().',
@@ -237,7 +238,7 @@
 					scaffolding.storage.AssetType.Font,
 				],
 				(asset: any) =>
-					`${location.origin}/uploads/projects/${project.id}/${asset.assetId}.${asset.dataFormat}`,
+					`${location.origin}/uploads/projects/unified-storage/${asset.assetId[0]}/${asset.assetId.slice(0, 2)}/${asset.assetId}.${asset.dataFormat}`,
 			)
 
 			vm.on('ASSET_PROGRESS', (f: number, t: number) => {

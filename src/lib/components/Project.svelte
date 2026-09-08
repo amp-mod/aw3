@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { getPublicUrl } from '$lib/storage-helpers'
+	import Button from '$lib/components/Button.svelte'
 
-	// Destructure vertical with a default value of false
-	let { project, vertical = false } = $props()
+	let { project, vertical = false, actions = [] } = $props()
 
 	const styles = {
-		// Use template literals to toggle between horizontal (default) and vertical layouts
 		card: `group relative flex gap-3 rounded-xl p-2 transition-all border border-black/10 dark:border-white/10 hover:bg-neutral-50 dark:hover:bg-white/5 
                ${vertical ? 'flex-row items-center w-full' : 'flex-col w-52 shrink-0'}`,
 
@@ -29,25 +28,36 @@
 		/>
 	</div>
 
-	<div class="flex min-w-0 flex-col gap-0.5">
-		<a href="/projects/{project.id}" class="{styles.title} {styles.mainLink}">
-			{project.title}
-		</a>
-
-		{#if project.author}
-			<a href="/users/{project.author.username}" class={styles.authorLink}>
-				by {project.author.username}
+	<div class="flex flex-1 justify-between">
+		<div class="flex min-w-0 flex-col gap-0.5">
+			<a href="/projects/{project.id}" class="{styles.title} {styles.mainLink}">
+				{project.title}
 			</a>
-		{/if}
 
-		{#if project.createdAt && vertical}
-			<p class="px-1 text-xs text-neutral-500 dark:text-neutral-400">
-				Created on {new Date(project.createdAt).toLocaleDateString()}
-			</p>
-		{/if}
+			{#if project.author}
+				<a href="/users/{project.author.username}" class={styles.authorLink}>
+					by {project.author.username}
+				</a>
+			{/if}
 
-		{#if project.status === 'banned'}
-			<p class="mt-1 px-1 text-xs font-bold text-red-500">Banned</p>
+			{#if project.createdAt && vertical}
+				<p class="px-1 text-xs text-neutral-500 dark:text-neutral-400">
+					Created on {new Date(project.createdAt).toLocaleDateString()}
+				</p>
+			{/if}
+
+			{#if project.status === 'banned'}
+				<p class="mt-1 px-1 text-xs font-bold text-red-500">Banned</p>
+			{/if}
+		</div>
+
+		{#if actions.length > 0}
+			<!-- Added relative z-10 so button clicks take priority over the stretched link -->
+			<div class="relative z-10 flex flex-col items-end gap-1">
+				{#each actions as action}
+					<Button onclick={action.onClick}>{action.label}</Button>
+				{/each}
+			</div>
 		{/if}
 	</div>
 </div>

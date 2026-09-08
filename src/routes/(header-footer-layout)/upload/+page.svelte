@@ -320,7 +320,7 @@
 							}
 
 							if (!fileToUpload) continue
-							const assetResp = await fetch(`/projects/${projectId}/upload/${asset.name}`, {
+							const assetResp = await fetch(`/projects/uploadFile/${asset.name}`, {
 								method: 'POST',
 								body: fileToUpload,
 							})

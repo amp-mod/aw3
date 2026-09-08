@@ -57,6 +57,10 @@ If a user under 13 has provided personal information on AmpMod, please contact A
 If you live in a country where the age required for us to legally collect personal information is over 13,
 "13" in this section should be replaced with that age.
 
+### Cookies
+
+
+
 ## Projects uploaded to the website
 
 Projects that contain custom extensions outside of our servers will be hidden until we review such custom

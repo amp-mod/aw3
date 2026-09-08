@@ -5,10 +5,45 @@
 	import { myStuffState } from './mystuff.svelte'
 	import { untrack } from 'svelte'
 
-	let { type } = $props<{ type: 'shared' | 'unshared' }>()
+	let { type } = $props<{ type: 'shared' | 'unshared' | 'all' }>()
 
 	let page = $state(1)
 	let projects = $state([])
+	let pendingIds = $state<Set<number>>(new Set())
+
+	// Handle share / unshare action submission
+	async function toggleShare(project: any) {
+		const isCurrentlyShared = project.status === 'shared'
+		const actionName = isCurrentlyShared ? 'unshareProject' : 'shareProject'
+		const nextStatus = isCurrentlyShared ? 'unshared' : 'shared'
+
+		// Mark project as updating
+		pendingIds.add(project.id)
+
+		try {
+			const body = new FormData()
+			body.append('projectId', String(project.id))
+
+			const response = await fetch(`/mystuff?/${actionName}`, {
+				method: 'POST',
+				body,
+			})
+
+			if (response.ok) {
+				untrack(() => {
+					// Update status locally
+					project.status = nextStatus
+
+					// If we are on a filtered tab ('shared' or 'unshared'), remove the item from view
+					if (type !== 'all' && type !== nextStatus) {
+						projects = projects.filter((p) => p.id !== project.id)
+					}
+				})
+			}
+		} finally {
+			pendingIds.delete(project.id)
+		}
+	}
 
 	// 1. Client-side filtering driven by the global state
 	let filteredProjects = $derived(
@@ -17,6 +52,26 @@
 			: projects.filter((p) =>
 					p.title.toLowerCase().includes(myStuffState.searchTerm.toLowerCase()),
 				),
+	)
+
+	// Map actions onto each project item dynamically
+	let projectsWithActions = $derived(
+		filteredProjects.map((project) => ({
+			...project,
+			actions:
+				project.status === 'banned'
+					? []
+					: [
+							{
+								label: pendingIds.has(project.id)
+									? 'Updating...'
+									: project.status === 'shared'
+										? 'Unshare'
+										: 'Share',
+								onClick: () => toggleShare(project),
+							},
+						],
+		})),
 	)
 
 	// 2. Reset list and pagination when tab category or search changes
@@ -68,7 +123,7 @@
 </script>
 
 {#if filteredProjects.length !== 0}
-	<ProjectVerticalList projects={filteredProjects} />
+	<ProjectVerticalList projects={projectsWithActions} />
 {:else if !query.loading && !query.error}
 	<div class="space-y-6 py-24 text-center">
 		{#if myStuffState.searchTerm}

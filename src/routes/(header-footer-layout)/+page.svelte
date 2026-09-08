@@ -16,7 +16,6 @@
 	import Button from '$lib/components/Button.svelte'
 	import ProjectList from '$lib/components/ProjectList.svelte'
 	import { m } from '$lib/paraglide/messages'
-	import { getPfpPath } from '$lib/storage-helpers.js'
 	import Row from '$lib/components/Row.svelte'
 	import Alert from '$lib/components/Alert.svelte'
 	import ComingSoon from '$lib/components/ComingSoon.svelte'
