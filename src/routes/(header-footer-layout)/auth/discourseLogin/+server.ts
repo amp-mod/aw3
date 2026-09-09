@@ -59,7 +59,10 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		admin: isAdmin ? 'true' : 'false',
 		moderator: isModerator ? 'true' : 'false',
 		...(user.hasPFP
-			? { avatar_url: `https://ampmod.org/uploads/aw3-avatars/${user.id}_full.webp` }
+			? {
+					avatar_url: `https://ampmod.org/uploads/aw3-avatars/${user.id}_full.webp`,
+					avatar_force_update: 'true',
+				}
 			: {}),
 	})
 
