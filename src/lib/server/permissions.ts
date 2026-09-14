@@ -47,8 +47,10 @@ const rankPerms = Object.freeze({
  * @returns {boolean}
  */
 export function canPerformAction(user: User, action: keyof typeof rankPerms) {
+	if (!user) return false
+
 	// Banned users cannot perform any action.
-	if (user.status === 'banned') return false
+	if (user?.status === 'banned') return false
 
 	// Unverified users cannot perform any action.
 	if (!user.isEmailVerified) return false
