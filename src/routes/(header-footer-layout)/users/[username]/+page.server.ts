@@ -97,10 +97,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(404, { message: 'User not found' })
 	}
 
-	if (userProfile.id !== viewer?.id && !canPerformAction(viewerRank, 'viewPrivateProfiles')) {
-		throw error(404, { message: 'User not found' })
-	}
-
 	// Filter ban status dynamically based on viewer permissions
 	const canSeeBanStatus = canPerformAction(viewerRank, 'seeBanStatus')
 	if (!canSeeBanStatus) {
