@@ -57,6 +57,9 @@ export const user = pgTable(
 		hasFeaturedProject: boolean().default(false),
 		inviteId: uuid().defaultRandom(),
 		inviter: integer().references(() => user.id, { onDelete: 'cascade' }),
+		email: text(),
+		isEmailVerified: boolean().notNull().default(false),
+		verifyID: uuid().defaultRandom(),
 	},
 	(table) => [index('username_idx').on(table.username)],
 )
@@ -106,8 +109,8 @@ export const project = pgTable(
 	],
 )
 
-export const gallery = pgTable(
-	'gallery',
+export const studio = pgTable(
+	'studio',
 	{
 		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
 		hostId: bigint('host_id', { mode: 'number' })
@@ -123,40 +126,40 @@ export const gallery = pgTable(
 		searchIndex: tsvector('search_index'),
 	},
 	(table) => [
-		index('gallery_host_id_idx').on(table.hostId),
-		index('gallery_search_idx').using('gin', table.searchIndex),
+		index('studio_host_id_idx').on(table.hostId),
+		index('studio_search_idx').using('gin', table.searchIndex),
 	],
 )
 
-export const galleryCurators = pgTable(
-	'gallery_curators',
+export const studioCurators = pgTable(
+	'studio_curators',
 	{
-		galleryId: bigint('gallery_id', { mode: 'number' })
+		studioId: bigint('studio_id', { mode: 'number' })
 			.notNull()
-			.references(() => gallery.id, { onDelete: 'cascade' }),
+			.references(() => studio.id, { onDelete: 'cascade' }),
 		userId: bigint('user_id', { mode: 'number' })
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
 	},
 	(t) => [
-		primaryKey({ columns: [t.galleryId, t.userId] }),
-		index('gallery_curator_idx').on(t.galleryId, t.userId),
+		primaryKey({ columns: [t.studioId, t.userId] }),
+		index('studio_curator_idx').on(t.studioId, t.userId),
 	],
 )
 
-export const projectsToGalleries = pgTable(
-	'projects_to_galleries',
+export const projectsToStudios = pgTable(
+	'projects_to_studios',
 	{
 		projectId: bigint('project_id', { mode: 'number' })
 			.notNull()
 			.references(() => project.id, { onDelete: 'cascade' }),
-		galleryId: bigint('gallery_id', { mode: 'number' })
+		studioId: bigint('studio_id', { mode: 'number' })
 			.notNull()
-			.references(() => gallery.id, { onDelete: 'cascade' }),
+			.references(() => studio.id, { onDelete: 'cascade' }),
 	},
 	(t) => [
-		primaryKey({ columns: [t.projectId, t.galleryId] }),
-		index('project_gallery_idx').on(t.galleryId),
+		primaryKey({ columns: [t.projectId, t.studioId] }),
+		index('project_studio_idx').on(t.studioId),
 	],
 )
 
@@ -189,16 +192,16 @@ export const featuredProject = pgTable(
 	(table) => [index('featured_project_id_idx').on(table.projectId)],
 )
 
-export const featuredGallery = pgTable(
-	'featured_gallery',
+export const featuredStudio = pgTable(
+	'featured_studio',
 	{
 		id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
-		galleryId: bigint('gallery_id', { mode: 'number' })
+		studioId: bigint('studio_id', { mode: 'number' })
 			.notNull()
-			.references(() => gallery.id, { onDelete: 'cascade' }),
+			.references(() => studio.id, { onDelete: 'cascade' }),
 		why: text('why'),
 	},
-	(table) => [index('featured_gallery_id_idx').on(table.galleryId)],
+	(table) => [index('featured_studio_id_idx').on(table.studioId)],
 )
 
 export const config = pgTable('config', {
@@ -328,12 +331,8 @@ export const comment = pgTable(
 		authorId: bigint('author_id', { mode: 'number' })
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
-		projectId: bigint('project_id', { mode: 'number' }).references(() => project.id, {
-			onDelete: 'cascade',
-		}),
-		galleryId: bigint('gallery_id', { mode: 'number' }).references(() => gallery.id, {
-			onDelete: 'cascade',
-		}),
+		itemId: bigint('recipient_id', { mode: 'number' }).notNull(),
+		itemType: text('type').notNull(),
 		parentId: bigint('parent_id', { mode: 'number' }).references((): any => comment.id, {
 			onDelete: 'cascade',
 		}),
@@ -342,12 +341,7 @@ export const comment = pgTable(
 		createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
 		updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
 	},
-	(t) => [
-		index('comment_project_idx').on(t.projectId),
-		index('comment_gallery_idx').on(t.galleryId),
-		index('comment_author_idx').on(t.authorId),
-		index('comment_parent_idx').on(t.parentId),
-	],
+	(t) => [index('comment_author_idx').on(t.authorId), index('comment_parent_idx').on(t.parentId)],
 )
 
 // --- RELATIONS ---
@@ -380,7 +374,7 @@ export const projectRelations = relations(project, ({ one, many }) => ({
 		fields: [project.userId],
 		references: [user.id],
 	}),
-	galleries: many(projectsToGalleries),
+	studios: many(projectsToStudios),
 	remixes: many(project, { relationName: 'remix_relation' }),
 	parent: one(project, {
 		fields: [project.original],
@@ -421,17 +415,32 @@ export const userRedirects = pgTable(
 	],
 )
 
+export const commentRelations = relations(comment, ({ one, many }) => ({
+	author: one(user, {
+		fields: [comment.authorId],
+		references: [user.id],
+	}),
+	parent: one(comment, {
+		fields: [comment.parentId],
+		references: [comment.id],
+		relationName: 'comment_replies',
+	}),
+	replies: many(comment, {
+		relationName: 'comment_replies',
+	}),
+}))
+
 // --- TYPES ---
 export type Authenticator = typeof authenticator.$inferSelect
 export type User = typeof user.$inferSelect
 export type Session = typeof session.$inferSelect
 export type Project = typeof project.$inferSelect
-export type gallery = typeof gallery.$inferSelect
-export type galleryCurator = typeof galleryCurators.$inferSelect
-export type ProjectToGallery = typeof projectsToGalleries.$inferSelect
+export type studio = typeof studio.$inferSelect
+export type studioCurator = typeof studioCurators.$inferSelect
+export type ProjectToStudio = typeof projectsToStudios.$inferSelect
 export type AuditLog = typeof auditLog.$inferSelect
 export type FeaturedProject = typeof featuredProject.$inferSelect
-export type FeaturedGallery = typeof featuredGallery.$inferSelect
+export type FeaturedStudio = typeof featuredStudio.$inferSelect
 export type Config = typeof config.$inferSelect
 export type Follow = typeof follow.$inferSelect
 export type Notification = typeof notification.$inferSelect

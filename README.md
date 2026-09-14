@@ -23,8 +23,6 @@ Stack:
 
 ### What aw3 won't do in the near future
 
-- Commenting on projects (it most likely never will - it's a nightmare to moderate for a small community with
-  only a few admins) **Update: we are considering adding comments to AmpMod, so this might be removed from the list soon**
 - Forums, wiki, manual, extension gallery (hosted separately)
 - Editor (we have links to paths such as `/projects/editor` and `/settings/addons` but we expect you to reverse
   proxy those - see below)
@@ -41,16 +39,20 @@ under your branding, as unlike AmpMod itself, aw3 doesn't use a set-and-forget b
 
 ## Dev setup
 
+First, run these:
+
 ```
 pnpm install
 pnpm dev
 ```
 
-### Database additional step
-
-To run the database, you will need Docker. Then, you can run `pnpm db:start` in the root of your copy
-of aw3. It's good to run this in a separate terminal, and run `pnpm db:push` every time you update
+To run the services aw3 needs, you will need Docker. Then, you can run `pnpm db:start` in the root of your copy
+of aw3. It's good to run this in a separate terminal, and run `pnpm db:push` and `pnpm db:migrate` every time you update
 the schema.
+
+To verify the email of your account, go to http://localhost:8025 to see the mailpit inbox. The email you enter
+into the registration form does not matter. user@example.com, noreply@ampmod.org, or anything else that looks like an email will
+work.
 
 ## Running in production
 
@@ -72,3 +74,7 @@ that you do it yourself.
 aw3 is licenced under the AGPLv3 or at your option, any later version. See `COPYING` for more information.
 
 Some files are taken from ampmod-web-front under the MIT licence, and the ampmod gui package under the GPLv3.
+
+## Security
+
+Please contact ampelc@proton.me if you have any security concerns. Do not disclose vulnerabilities publicly.

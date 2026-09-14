@@ -274,10 +274,7 @@
 				<div in:fly={{ x: 20, duration: 250 }} class="space-y-6">
 					<div>
 						<h1 class="text-2xl font-bold">Email</h1>
-						<p class="mt-1 text-sm text-neutral-500">
-							Optional, but required to reset your password. If you don't set this and you lose your
-							account, it will be permanently lost.
-						</p>
+						<p class="mt-1 text-sm text-neutral-500">Please enter your email.</p>
 					</div>
 
 					<div class="relative">
@@ -286,6 +283,7 @@
 							bind:value={email}
 							type="email"
 							placeholder="you@example.com"
+							required
 							class="w-full rounded-xl border-2 border-neutral-100 p-4 pl-12 outline-none focus:border-accent dark:border-neutral-700 dark:bg-neutral-900"
 						/>
 					</div>
@@ -309,7 +307,9 @@
 						<Button
 							type="submit"
 							class="w-full py-4 text-lg"
-							disabled={submitting || (import.meta.env.VITE_TURNSTILE_SITE_KEY && !turnstileToken)}
+							disabled={submitting ||
+								(import.meta.env.VITE_TURNSTILE_SITE_KEY && !turnstileToken) ||
+								!email}
 						>
 							{#if submitting}<Loader class="mx-auto animate-spin" size={20} />{:else}Join{/if}
 						</Button>

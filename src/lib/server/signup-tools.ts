@@ -3,20 +3,28 @@ import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import { isValidUsername } from '$lib/username'
 import { eq, sql, and, gt } from 'drizzle-orm'
+import { sendVerificationEmail } from './verify-email'
 
-// --- PRIVATE HELPERS ---
-export async function createNewUser(username: string, passwordHash: string, isScratch = false) {
+export async function createNewUser(
+	username: string,
+	passwordHash: string,
+	isScratch = false,
+	email = '',
+	origin = '',
+) {
 	return await db.transaction(async (tx) => {
+		if (!isValidUsername(username)) {
+			return { error: 'Invalid username', status: 400 }
+		}
+
 		const existing = await tx
 			.select({ id: table.user.id })
 			.from(table.user)
 			.where(eq(table.user.username, username))
 			.limit(1)
 
-		if (!isValidUsername(username)) {
-			return { error: 'Invalid username', status: 400 }
-		}
 		if (existing.length > 0) return { error: 'Username already exists', status: 409 }
+
 		const activeRedirect = await tx
 			.select({ id: table.userRedirects.id })
 			.from(table.userRedirects)
@@ -41,9 +49,11 @@ export async function createNewUser(username: string, passwordHash: string, isSc
 				username, // Already normalized
 				passwordHash,
 				rank: assignedRank,
+				email: email || null,
 				scratchUsername: isScratch ? username : null,
 			})
-			.returning({ id: table.user.id })
+			.returning({ id: table.user.id, verifyID: table.user.verifyID })
+
 		if (newUser.id !== 1) {
 			await tx
 				.insert(table.follow)
@@ -54,19 +64,29 @@ export async function createNewUser(username: string, passwordHash: string, isSc
 				.onConflictDoNothing()
 		}
 
+		if (email && newUser.verifyID && origin) {
+			await sendVerificationEmail({
+				to: email,
+				verifyID: newUser.verifyID,
+				origin,
+			})
+		}
+
 		return { newUser, status: 200 }
 	})
 }
+
 export async function establishSession(event: any, userId: number) {
 	const sessionToken = auth.generateSessionToken()
 	const session = await auth.createSession(
 		sessionToken,
 		userId,
 		event.getClientAddress(),
-		event.request.headers.get('user-agent'),
+		event.request.headers.get('user-agent') ?? '',
 	)
 	auth.setSessionTokenCookie(event, sessionToken, session.expiresAt)
 }
+
 export function clearScratchCookies(cookies: any) {
 	const opts = { path: '/' }
 	cookies.delete('s_reg_user', opts)
@@ -74,10 +94,12 @@ export function clearScratchCookies(cookies: any) {
 	cookies.delete('s_reg_comment', opts)
 	cookies.delete('s_reg_pw', opts)
 }
+
 export function validateUsername(username: string): boolean {
 	// Only lowercase allowed post-normalization
 	return username.length >= 3 && username.length <= 20 && /^[a-z0-9_-]+$/.test(username)
 }
+
 export function validatePassword(password: unknown): password is string {
 	return typeof password === 'string' && password.length >= 6 && password.length <= 255
 }

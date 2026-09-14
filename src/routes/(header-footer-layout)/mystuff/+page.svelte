@@ -35,9 +35,9 @@
 		{ label: 'Import from Scratch', href: '/settings/link-scratch', icon: Cat },
 	]
 
-	const galleryActions = [{ label: 'New gallery', href: '/galleries/new', icon: SquareStack }]
+	const studioActions = [{ label: 'New studio', href: '/studios/new', icon: SquareStack }]
 
-	const validViews = ['all', 'shared', 'unshared', 'galleries']
+	const validViews = ['all', 'shared', 'unshared', 'studios']
 
 	// Load initial view state from location hash on mount
 	onMount(() => {
@@ -81,7 +81,7 @@
 	)
 
 	// Filter actions dynamically depending on the selected tab
-	const newActions = $derived(myStuffState.view === 'galleries' ? galleryActions : projectActions)
+	const newActions = $derived(myStuffState.view === 'studios' ? studioActions : projectActions)
 
 	// Single action item target if only one exists
 	const singleAction = $derived(newActions.length === 1 ? newActions[0] : null)
@@ -186,9 +186,9 @@
 				</Tabs.Trigger>
 			</div>
 
-			<Tabs.Trigger value="galleries" class={styles.tab}>
+			<Tabs.Trigger value="studios" class={styles.tab}>
 				<SquareStack size={18} />
-				<span>My galleries</span>
+				<span>My studios</span>
 			</Tabs.Trigger>
 		</Tabs.List>
 
@@ -215,7 +215,7 @@
 					{/if}
 				</Tabs.Content>
 
-				<Tabs.Content value="galleries">
+				<Tabs.Content value="studios">
 					<ComingSoon />
 				</Tabs.Content>
 			</main>

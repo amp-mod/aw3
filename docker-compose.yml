@@ -2,21 +2,33 @@ services:
   db:
     image: postgres:18
     environment:
-      POSTGRES_USER: aw3
-      POSTGRES_PASSWORD: aw3 # we don't want to use this on deployment
-      POSTGRES_DB: aw3
-    volumes:
-      - db-data:/var/lib/postgresql
+      POSTGRES_USER: ${POSTGRES_USER:-aw3}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aw3}
+      POSTGRES_DB: ${POSTGRES_DB:-aw3}
     ports:
       - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-aw3} -d ${POSTGRES_DB:-aw3}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   valkey:
-    image: valkey/valkey:9.1
+    image: valkey/valkey:9-alpine
     ports:
       - '6379:6379'
     volumes:
       - valkey-data:/data
     command: valkey-server --save 60 1
 
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - '8025:8025'
+      - '1025:1025'
 volumes:
   db-data:
   valkey-data:

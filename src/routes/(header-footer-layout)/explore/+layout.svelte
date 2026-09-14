@@ -25,15 +25,15 @@
 			<span class="text-sm font-medium">Projects</span>
 		</a>
 		<a
-			href="/explore/galleries"
+			href="/explore/studios"
 			class="flex flex-col items-center gap-1.5 pt-4 pb-2 {page.url.pathname.startsWith(
-				'/explore/galleries',
+				'/explore/studios',
 			)
 				? 'border-b-4 border-emerald-500 text-emerald-500'
 				: 'text-neutral-600 dark:text-neutral-100'}"
 		>
 			<SquareStack class="h-6 w-6" />
-			<span class="text-sm font-medium">Galleries</span>
+			<span class="text-sm font-medium">Studios</span>
 		</a>
 	</div>
 </div>

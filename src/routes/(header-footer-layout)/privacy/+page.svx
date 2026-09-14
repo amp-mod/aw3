@@ -2,7 +2,7 @@
 title: AmpMod Privacy Policy
 ---
 
-**Updated on 2026-08-19.**
+**Updated on 2026-09-14.**
 
 The AmpMod project does not sell your personal information to third parties, use it to personalise ads,
 or train artificial intelligence or large language models on it. We do not have any interest in your
@@ -50,16 +50,10 @@ See their privacy policy at https://www.simpleanalytics.com/privacy-policy.
 
 ### For users under 13
 
-AmpMod does not knowingly collect personal information from users under 13. If you are under 13, you should
-enter a parent or guardian's email on signup instead of your own, or simply don't enter one at all.
-If a user under 13 has provided personal information on AmpMod, please contact AmpMod to remove that information.
+If you are under 13, you need parental consent to help you with joining AmpMod, due to AmpMod requiring
+an email to join.
 
-If you live in a country where the age required for us to legally collect personal information is over 13,
-"13" in this section should be replaced with that age.
-
-### Cookies
-
-
+We plan to remove the requirement for emails for those who register with Scratch.
 
 ## Projects uploaded to the website
 
@@ -83,5 +77,5 @@ data, see below. We will accept all requests until these features are added to t
 
 ## Contact
 
-Contact <ampelc@proton.me> if you have any questions or want to delete or export any data stored on our
+Contact <support@ampmod.org> if you have any questions or want to delete or export any data stored on our
 servers that you or your children own.

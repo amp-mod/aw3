@@ -7,6 +7,8 @@ import type { PageServerLoad } from './$types'
 export const load: PageServerLoad = async ({ locals }) => {
 	const userId = locals.user.id
 
+	if (!locals.user.isEmailVerified) return { canInvite: false }
+
 	const [user] = await db
 		.select({
 			inviteId: table.user.inviteId,
@@ -15,5 +17,5 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.where(eq(table.user.id, userId))
 		.limit(1)
 
-	return { inviteId: user.inviteId }
+	return { canInvite: false, inviteId: user.inviteId }
 }

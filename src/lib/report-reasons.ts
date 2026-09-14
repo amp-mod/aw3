@@ -18,10 +18,10 @@ export const reportReasons: Record<string, Record<string, string>> = {
 		inappropriate: 'Inappropriate language',
 		other: 'Other',
 	},
-	gallery: {
+	studio: {
 		spam: 'Spam or advertisement',
 		harassment: 'Harassment or hate speech',
-		raids: 'This gallery is being raided',
+		raids: 'This studio is being raided',
 		other: 'Other',
 	},
 } as const

@@ -29,7 +29,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	const user = locals.user
 	if (!user) {
 		const returnTo = encodeURIComponent(url.pathname + url.search)
-		throw redirect(302, `/auth/login-modal?redirect=${returnTo}`)
+		throw redirect(302, `/auth/login-modal?return=${returnTo}`)
 	}
 
 	// Prevent users banned from AmpMod from logging into the forums.
@@ -37,6 +37,10 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	// ampmod.org apply to all other AmpMod sites.
 	if (user.status === 'banned') {
 		throw redirect(302, `/banned`)
+	}
+
+	if (!user.email) {
+		throw redirect(302, '/auth/verify')
 	}
 
 	const rawPayload = Buffer.from(sso, 'base64').toString('utf-8')
@@ -54,7 +58,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	const responseParams = new URLSearchParams({
 		nonce,
 		external_id: user.id.toString(),
-		email: `${user.id}-no-email@aw3.invalid`,
+		email: user.email,
 		username: user.username,
 		admin: isAdmin ? 'true' : 'false',
 		moderator: isModerator ? 'true' : 'false',

@@ -3,39 +3,14 @@ import * as table from '$lib/server/db/schema'
 import { and, desc, eq, sql } from 'drizzle-orm'
 import type { PageServerLoad } from './$types'
 import { CATEGORIES } from '$lib/categories'
+import { valkey } from '$lib/server/valkey'
 
 export const load: PageServerLoad = async (event) => {
 	const userId = event.locals.user?.id
 
-	// 1. Pick the primary random category
+	// 1. Pick the primary random category key
 	const keys = Object.keys(CATEGORIES) as Array<keyof typeof CATEGORIES>
 	const randomTitle = keys[Math.floor(Math.random() * keys.length)]
-	const randomTag = CATEGORIES[randomTitle]
-
-	const getAllowedTags = (title: string): string[] => {
-		const t = CATEGORIES
-		switch (title) {
-			case 'Game':
-				return [t.Game, t['3D'], t.Platformer]
-			case 'Contest':
-				return Object.values(t)
-			case 'Story':
-				return [t.Story, t.Art, t.Animation, t.Game]
-			case 'Online':
-			case '3D':
-				return Object.values(t).filter((v) => v !== t.Music)
-			default:
-				return [t[title as keyof typeof CATEGORIES]]
-		}
-	}
-
-	const allowedTags = getAllowedTags(randomTitle)
-	const forbiddenTags = Object.values(CATEGORIES).filter((tag) => !allowedTags.includes(tag))
-	const primaryPattern = `(?<![a-zA-Z0-9])${randomTag}(?![a-zA-Z0-9])`
-	const forbiddenPattern =
-		forbiddenTags.length > 0
-			? forbiddenTags.map((tag) => tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
-			: null
 
 	const projectSelection = {
 		id: table.project.id,
@@ -48,103 +23,89 @@ export const load: PageServerLoad = async (event) => {
 		},
 	}
 
-	const fetchBlogUpdates = async () => {
-		try {
-			const res = await fetch(
-				'https://ampblog.flarum.cloud/api/discussions?filter%5Bq%5D=is%3Ablog&sort=-createdAt&include=user,tags',
-			)
+	const fetchLatest = async () => {
+		const key = 'projects:latest'
+		const cached = await valkey.get(key)
+		if (cached) return JSON.parse(cached)
 
-			if (!res.ok) return []
-			const json = await res.json()
-
-			const discussions = json.data || []
-			const included = json.included || []
-
-			return await Promise.all(
-				discussions.map(async (discussion: any) => {
-					const authorId = discussion.relationships?.user?.data?.id
-					const authorData = included.find(
-						(inc: any) => inc.type === 'users' && inc.id === authorId,
-					)
-
-					// Get Tag Info
-					const tagRelation = discussion.relationships?.tags?.data?.[0]
-					const tagData = included.find(
-						(inc: any) => inc.type === 'tags' && inc.id === tagRelation?.id,
-					)
-
-					return {
-						id: discussion.id,
-						title: discussion.attributes.title,
-						slug: discussion.attributes.slug,
-						createdAt: discussion.attributes.createdAt,
-						author: {
-							username: authorData?.attributes.username ?? 'Newswriters',
-						},
-					}
-				}),
-			)
-		} catch (e) {
-			console.error('Flarum fetch error:', e)
-			return []
-		}
-	}
-
-	const queries = {
-		latest: db
+		const res = await db
 			.select(projectSelection)
 			.from(table.project)
 			.leftJoin(table.user, eq(table.project.userId, table.user.id))
 			.where(eq(table.project.status, 'shared'))
 			.orderBy(desc(table.project.createdAt))
-			.limit(15),
+			.limit(15)
 
-		category: db
+		await valkey.set(key, JSON.stringify(res), 'EX', 60)
+		return res
+	}
+
+	const fetchCategory = async () => {
+		const key = `projects:category:${randomTitle}`
+		const cached = await valkey.get(key)
+		if (cached) return JSON.parse(cached)
+
+		// Query the search index using websearch_to_tsquery for the category title/tag
+		const res = await db
 			.select(projectSelection)
 			.from(table.project)
 			.leftJoin(table.user, eq(table.project.userId, table.user.id))
 			.where(
-				sql`
-				"project"."status" = 'shared'
-				AND coalesce("project"."notes", '') ~* ${primaryPattern}
-				${forbiddenPattern ? sql`AND NOT (coalesce("project"."notes", '') ~* ${forbiddenPattern})` : sql``}
-				AND (SELECT count(*) FROM regexp_matches(coalesce("project"."notes", ''), ${primaryPattern}, 'gi')) = 1
-			`,
+				and(
+					eq(table.project.status, 'shared'),
+					sql`${table.project.searchIndex} @@ websearch_to_tsquery('english', ${randomTitle})`,
+				),
 			)
 			.orderBy(sql`RANDOM()`)
-			.limit(15),
+			.limit(15)
 
-		featuredProjects: db
+		await valkey.set(key, JSON.stringify(res), 'EX', 300)
+		return res
+	}
+
+	const fetchFeatured = async () => {
+		const key = 'projects:featured'
+		const cached = await valkey.get(key)
+		if (cached) return JSON.parse(cached)
+
+		const res = await db
 			.select(projectSelection)
 			.from(table.featuredProject)
 			.innerJoin(table.project, eq(table.featuredProject.projectId, table.project.id))
 			.leftJoin(table.user, eq(table.project.userId, table.user.id))
 			.where(eq(table.project.status, 'shared'))
 			.orderBy(desc(table.project.createdAt))
-			.limit(15),
+			.limit(15)
 
-		following: userId
-			? db
-					.select(projectSelection)
-					.from(table.project)
-					.innerJoin(table.follow, eq(table.project.userId, table.follow.followingId))
-					.leftJoin(table.user, eq(table.project.userId, table.user.id))
-					.where(and(eq(table.follow.followerId, userId), eq(table.project.status, 'shared')))
-					.orderBy(desc(table.project.createdAt))
-					.limit(15)
-			: Promise.resolve([]),
-
-		blog: fetchBlogUpdates(),
+		await valkey.set(key, JSON.stringify(res), 'EX', 300)
+		return res
 	}
 
-	const [latestProjects, categoryProjects, featuredProjects, followedProjects, blogDiscussions] =
-		await Promise.all([
-			queries.latest,
-			queries.category,
-			queries.featuredProjects,
-			queries.following,
-			queries.blog,
-		])
+	const fetchFollowing = async () => {
+		if (!userId) return []
+		const key = `user:following_feed:${userId}`
+		const cached = await valkey.get(key)
+		if (cached) return JSON.parse(cached)
+
+		const res = await db
+			.select(projectSelection)
+			.from(table.project)
+			.innerJoin(table.follow, eq(table.project.userId, table.follow.followingId))
+			.leftJoin(table.user, eq(table.project.userId, table.user.id))
+			.where(and(eq(table.follow.followerId, userId), eq(table.project.status, 'shared')))
+			.orderBy(desc(table.project.createdAt))
+			.limit(15)
+
+		await valkey.set(key, JSON.stringify(res), 'EX', 60)
+		return res
+	}
+
+	const [latestProjects, categoryProjects, featuredProjects, followedProjects] = await Promise.all([
+		fetchLatest(),
+		fetchCategory(),
+		fetchFeatured(),
+		fetchFollowing(),
+	])
 
 	return {
 		latestProjects,
@@ -154,7 +115,6 @@ export const load: PageServerLoad = async (event) => {
 			title: randomTitle,
 			projects: categoryProjects,
 		},
-		blogDiscussions,
 		user: event.locals.user,
 	}
 }

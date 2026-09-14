@@ -7,6 +7,11 @@ import { failIfCannotPerformAction, canPerformAction } from '$lib/server/permiss
 import { frames } from '$lib/frames'
 import { regenerateUserProfileCache } from '$lib/server/auth'
 
+export const load: PageServerLoad = async ({ locals }) => {
+	if (!canPerformAction(locals.user, 'setFrame')) return { canUseFrames: false }
+	return { canUseFrames: true }
+}
+
 export const actions: Actions = {
 	setFrame: async ({ request, locals }) => {
 		if (!locals.user) {

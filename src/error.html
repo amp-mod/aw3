@@ -3,16 +3,12 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Error - AmpMod</title>
+		<title>Server Error - AmpMod</title>
 		<style>
 			body {
 				font-family: sans-serif;
-				padding: 10px;
-				background: #4fa55c;
-				color: white;
-			}
-			a {
-				color: inherit;
+				padding: 20px;
+				background: #d8ffde;
 			}
 			h1 {
 				font-size: 2.5rem;
@@ -20,21 +16,29 @@
 			}
 			p {
 				font-size: 1.2rem;
-				color: white;
 			}
 			.container {
-				max-width: 900px;
+				max-width: 800px;
 				margin: 0 auto;
+				border-top: #4fa55c 10px solid;
+				background: white;
+				padding: 25px;
+				border-radius: 4px;
+				text-align: center;
 			}
 		</style>
 	</head>
 	<body>
 		<div class="container">
-			<h1>Oops!</h1>
-			<p>An unknown error occured.</p>
+			<img
+				src="/apple-cat-maintenance.svg"
+				alt="Apple Cat holding a wrench to fix a server."
+				height="150"
+			/>
+			<h2>Oops! AmpMod ran into an error.</h2>
 			<p>
-				For more information about a potential error, visit the
-				<a href="https://status.ampmod.org">AmpMod Services Status page</a>.
+				Try reloading in a few minutes. For more information about any outages or ongoing
+				maintenance, please go to our <a href="https://status.ampmod.org">status page</a>.
 			</p>
 		</div>
 	</body>

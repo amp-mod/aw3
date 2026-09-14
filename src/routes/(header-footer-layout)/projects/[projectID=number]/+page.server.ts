@@ -5,7 +5,7 @@ import { and, eq, sql } from 'drizzle-orm'
 import type { PageServerLoad, Actions } from './$types'
 import { storage } from '$lib/storage'
 import { isProfane } from '$lib/server/bad-word-checker'
-import { failIfCannotPerformAction } from '$lib/server/permissions'
+import { canPerformAction, failIfCannotPerformAction } from '$lib/server/permissions'
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const projectId = Number(params.projectID)
@@ -67,6 +67,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	return {
 		project,
 		isFeatured: !!featured,
+		canCreateProjects: canPerformAction(locals.user, 'createProject'),
 		author: {
 			username: author?.username ?? 'Unknown User',
 			id: author?.id,

@@ -236,7 +236,7 @@
 
 			<div class="grow"></div>
 			<div class="flex shrink-0 items-start gap-3">
-				{#if data.user && data.user.id !== project.userId}
+				{#if data.canCreateProjects && data.user.id !== project.userId}
 					<form method="POST" action="?/remixProject" class="flex" use:enhance>
 						<input type="hidden" name="projectId" value={project.id} />
 						<Button type="submit" class="flex h-12 items-center gap-2">

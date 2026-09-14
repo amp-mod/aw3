@@ -1,4 +1,4 @@
-import { error, fail, type Actions, redirect } from '@sveltejs/kit'
+import { fail, type Actions } from '@sveltejs/kit'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import { eq, sql } from 'drizzle-orm'
@@ -6,12 +6,29 @@ import sharp from 'sharp'
 import { storage } from '$lib/storage'
 import { acceptablePrefixes } from '$lib/security-manager.svelte'
 import type { PageServerLoad } from './$types'
-import { failIfCannotPerformAction } from '$lib/server/permissions'
+import { canPerformAction, failIfCannotPerformAction } from '$lib/server/permissions'
+import { valkey } from '$lib/server/valkey'
+import { AMPMODDER } from '$lib/ranks'
+
+async function isUserRateLimited(userId: number, limit: number): Promise<boolean> {
+	const key = `ratelimit:uploadProject:${userId}`
+	const current = await valkey.get(key)
+	return current ? parseInt(current, 10) >= limit : false
+}
+
+async function incrementUserRateLimit(userId: number, windowInSeconds: number): Promise<void> {
+	const key = `ratelimit:uploadProject:${userId}`
+	const count = await valkey.incr(key)
+	if (count === 1) {
+		await valkey.expire(key, windowInSeconds)
+	}
+}
 
 export const load: PageServerLoad = async ({ cookies, locals }) => {
-	failIfCannotPerformAction(locals.user, 'createProject')
+	if (!canPerformAction(locals.user, 'createProject')) {
+		return { cannotDo: true }
+	}
 
-	// 2. Fetch the user's current link status from the DB
 	const dbUser = await db.query.user.findFirst({
 		where: eq(table.user.id, locals.user.id),
 		columns: {
@@ -30,6 +47,17 @@ export const actions: Actions = {
 		failIfCannotPerformAction(locals.user, 'createProject')
 		const { session, user } = locals
 		if (!session || !user) return fail(401, { message: 'Unauthorized' })
+
+		const isHighRank = locals.user.rank >= AMPMODDER
+		const rateLimitWindow = isHighRank ? 60 : 300
+		const maxAllowedUploads = 1
+
+		if (await isUserRateLimited(user.id, maxAllowedUploads)) {
+			const waitMinutes = isHighRank ? '1 minute' : '5 minutes'
+			return fail(429, {
+				message: `You are uploading projects too fast. Please wait ${waitMinutes} before trying again.`,
+			})
+		}
 
 		const formData = await request.formData()
 		const jsonFile = formData.get('projectJson') as File
@@ -88,6 +116,8 @@ export const actions: Actions = {
 					})
 				}
 			}
+
+			await incrementUserRateLimit(user.id, rateLimitWindow)
 
 			const [newProject] = await db
 				.insert(table.project)

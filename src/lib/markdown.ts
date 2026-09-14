@@ -25,7 +25,7 @@ md.inline.ruler.after('link', 'shorthand', (state, silent) => {
 	if (!match) return false
 
 	const id = match[1]
-	const type = char === 'P' ? 'projects' : 'galleries'
+	const type = char === 'P' ? 'projects' : 'studios'
 
 	// 3. Update the label to reflect the @ symbol
 	const label = `${char}@${id}`

@@ -1,7 +1,7 @@
 {
 	"name": "@ampmod/aw3",
 	"private": true,
-	"version": "0.4.4",
+	"version": "0.4.5",
 	"type": "module",
 	"license": "AGPL-3.0-or-later",
 	"scripts": {
@@ -112,6 +112,7 @@
 		"isomorphic-dompurify": "^3.22.0",
 		"jszip": "^3.10.1",
 		"markdown-it": "^14.3.0",
+		"nodemailer": "^10.0.8",
 		"postgres": "^3.4.9",
 		"sharp": "^0.34.5",
 		"smile-js": "^0.10.1",

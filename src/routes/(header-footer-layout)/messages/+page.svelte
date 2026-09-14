@@ -143,11 +143,11 @@
 									</p>
 									<p>{note.metadata?.title}</p>
 								{/if}
-							{:else if note.type === 'gallery_banned'}
-								{#if note.metadata?.galleryID}
+							{:else if note.type === 'studio_banned'}
+								{#if note.metadata?.studioID}
 									<p class="font-bold">
-										Your gallery, <a class="link" href="/studios/{note.metadata?.galleryID}"
-											>{note.metadata?.galleryTitle}</a
+										Your studio, <a class="link" href="/studios/{note.metadata?.studioID}"
+											>{note.metadata?.studioTitle}</a
 										> has been banned by a moderator.
 									</p>
 									<p>{note.metadata?.title}</p>

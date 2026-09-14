@@ -28,7 +28,9 @@ Blank projects or projects that only contain a default sprite (e.g. Apple Cat or
 
 Each asset in your project combined should be less than 20MB, and the project.json file must be less than 10MB. This is to save storage space. There are technical restrictions to automatically prevent uploading such projects, but there is no punishment for this.
 
-All projects are licensed under the [Creative Commons Attribution-ShareAlike 4.0](https://creativecommons.org/licenses/by-sa/4.0/) licence (except for exact reuploads of Scratch projects - more on that later.) Remixes that do not make any meaningful changes to the original project will be removed.
+All projects are licensed under the [Creative Commons Attribution-ShareAlike 4.0](https://creativecommons.org/licenses/by-sa/4.0/) licence (except for exact reuploads of Scratch projects - more on that later.) This means others can remix your content as long as they credit you. Remixing helps users learn on AmpMod.
+
+Remixes that do not make any meaningful changes to the original project will be removed.
 
 ## Be respectful
 We welcome people of all ages, races, ethnicities, religions, abilities, sexual orientations, and gender identities.<!-- taken from Scratch!--> Please do not judge users by these traits.

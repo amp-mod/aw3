@@ -9,6 +9,15 @@ import { storage } from '$lib/storage'
 import sharp from 'sharp'
 import { desc } from 'drizzle-orm'
 import { canPerformAction, failIfCannotPerformAction } from '$lib/server/permissions'
+import { sendEmail } from '$lib/server/email'
+import banEmailTemplate from '$lib/server/emails/banned.html?raw'
+import { valkey } from '$lib/server/valkey'
+
+const PROFILE_CACHE_TTL = 300 // Cache for 5 minutes (in seconds)
+
+async function invalidateProfileCache(username: string) {
+	await valkey.del(`user:profile:${username.toLowerCase()}`)
+}
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const { username } = params
@@ -16,30 +25,49 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const viewer = locals.user
 	const viewerRank = viewer?.rank ?? 0
 	const isStaffMember = viewerRank >= 2
-	const [userProfile] = await db
-		.select({
-			id: table.user.id,
-			username: table.user.username,
-			bio: table.user.bio,
-			rank: table.user.rank,
-			createdAt: table.user.createdAt,
-			hasPFP: table.user.hasPFP,
-			isPrivate: table.user.isPrivate,
-			featuredProjectId: table.user.featuredProjectId,
-			featuredProjectTitleIndex: table.user.featuredProjectTitleIndex,
-			scratchUsername: table.user.scratchUsername,
-			frame: table.user.frame,
-			...(canPerformAction(viewerRank, 'seeBanStatus')
-				? {
-						status: table.user.status,
-						bannedExpiry: table.user.bannedExpiry,
-						banReason: table.user.banReason,
-					}
-				: {}),
-		})
-		.from(table.user)
-		.where(eq(table.user.username, username))
-		.limit(1)
+	const cacheKey = `user:profile:${username.toLowerCase()}`
+
+	let userProfile: any = null
+
+	// 1. Check Valkey Cache
+	const cachedProfile = await valkey.get(cacheKey)
+	if (cachedProfile) {
+		try {
+			userProfile = JSON.parse(cachedProfile)
+		} catch (e) {
+			console.error('Failed to parse cached user profile:', e)
+		}
+	}
+
+	// 2. Fetch from DB on cache miss
+	if (!userProfile) {
+		const [dbProfile] = await db
+			.select({
+				id: table.user.id,
+				username: table.user.username,
+				bio: table.user.bio,
+				rank: table.user.rank,
+				createdAt: table.user.createdAt,
+				hasPFP: table.user.hasPFP,
+				isPrivate: table.user.isPrivate,
+				featuredProjectId: table.user.featuredProjectId,
+				featuredProjectTitleIndex: table.user.featuredProjectTitleIndex,
+				scratchUsername: table.user.scratchUsername,
+				frame: table.user.frame,
+				status: table.user.status,
+				bannedExpiry: table.user.bannedExpiry,
+				banReason: table.user.banReason,
+			})
+			.from(table.user)
+			.where(eq(table.user.username, username))
+			.limit(1)
+
+		if (dbProfile) {
+			userProfile = dbProfile
+			// Save full profile in Valkey with TTL
+			await valkey.set(cacheKey, JSON.stringify(dbProfile), 'EX', PROFILE_CACHE_TTL)
+		}
+	}
 
 	if (!userProfile) {
 		const [userRedirect] = await db
@@ -67,6 +95,18 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			}
 		}
 		throw error(404, { message: 'User not found' })
+	}
+
+	if (userProfile.id !== viewer?.id && !canPerformAction(viewerRank, 'viewPrivateProfiles')) {
+		throw error(404, { message: 'User not found' })
+	}
+
+	// Filter ban status dynamically based on viewer permissions
+	const canSeeBanStatus = canPerformAction(viewerRank, 'seeBanStatus')
+	if (!canSeeBanStatus) {
+		delete userProfile.status
+		delete userProfile.bannedExpiry
+		delete userProfile.banReason
 	}
 
 	const isOwnProfile = viewer?.id === userProfile.id
@@ -177,6 +217,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				]
 			: []
 	).filter((action) => canPerformAction(viewer, action as any))
+
 	return {
 		userProfile,
 		availableActions,
@@ -344,6 +385,17 @@ export const actions: Actions = {
 		else if (durationHours) {
 			expiryDate = new Date()
 			expiryDate.setHours(expiryDate.getHours() + durationHours)
+		}
+
+		if (durationHours !== 0 && !!targetUser.email && targetUser.isEmailVerified) {
+			await sendEmail({
+				to: targetUser.email,
+				subject: 'You have been banned',
+				data: {
+					title: 'You have been banned',
+					content: banEmailTemplate.replaceAll('{{reason}}', reason),
+				},
+			})
 		}
 
 		await db

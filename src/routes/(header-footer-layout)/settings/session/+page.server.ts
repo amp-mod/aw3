@@ -84,6 +84,9 @@ export const actions: Actions = {
 			return fail(404, { message: 'Session not found' })
 		}
 
+		if (sessionToRevoke.userId !== event.locals.user.id)
+			return fail(403, { message: 'Session is not for your account' })
+
 		await invalidateSession(sessionToRevoke.id)
 
 		if (sessionToRevoke.id === currentSession.id) {

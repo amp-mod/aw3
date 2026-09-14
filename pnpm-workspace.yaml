@@ -2,5 +2,7 @@ allowBuilds:
   core-js: true
   esbuild: true
   sharp: true
+minimumReleaseAgeExclude:
+  - nodemailer@10.0.8
 onlyBuiltDependencies:
   - esbuild

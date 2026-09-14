@@ -145,9 +145,11 @@
 				</p>
 				<Button href="/projects/editor" class="mt-4">Create a project</Button>
 			</div>
-		{:else}
+		{:else if type === 'all'}
 			<div class="mx-auto max-w-md space-y-4">
-				<p class="text-5xl">Nothing here :(</p>
+				<h2 class="text-3xl font-bold text-black dark:text-white">Create projects!</h2>
+				<p class="text-neutral-600 dark:text-neutral-400">You haven't created any projects yet.</p>
+				<Button href="/projects/editor" class="mt-4">Create a project</Button>
 			</div>
 		{/if}
 	</div>

@@ -38,8 +38,7 @@ affiliates.
 ## 2. Account creation and maintenance
 
 1.  In order to use the full feature set of AmpMod, you must register for an Account. To register for an Account,
-    you must provide your username and a password. You may optionally provide an email for password resets.
-    An Account is not required to view public content on AmpMod.
+    you must provide your username, a password, and an email.
 2.  You may not create an account if you have been previously terminated or currently suspended from AmpMod and you
     do not have permission from us to continue using AmpMod.
 3.  You may not sell or transfer your Account or share it with anyone who is not in your immediate family.
@@ -55,7 +54,7 @@ affiliates.
 ## 3. "User-Generated Content"
 
 1.  For the purposes of these Terms, "User-Generated Content" (UGC) refers to any content shared via an Account, including projects,
-    galleries, custom extensions and wiki pages.
+    studios, custom extensions and wiki pages.
 2.  By publishing User-Generated Content, you grant a licence for others to use it under the
     [Creative Commons Attribution-ShareAlike 4.0 Licence](https://creativecommons.org/licenses/by-sa/4.0/legalcode.en)
     ("CC-BY-SA"). This allows others to share and remix content both on and outside of AmpMod,

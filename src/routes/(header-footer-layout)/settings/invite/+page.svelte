@@ -7,7 +7,9 @@
 <div class="flex flex-col gap-1">
 	<h2 class="mb-2 text-3xl font-bold">Invite users</h2>
 	<p>AmpMod is a small website, but we're giving you the opportunity to make it grow!</p>
-	{#if browser}
+	{#if !data.canInvite}
+		<p>You need to verify your email in order to invite users.</p>
+	{:else if browser}
 		{@const inviteLink = `${window.location.origin}/auth/register?inv=${data.inviteId}`}
 		<p>
 			Your invite link is <a href={inviteLink} class="link">{inviteLink}</a>. Share it with friends!

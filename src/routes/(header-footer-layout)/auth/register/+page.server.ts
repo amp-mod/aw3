@@ -59,6 +59,7 @@ export const actions: Actions = {
 		// Normalize to lowercase immediately
 		const username = (formData.get('username') as string)?.toLowerCase().trim() ?? ''
 		const password = formData.get('password')
+		const email = formData.get('email') as string
 		const inviteCode = (formData.get('inviteCode') as string)?.trim() ?? ''
 
 		if (!isValidUsername(username) || isProfane(username, true)) {
@@ -66,6 +67,9 @@ export const actions: Actions = {
 		}
 		if (!validatePassword(password)) {
 			return fail(400, { message: 'Invalid password' })
+		}
+		if (!email) {
+			return fail(400, { message: 'No email' })
 		}
 
 		if (import.meta.env.TURNSTILE_SECRET_KEY) {
@@ -95,7 +99,7 @@ export const actions: Actions = {
 		})
 
 		try {
-			const result = await createNewUser(username, passwordHash, false)
+			const result = await createNewUser(username, passwordHash, false, email, event.url.origin)
 			if ('error' in result) return fail(result.status, { message: result.error })
 
 			if (inviteCode) {
@@ -125,7 +129,7 @@ export const actions: Actions = {
 			return fail(500, { message: 'An error occurred during registration' })
 		}
 
-		return redirect(302, '/')
+		return redirect(302, '/auth/verify')
 	},
 
 	registerScratch: async ({ request, cookies }) => {

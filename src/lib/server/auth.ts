@@ -67,13 +67,11 @@ export async function getUserProfile(userId: number) {
 			privacyRevision: table.user.privacyRevision,
 			featuredProjectId: table.user.featuredProjectId,
 			featuredProjectTitleIndex: table.user.featuredProjectTitleIndex,
+			email: table.user.email,
+			isEmailVerified: table.user.isEmailVerified,
 		})
 		.from(table.user)
 		.where(eq(table.user.id, userId))
-
-	if (user) {
-		regenerateUserProfileCache(userId)
-	}
 
 	return user ?? null
 }
@@ -102,6 +100,8 @@ export async function regenerateUserProfileCache(userId: number) {
 			privacyRevision: table.user.privacyRevision,
 			featuredProjectId: table.user.featuredProjectId,
 			featuredProjectTitleIndex: table.user.featuredProjectTitleIndex,
+			email: table.user.email,
+			isEmailVerified: table.user.isEmailVerified,
 		})
 		.from(table.user)
 		.where(eq(table.user.id, userId))

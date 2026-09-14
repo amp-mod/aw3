@@ -58,6 +58,7 @@
 			<input type="password" name="password" class="input" required />
 		</label>
 
+		<p><a class="link" href="/auth/send-reset-email">Forgot password?</a></p>
 		<p>
 			Don't have an account? <a class="link" href="/auth/register">Join today!</a>
 		</p>

@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit'
-import { eq, and, lte, isNotNull } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import type { PageServerLoad } from './$types'
@@ -8,6 +8,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
 		redirect(302, '/')
 	}
+	console.log(locals.user)
 
 	const userId = locals.user.id
 
@@ -37,5 +38,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.where(eq(table.user.id, userId))
 
 		redirect(302, '/')
+	}
+
+	return {
+		user,
 	}
 }

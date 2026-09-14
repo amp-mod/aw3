@@ -155,7 +155,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	const { session, user } = await auth.validateSessionToken(sessionToken)
 
 	const currentIp = event.getClientAddress()
-	if (env.ADMIN_MANDATORY_IP && user.rank === 3 && currentIp !== env.ADMIN_MANDATORY_IP) {
+	if (env.ADMIN_MANDATORY_IP && user?.rank === 3 && currentIp !== env.ADMIN_MANDATORY_IP) {
 		return new Response(tailscaleError, {
 			status: 500,
 			headers: {
@@ -167,11 +167,6 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	if (session) {
 		const currentUserAgent = event.request.headers.get('user-agent')
 
-		if (session.ip !== currentIp && session.userAgent !== currentUserAgent) {
-			auth.invalidateSession(session.id)
-			auth.deleteSessionTokenCookie(event)
-			throw redirect(307, '/sessionpwned')
-		}
 		if (session.ip !== currentIp || session.userAgent !== currentUserAgent) {
 			await auth.updateSessionDetails(session.id, {
 				ip: currentIp,

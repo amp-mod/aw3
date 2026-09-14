@@ -67,6 +67,13 @@
 			icon: ScanSquare,
 		},
 		{
+			id: 'email',
+			label: 'Email',
+			href: '/settings/email',
+			restricted: true,
+			icon: Mail,
+		},
+		{
 			id: 'auth',
 			label: 'Passwords and 2FA',
 			href: '/settings/auth',

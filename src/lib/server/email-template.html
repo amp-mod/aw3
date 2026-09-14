@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{{title}}</title>
+		<style>
+			body {
+				font-family: sans-serif;
+				background: white;
+				color: black;
+			}
+			footer {
+				opacity: 0.5;
+				margin-top: 5px;
+			}
+			main {
+				padding: 20px;
+				max-width: 800px;
+				margin: auto;
+			}
+			header {
+				padding: 10px;
+				max-width: 800px;
+				margin: auto;
+				background: #4fa55c;
+				color: white;
+				text-align: center;
+			}
+			.button {
+				background: #4fa55c;
+				color: white;
+				font-weight: bold;
+				padding: 10px;
+				border-radius: 8px;
+				text-decoration: none;
+			}
+			blockquote {
+				border-left: 3px #aaa solid;
+				padding: 5px;
+			}
+		</style>
+	</head>
+	<body>
+		<header><img src="http://localhost:5173/logo.svg" height="30" alt="AmpMod" /></header>
+		<main>
+			<div class="content">{{content}}</div>
+			<footer>
+				<p>Sent by AmpMod. Contact us if you want to unsubscribe. Do not reply to this email.</p>
+			</footer>
+		</main>
+	</body>
+</html>

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { Tabs } from 'bits-ui'
 	import {
 		Clapperboard,
@@ -20,9 +20,10 @@
 	import Alert from '$lib/components/Alert.svelte'
 	import ComingSoon from '$lib/components/ComingSoon.svelte'
 	import PFP from '$lib/components/PFP.svelte'
+	import { getBlog } from './getBlog.remote'
+	import { browser } from '$app/environment'
 
 	let { data } = $props()
-	const discussions = data.blogDiscussions ?? []
 
 	const styles = {
 		button_normal:
@@ -39,16 +40,23 @@
 </svelte:head>
 
 <Alert
-	id="aw3"
+	id="aw3-survey"
 	background="#49b049"
 	button={{
-		url: 'https://forums.ampmod.org/t/suggestions',
-		text: 'Share feedback on forums',
+		url: 'https://forms.gle/XsUkmbUUF71SQpKq9',
+		text: 'Take the survey',
 	}}
 	icon={Globe}
 >
-	Welcome to the brand-new AmpMod website! This site is currently in beta and might have bugs.
+	We're running a survey to help AmpMod be better for everyone! Your feedback will be used to
+	improve AmpMod.
 </Alert>
+{#if !!data.user}
+	<Alert id="oops" background="#555" icon={TriangleAlert}>
+		Unfortunately, all content and accounts created after the 23rd of August have been removed from
+		the site due to a recent incident. We are very sorry for this.
+	</Alert>
+{/if}
 {#if data.user && !data.user.scratchUsername}
 	<Alert
 		id="linkScratch"
@@ -117,7 +125,9 @@
 					{/if}
 					<Tabs.Trigger value="feed" class={styles.tab}><Rss />Feed</Tabs.Trigger>
 				{/if}
-				<Tabs.Trigger value="news" class={styles.tab}><Newspaper />Updates</Tabs.Trigger>
+				{#if browser}
+					<Tabs.Trigger value="news" class={styles.tab}><Newspaper />Updates</Tabs.Trigger>
+				{/if}
 			</Tabs.List>
 
 			{#if data.user}
@@ -151,26 +161,28 @@
 				class="h-60 grow overflow-y-auto rounded-lg border border-neutral-300 bg-white dark:border-neutral-500 dark:bg-neutral-800"
 			>
 				<div class="flex flex-col divide-y divide-neutral-200 dark:divide-neutral-700">
-					{#each discussions as item}
-						<a
-							href="/blog/{item.id}"
-							class="group flex items-start gap-4 p-4 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-700/50"
-						>
-							<div class="flex flex-col">
-								<span
-									class="font-bold text-accent-secondary group-hover:underline dark:text-accent-light"
-									>{item.title}</span
-								>
-								<div class="flex items-center gap-2 text-sm text-neutral-500">
-									<span>{item.author.username}</span>
-									<span>•</span>
-									<span>{new Date(item.createdAt).toLocaleDateString()}</span>
+					{#if browser}
+						{#each await getBlog() as item}
+							<a
+								href={item.link}
+								class="group flex items-start gap-4 p-4 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-700/50"
+							>
+								<div class="flex flex-col">
+									<span
+										class="font-bold text-accent-secondary group-hover:underline dark:text-accent-light"
+										>{item.title}</span
+									>
+									<div class="flex items-center gap-2 text-sm text-neutral-500">
+										<span>{item.author.username}</span>
+										<span>•</span>
+										<span>{new Date(item.createdAt).toLocaleDateString()}</span>
+									</div>
 								</div>
-							</div>
-						</a>
-					{:else}
-						<div class="p-8 text-center text-neutral-500 italic">No updates found.</div>
-					{/each}
+							</a>
+						{:else}
+							<div class="p-8 text-center text-neutral-500 italic">No updates found.</div>
+						{/each}
+					{/if}
 				</div>
 			</Tabs.Content>
 		</Tabs.Root>

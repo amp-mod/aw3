@@ -59,22 +59,43 @@
 	let joinedDate = $derived(
 		(() => {
 			try {
-				return userProfile.createdAt
-					? new Date(userProfile.createdAt).toLocaleDateString(getLocale(), {
-							year: 'numeric',
-							month: 'long',
-							day: 'numeric',
-						})
-					: 'Unknown'
+				if (!userProfile.createdAt) return 'Unknown'
+
+				const createdDate = new Date(userProfile.createdAt)
+				const now = new Date()
+				const diffInSeconds = Math.floor((now - createdDate) / 1000)
+
+				const units = [
+					{ name: 'year', seconds: 31536000 },
+					{ name: 'month', seconds: 2592000 },
+					{ name: 'week', seconds: 604800 },
+					{ name: 'day', seconds: 86400 },
+					{ name: 'hour', seconds: 3600 },
+					{ name: 'minute', seconds: 60 },
+					{ name: 'second', seconds: 1 },
+				]
+
+				const rtf = new Intl.RelativeTimeFormat(getLocale(), { numeric: 'auto' })
+
+				for (const unit of units) {
+					if (Math.abs(diffInSeconds) >= unit.seconds || unit.name === 'second') {
+						const count = Math.floor(diffInSeconds / unit.seconds)
+						return rtf.format(-count, unit.name)
+					}
+				}
+
+				return 'Unknown'
 			} catch (e) {
-				console.error('Failed to translate joined date!', e)
-				return new Date(userProfile.createdAt).toISOString()
+				console.error('Failed to format joined date!', e)
+				return userProfile.createdAt ? new Date(userProfile.createdAt).toISOString() : 'Unknown'
 			}
 		})(),
 	)
 
 	const viewerIsOp = $derived(isStaff(data.user?.rank))
-	const canEdit = $derived(isOwnProfile || viewerIsOp)
+	const canEdit = $derived(
+		(isOwnProfile || viewerIsOp) && data.availableActions?.includes('setBio'),
+	)
 
 	let displayedProjects = $state([...data.projects]) // Initialize with first batch
 	let isLoadingMore = $state(false)
@@ -294,7 +315,7 @@
 							{@html DOMPurify.sanitize(md.render(userProfile.bio))}
 						{:else}
 							<i class="opacity-50">
-								{isOwnProfile ? m.aboutMePlaceholderEdit() : m.aboutMePlaceholder()}
+								{canEdit ? m.aboutMePlaceholderEdit() : m.aboutMePlaceholder()}
 							</i>
 						{/if}
 					</div>
@@ -389,7 +410,7 @@
 
 		<ul class="ml-3 list-inside list-disc">
 			<li>More extensions on uploaded projects</li>
-			<li>Creating galleries</li>
+			<li>Creating studios</li>
 			<li>Uploading larger and more complex projects</li>
 		</ul>
 		<p>Your New AmpModder rank will be revoked permanently.</p>
@@ -539,8 +560,7 @@
 					id="reason"
 					name="reason"
 					placeholder="Violation of community guidelines..."
-					class="{styles.modalInput} min-h-[100px] resize-none"
-				></textarea>
+					class="{styles.modalInput} min-h-[100px] resize-none"></textarea>
 			</div>
 			<div class="mt-2 flex justify-end gap-3">
 				<button

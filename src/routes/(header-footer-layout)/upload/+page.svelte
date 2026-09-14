@@ -273,230 +273,255 @@
 	let isFormValid = $derived(title.trim().length > 0 && hasFile)
 </script>
 
-<form
-	method="POST"
-	enctype="multipart/form-data"
-	action="?/uploadProjectJson"
-	use:enhance={() => {
-		loading = true
-		progress = 0
-		progressText = 'Uploading project data...'
-		isUploading = true
+<svelte:head>
+	<title>Upload Project - AmpMod</title>
+</svelte:head>
 
-		return async ({ result }) => {
-			try {
-				if (result.type === 'success' && result.data?.success) {
-					const projectId = result.data.projectId
+{#if data.cannotDo}
+	<div class="m-auto my-16 flex max-w-3xl flex-col gap-6 px-4">
+		<div
+			class="flex flex-col gap-4 rounded border-l-4 border-l-accent bg-neutral-100 p-4 dark:bg-neutral-800"
+		>
+			<div class="flex flex-col gap-2">
+				<p>
+					You currently are not allowed to upload projects to the site. You may need to verify your
+					email first.
+				</p>
+			</div>
+		</div>
+	</div>
+{:else}
+	<form
+		method="POST"
+		enctype="multipart/form-data"
+		action="?/uploadProjectJson"
+		use:enhance={() => {
+			loading = true
+			progress = 0
+			progressText = 'Uploading project data...'
+			isUploading = true
 
-					// Upload extracted assets one by one
-					const concurrencyLimit = isScratchImport ? 15 : 30
-					let assetIndex = 0
+			return async ({ result }) => {
+				try {
+					if (result.type === 'success' && result.data?.success) {
+						const projectId = result.data.projectId
 
-					async function uploadWorker() {
-						while (assetIndex < extractedAssets.length) {
-							const currentIndex = assetIndex++
-							const asset = extractedAssets[currentIndex]
-							progress = (currentIndex / extractedAssets.length) * 100
-							progressText = `Uploading assets (${currentIndex + 1}/${extractedAssets.length})...`
+						// Upload extracted assets one by one
+						const concurrencyLimit = isScratchImport ? 15 : 30
+						let assetIndex = 0
 
-							let fileToUpload = asset.file
+						async function uploadWorker() {
+							while (assetIndex < extractedAssets.length) {
+								const currentIndex = assetIndex++
+								const asset = extractedAssets[currentIndex]
+								progress = (currentIndex / extractedAssets.length) * 100
+								progressText = `Uploading assets (${currentIndex + 1}/${extractedAssets.length})...`
 
-							// Fetch from Scratch CDN on-the-fly right before uploading
-							if (!fileToUpload && asset.fetchUrl) {
-								try {
-									const res = await fetch(asset.fetchUrl)
-									if (res.ok) {
-										const blob = await res.blob()
-										const ext = asset.name.split('.').pop() || 'png'
-										fileToUpload = new File([blob], asset.name, { type: getMimeType(ext) })
-									} else {
-										console.error(`Failed to download remote asset: ${asset.name} (${res.status})`)
+								let fileToUpload = asset.file
+
+								// Fetch from Scratch CDN on-the-fly right before uploading
+								if (!fileToUpload && asset.fetchUrl) {
+									try {
+										const res = await fetch(asset.fetchUrl)
+										if (res.ok) {
+											const blob = await res.blob()
+											const ext = asset.name.split('.').pop() || 'png'
+											fileToUpload = new File([blob], asset.name, { type: getMimeType(ext) })
+										} else {
+											console.error(
+												`Failed to download remote asset: ${asset.name} (${res.status})`,
+											)
+											continue
+										}
+									} catch (err) {
+										console.error(`Error fetching asset ${asset.name}:`, err)
 										continue
 									}
-								} catch (err) {
-									console.error(`Error fetching asset ${asset.name}:`, err)
-									continue
+								}
+
+								if (!fileToUpload) continue
+								const assetResp = await fetch(`/projects/uploadFile/${asset.name}`, {
+									method: 'POST',
+									body: fileToUpload,
+								})
+
+								if (!assetResp.ok) {
+									console.error(`Failed to upload asset: ${asset.name}`)
 								}
 							}
-
-							if (!fileToUpload) continue
-							const assetResp = await fetch(`/projects/uploadFile/${asset.name}`, {
-								method: 'POST',
-								body: fileToUpload,
-							})
-
-							if (!assetResp.ok) {
-								console.error(`Failed to upload asset: ${asset.name}`)
-							}
 						}
+						const workers = Array(Math.min(concurrencyLimit, extractedAssets.length))
+							.fill(0)
+							.map(() => uploadWorker())
+
+						await Promise.all(workers)
+						goto(`/projects/${projectId}`)
+					} else if (result.type === 'failure') {
+						loading = false
+						isUploading = false
+						addToast({ type: 'failure', text: result.data?.message ?? 'Upload failed' })
 					}
-					const workers = Array(Math.min(concurrencyLimit, extractedAssets.length))
-						.fill(0)
-						.map(() => uploadWorker())
-
-					await Promise.all(workers)
-					goto(`/projects/${projectId}`)
-				} else if (result.type === 'failure') {
+				} catch (err: any) {
 					loading = false
+					console.error(err)
+					addToast({ type: 'failure', text: 'An error occurred uploading project assets.' })
 					isUploading = false
-					addToast({ type: 'failure', text: result.data?.message ?? 'Upload failed' })
 				}
-			} catch (err: any) {
-				loading = false
-				console.error(err)
-				addToast({ type: 'failure', text: 'An error occurred uploading project assets.' })
-				isUploading = false
 			}
-		}
-	}}
-	class="m-auto my-16 flex max-w-3xl flex-col gap-6 px-4"
->
-	<input bind:this={jsonInput} name="projectJson" type="file" class="hidden" required />
-	<input bind:this={customThumbInput} name="thumbnail" type="file" class="hidden" />
-	<input class="hidden" name="scratchProjectID" value={scratchId} />
-
-	<div
-		class="flex flex-col gap-4 rounded border-l-4 border-l-accent bg-neutral-100 p-4 dark:bg-neutral-800"
+		}}
+		class="m-auto my-16 flex max-w-3xl flex-col gap-6 px-4"
 	>
-		<h2 class="text-2xl font-bold">Upload Project</h2>
-		{#if error}<div class="text-sm font-bold text-red-500">{error}</div>{/if}
-		<div class="flex flex-col gap-2">
-			<p>On this page you can upload a project to AmpMod.</p>
-		</div>
-		<div class="relative flex items-center gap-3">
-			{#if isScratchImport}
-				<p><i>Project loaded from Scratch.</i></p>
-			{:else}
-				<input
-					type="file"
-					accept=".apz,.sb3"
-					onchange={(e) => {
-						if (e.target.files?.[0]) handleFileSelection(e.target.files[0])
-					}}
-					class="absolute inset-0 z-10 cursor-pointer opacity-0"
-				/>
-				<div
-					class="flex w-full items-center gap-3 overflow-hidden rounded-lg border bg-white dark:bg-neutral-900"
-				>
-					<div class="bg-accent px-4 py-2 font-bold text-white">Browse...</div>
-					<span class="truncate p-2 text-sm text-neutral-500"
-						>{jsonInput?.files?.[0]?.name ?? 'No file selected'}</span
-					>
-				</div>
-			{/if}
-		</div>
-	</div>
+		<input bind:this={jsonInput} name="projectJson" type="file" class="hidden" required />
+		<input bind:this={customThumbInput} name="thumbnail" type="file" class="hidden" />
+		<input class="hidden" name="scratchProjectID" value={scratchId} />
 
-	{#if hasFile}
 		<div
-			class="flex flex-col gap-6 rounded border-l-4 border-l-blue-500 bg-neutral-100 p-4 dark:bg-neutral-800"
-			transition:fade
+			class="flex flex-col gap-4 rounded border-l-4 border-l-accent bg-neutral-100 p-4 dark:bg-neutral-800"
 		>
-			<h3 class="text-xl font-bold">Project Details</h3>
-
-			{#if projectJson?.meta?.platform && projectJson.meta.platform?.name !== 'TurboWarp' && projectJson.meta.platform?.name !== 'AmpMod' && !isScratchImport}
-				<div class="rounded bg-red-500 p-3 text-sm font-bold text-white">
-					<p>
-						This project was created for {projectJson.meta.platform.name}. Incompatible projects are
-						against the TOS. Ensure it functions correctly in AmpMod before uploading.
-					</p>
-				</div>
-			{/if}
-
-			<div class="flex flex-col gap-3">
-				<span class="text-sm font-semibold">Thumbnail Selection</span>
-				<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+			<h2 class="text-2xl font-bold">Upload Project</h2>
+			{#if error}<div class="text-sm font-bold text-red-500">{error}</div>{/if}
+			<div class="flex flex-col gap-2">
+				<p>On this page you can upload a project to AmpMod.</p>
+			</div>
+			<div class="relative flex items-center gap-3">
+				{#if isScratchImport}
+					<p><i>Project loaded from Scratch.</i></p>
+				{:else}
+					<input
+						type="file"
+						accept=".apz,.sb3"
+						onchange={(e) => {
+							if (e.target.files?.[0]) handleFileSelection(e.target.files[0])
+						}}
+						class="absolute inset-0 z-10 cursor-pointer opacity-0"
+					/>
 					<div
-						class="flex aspect-[4/3] items-center justify-center overflow-hidden rounded border border-neutral-300 bg-black/10 dark:border-neutral-700"
+						class="flex w-full items-center gap-3 overflow-hidden rounded-lg border bg-white dark:bg-neutral-900"
 					>
-						{#if selectedThumbnailUrl}
-							<img src={selectedThumbnailUrl} alt="Preview" class="h-full w-full object-contain" />
-						{:else}
-							<ImageIcon size={48} class="text-neutral-400" />
-						{/if}
-					</div>
-					<div
-						class="flex max-h-[180px] flex-wrap gap-2 overflow-y-auto rounded border bg-white p-2 dark:bg-neutral-900"
-					>
-						{#each thumbnails as thumb}
-							<button
-								type="button"
-								onclick={() => selectProjectThumbnail(thumb)}
-								class="aspect-[4/3] w-16 overflow-hidden rounded border-2 transition-all {selectedThumbnailUrl ===
-								thumb.url
-									? 'scale-105 border-accent'
-									: 'border-transparent opacity-60 hover:opacity-100'}"
-							>
-								<img
-									src={thumb.url}
-									alt="costume"
-									class="h-full w-full object-cover"
-									loading="lazy"
-								/>
-							</button>
-						{/each}
-						<label
-							class="flex aspect-[4/3] w-16 cursor-pointer flex-col items-center justify-center rounded border-2 border-dashed hover:bg-neutral-50 dark:hover:bg-neutral-800 {thumbnailType ===
-							'custom'
-								? 'border-accent'
-								: ''}"
+						<div class="bg-accent px-4 py-2 font-bold text-white">Browse...</div>
+						<span class="truncate p-2 text-sm text-neutral-500"
+							>{jsonInput?.files?.[0]?.name ?? 'No file selected'}</span
 						>
-							<Upload size={16} />
-							<input
-								type="file"
-								accept="image/*"
-								class="hidden"
-								onchange={(e) => {
-									if (e.target.files?.[0]) {
-										selectedThumbnailUrl = URL.createObjectURL(e.target.files[0])
-										thumbnailType = 'custom'
-										const dt = new DataTransfer()
-										dt.items.add(e.target.files[0])
-										customThumbInput.files = dt.files
-									}
-								}}
-							/>
-						</label>
+					</div>
+				{/if}
+			</div>
+		</div>
+
+		{#if hasFile}
+			<div
+				class="flex flex-col gap-6 rounded border-l-4 border-l-blue-500 bg-neutral-100 p-4 dark:bg-neutral-800"
+				transition:fade
+			>
+				<h3 class="text-xl font-bold">Project Details</h3>
+
+				{#if projectJson?.meta?.platform && projectJson.meta.platform?.name !== 'TurboWarp' && projectJson.meta.platform?.name !== 'AmpMod' && !isScratchImport}
+					<div class="rounded bg-red-500 p-3 text-sm font-bold text-white">
+						<p>
+							This project was created for {projectJson.meta.platform.name}. Incompatible projects
+							are against the TOS. Ensure it functions correctly in AmpMod before uploading.
+						</p>
+					</div>
+				{/if}
+
+				<div class="flex flex-col gap-3">
+					<span class="text-sm font-semibold">Thumbnail Selection</span>
+					<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+						<div
+							class="flex aspect-[4/3] items-center justify-center overflow-hidden rounded border border-neutral-300 bg-black/10 dark:border-neutral-700"
+						>
+							{#if selectedThumbnailUrl}
+								<img
+									src={selectedThumbnailUrl}
+									alt="Preview"
+									class="h-full w-full object-contain"
+								/>
+							{:else}
+								<ImageIcon size={48} class="text-neutral-400" />
+							{/if}
+						</div>
+						<div
+							class="flex max-h-[180px] flex-wrap gap-2 overflow-y-auto rounded border bg-white p-2 dark:bg-neutral-900"
+						>
+							{#each thumbnails as thumb}
+								<button
+									type="button"
+									onclick={() => selectProjectThumbnail(thumb)}
+									class="aspect-[4/3] w-16 overflow-hidden rounded border-2 transition-all {selectedThumbnailUrl ===
+									thumb.url
+										? 'scale-105 border-accent'
+										: 'border-transparent opacity-60 hover:opacity-100'}"
+								>
+									<img
+										src={thumb.url}
+										alt="costume"
+										class="h-full w-full object-cover"
+										loading="lazy"
+									/>
+								</button>
+							{/each}
+							<label
+								class="flex aspect-[4/3] w-16 cursor-pointer flex-col items-center justify-center rounded border-2 border-dashed hover:bg-neutral-50 dark:hover:bg-neutral-800 {thumbnailType ===
+								'custom'
+									? 'border-accent'
+									: ''}"
+							>
+								<Upload size={16} />
+								<input
+									type="file"
+									accept="image/*"
+									class="hidden"
+									onchange={(e) => {
+										if (e.target.files?.[0]) {
+											selectedThumbnailUrl = URL.createObjectURL(e.target.files[0])
+											thumbnailType = 'custom'
+											const dt = new DataTransfer()
+											dt.items.add(e.target.files[0])
+											customThumbInput.files = dt.files
+										}
+									}}
+								/>
+							</label>
+						</div>
 					</div>
 				</div>
-			</div>
 
-			<div class="flex flex-col gap-2">
-				<label for="title" class="text-sm font-semibold">Title</label>
-				<input
-					id="title"
-					name="title"
-					bind:value={title}
-					required
-					class="w-full rounded border p-2 outline-none focus:ring-1 focus:ring-accent dark:bg-neutral-900"
-				/>
-			</div>
+				<div class="flex flex-col gap-2">
+					<label for="title" class="text-sm font-semibold">Title</label>
+					<input
+						id="title"
+						name="title"
+						bind:value={title}
+						required
+						class="w-full rounded border p-2 outline-none focus:ring-1 focus:ring-accent dark:bg-neutral-900"
+					/>
+				</div>
 
-			<div class="flex flex-col gap-2">
-				<label for="notes" class="text-sm font-semibold">Notes and Credits</label>
-				<textarea id="notes" name="notes" bind:value={notesAndCredits} hidden></textarea>
-				<div class="flex h-96">
-					<Tiptap bind:value={notesAndCredits} />
+				<div class="flex flex-col gap-2">
+					<label for="notes" class="text-sm font-semibold">Notes and Credits</label>
+					<textarea id="notes" name="notes" bind:value={notesAndCredits} hidden></textarea>
+					<div class="flex h-96">
+						<Tiptap bind:value={notesAndCredits} />
+					</div>
+				</div>
+
+				<div class="flex justify-end pt-4">
+					<Button type="submit" disabled={loading || !isFormValid}>
+						{loading ? 'Processing...' : 'Upload Project'}
+					</Button>
 				</div>
 			</div>
+		{/if}
+	</form>
 
-			<div class="flex justify-end pt-4">
-				<Button type="submit" disabled={loading || !isFormValid}>
-					{loading ? 'Processing...' : 'Upload Project'}
-				</Button>
+	<Modal bind:open={isUploading} title="Uploading Project" canClose={false}>
+		<div class="flex flex-col gap-4">
+			<div class="flex h-4 w-full items-stretch rounded-full bg-neutral-100 dark:bg-neutral-700">
+				<div
+					class="h-4 rounded-full bg-accent transition-all dark:bg-accent-light"
+					style="width: {progress}%;"
+				></div>
 			</div>
+			<p>{progressText}</p>
 		</div>
-	{/if}
-</form>
-
-<Modal bind:open={isUploading} title="Uploading Project" canClose={false}>
-	<div class="flex flex-col gap-4">
-		<div class="flex h-4 w-full items-stretch rounded-full bg-neutral-100 dark:bg-neutral-700">
-			<div
-				class="h-4 rounded-full bg-accent transition-all dark:bg-accent-light"
-				style="width: {progress}%;"
-			></div>
-		</div>
-		<p>{progressText}</p>
-	</div>
-</Modal>
+	</Modal>
+{/if}

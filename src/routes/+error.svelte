@@ -1,9 +1,11 @@
 <script>
 	import { page } from '$app/state'
 	import Button from '$lib/components/Button.svelte'
+	import Layout from './(header-footer-layout)/+layout.svelte'
 
 	// svelte-ignore non_reactive_update
 	let friendlyMessage
+	let { data } = $props()
 
 	switch (page.status) {
 		case 404:
@@ -36,14 +38,16 @@
 	<title>{page.status} - AmpMod</title>
 </svelte:head>
 
-<main class="mx-auto flex h-screen max-w-4xl flex-col justify-center gap-8 text-center">
-	<h1 class="font-mono text-8xl font-bold tracking-widest text-red-500 dark:text-red-400">
-		{page.status}
-	</h1>
-	<p class="text-xl font-semibold text-neutral-800 dark:text-white">
-		{friendlyMessage}
-	</p>
-	<div>
-		<Button href="/">Back to Home</Button>
-	</div>
-</main>
+<Layout {data}>
+	<main class="mx-auto my-32 flex max-w-4xl flex-col justify-center gap-8 text-center">
+		<h1 class="font-mono text-8xl font-bold tracking-widest text-red-500 dark:text-red-400">
+			{page.status}
+		</h1>
+		<p class="text-xl font-semibold text-neutral-800 dark:text-white">
+			{friendlyMessage}
+		</p>
+		<div>
+			<Button href="/">Back to Home</Button>
+		</div>
+	</main>
+</Layout>

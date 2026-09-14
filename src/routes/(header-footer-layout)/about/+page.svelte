@@ -178,7 +178,7 @@
 			ampmod: { icon: YES },
 		},
 		{
-			name: 'Galleries',
+			name: 'Studios',
 			desc: 'Organise projects in collections.',
 			scratch: { icon: YES, note: 'Studios' },
 			tw: { icon: NO },

@@ -2,7 +2,7 @@
   {
     "location": "/",
     "tdm-reservation": 1,
-    "tdm-policy": "https://placeholder-domain.ampmod.example/terms",
+    "tdm-policy": "https://ampmod.org/terms",
     "opt-out": "true"
   },
 ]

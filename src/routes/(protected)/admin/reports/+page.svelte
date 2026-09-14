@@ -31,9 +31,9 @@
 								>
 							{:else if report.itemType === 'user'}
 								<a href="/admin/users" class="underline hover:opacity-80">@{report.itemId}</a>
-							{:else if report.itemType === 'gallery'}
-								<a href="/galleries/{report.itemId}" class="underline hover:opacity-80"
-									>Gallery #{report.itemId}</a
+							{:else if report.itemType === 'studio'}
+								<a href="/studios/{report.itemId}" class="underline hover:opacity-80"
+									>Studio #{report.itemId}</a
 								>
 							{:else}
 								{report.itemId}

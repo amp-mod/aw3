@@ -5,9 +5,9 @@ import type { User } from './db/schema'
 const rankPerms = Object.freeze({
 	// main features that everyone can use
 	createProject: NEW_AMPMODDER,
-	createGallery: NEW_AMPMODDER,
+	createStudio: NEW_AMPMODDER,
 	renameProject: NEW_AMPMODDER,
-	beHostOfAGallery: NEW_AMPMODDER,
+	beHostOfAStudio: NEW_AMPMODDER,
 	setPFP: NEW_AMPMODDER,
 	setBio: NEW_AMPMODDER,
 	comment: NEW_AMPMODDER,
@@ -48,9 +48,10 @@ const rankPerms = Object.freeze({
  */
 export function canPerformAction(user: User, action: keyof typeof rankPerms) {
 	// Banned users cannot perform any action.
-	if (user.status === 'banned') {
-		return false
-	}
+	if (user.status === 'banned') return false
+
+	// Unverified users cannot perform any action.
+	if (!user.isEmailVerified) return false
 
 	const minimumRank = rankPerms[action] ?? Infinity
 
