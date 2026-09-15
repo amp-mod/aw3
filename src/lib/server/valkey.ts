@@ -1,4 +1,4 @@
 import Valkey from 'iovalkey'
-import { VALKEY_URL } from '$env/static/private'
+import { env } from '$env/dynamic/private'
 
-export const valkey = new Valkey(VALKEY_URL || 'valkey://localhost:6379')
+export const valkey = new Valkey(env.VALKEY_URL || 'valkey://localhost:6379')
