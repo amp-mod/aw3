@@ -20,6 +20,8 @@ COPY --from=builder /app/aw3/LICENSE ./
 COPY --from=builder /app/aw3/build ./build
 COPY --from=builder /app/aw3/package.json ./
 COPY --from=builder /app/aw3/node_modules ./node_modules
+COPY --from=builder /app/aw3/drizzle ./drizzle
+COPY --from=builder /app/aw3/migrate.sh ./migrate.sh
 
 USER aw3
 EXPOSE 3000
