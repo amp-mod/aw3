@@ -16,14 +16,13 @@ WORKDIR /app/aw3
 
 RUN adduser --system --group aw3
 
-COPY --from=builder /app/aw3/LICENSE ./
-COPY --from=builder /app/aw3/build ./build
-COPY --from=builder /app/aw3/package.json ./
-COPY --from=builder /app/aw3/node_modules ./node_modules
-
-COPY --from=builder /app/aw3/drizzle ./drizzle
-COPY --from=builder /app/aw3/migrate.js ./migrate.js
-COPY --from=builder /app/aw3/entrypoint.sh ./entrypoint.sh
+COPY --chown=aw3:aw3 --from=builder /app/aw3/LICENSE ./
+COPY --chown=aw3:aw3 --from=builder /app/aw3/build ./build
+COPY --chown=aw3:aw3 --from=builder /app/aw3/package.json ./
+COPY --chown=aw3:aw3 --from=builder /app/aw3/node_modules ./node_modules
+COPY --chown=aw3:aw3 --from=builder /app/aw3/drizzle ./drizzle
+COPY --chown=aw3:aw3 --from=builder /app/aw3/migrate.js ./migrate.js
+COPY --chown=aw3:aw3 --from=builder /app/aw3/entrypoint.sh ./entrypoint.sh
 
 RUN chmod +x ./entrypoint.sh
 
