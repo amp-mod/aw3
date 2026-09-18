@@ -8,6 +8,13 @@
       "when": 1789583154749,
       "tag": "0000_plain_brood",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789769726182,
+      "tag": "0001_lush_epoch",
+      "breakpoints": true
     }
   ]
 }

@@ -50,11 +50,11 @@
 	})
 
 	$effect(() => {
-		if (currentView == 'email' && env.VITE_TURNSTILE_SITE_KEY) {
+		if (currentView == 'email' && env.PUBLIC_TURNSTILE_SITE_KEY) {
 			window.onloadTurnstileCallback = () => {
 				if (window.turnstile) {
 					turnstileId = window.turnstile.render('#cf-turnstile', {
-						sitekey: env.VITE_TURNSTILE_SITE_KEY,
+						sitekey: env.PUBLIC_TURNSTILE_SITE_KEY,
 						callback: (receivedToken: string) => {
 							turnstileToken = receivedToken
 						},
@@ -118,7 +118,7 @@
 </script>
 
 <svelte:head>
-	{#if env.VITE_TURNSTILE_SITE_KEY}
+	{#if env.PUBLIC_TURNSTILE_SITE_KEY}
 		<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 	{/if}
 </svelte:head>
@@ -302,13 +302,13 @@
 						{#if data.inviteCode}
 							<input type="hidden" value={data.inviteCode} name="inviteCode" />
 						{/if}
-						{#if env.VITE_TURNSTILE_SITE_KEY && browser}
-							<div id="cf-turnstile" data-sitekey={env.VITE_TURNSTILE_SITE_KEY}></div>
+						{#if env.PUBLIC_TURNSTILE_SITE_KEY && browser}
+							<div id="cf-turnstile" data-sitekey={env.PUBLIC_TURNSTILE_SITE_KEY}></div>
 						{/if}
 						<Button
 							type="submit"
 							class="w-full py-4 text-lg"
-							disabled={submitting || (env.VITE_TURNSTILE_SITE_KEY && !turnstileToken) || !email}
+							disabled={submitting || (env.PUBLIC_TURNSTILE_SITE_KEY && !turnstileToken) || !email}
 						>
 							{#if submitting}<Loader class="mx-auto animate-spin" size={20} />{:else}Join{/if}
 						</Button>
