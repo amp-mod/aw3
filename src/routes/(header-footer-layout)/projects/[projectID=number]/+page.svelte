@@ -168,8 +168,8 @@
 				</div>
 			{:else if project.status === 'banned'}
 				<p>
-					AmpMod moderators have banned this project. It is now permanently unshared. If you believe
-					this was a mistake, please contact support.
+					AmpMod moderators have decided to remove this project. If you believe this was a mistake,
+					please contact support.
 				</p>
 				{#if project.moderatorNote}
 					<p class="mt-1 font-normal opacity-90">
@@ -277,11 +277,12 @@
 					</p>
 				</div>
 			{/if}
-			{#if data.scratchProjectID}
+			{#if data.project.scratchProjectID}
 				<div class="{styles.sectionCard} text-sm">
 					<p>
-						Project imported from <a href="https://scratch.mit.edu/projects/{data.scratchProjectID}"
-							>scratch.mit.edu/projects/{data.scratchProjectID}</a
+						Project imported from <a
+							href="https://scratch.mit.edu/projects/{data.project.scratchProjectID}"
+							>scratch.mit.edu/projects/{data.project.scratchProjectID}</a
 						>
 					</p>
 				</div>
@@ -364,7 +365,7 @@
 			<Button onclick={() => (isShowingBanProject = true)} class="flex items-center gap-2">
 				<Hammer />
 				{#if project.status === 'banned'}
-					Unban{:else}Ban{/if}
+					Restore{:else}Remove{/if}
 			</Button>
 		{/if}
 		<Button onclick={() => (isShowingCopyLink = true)} class="flex items-center gap-2">
@@ -461,11 +462,11 @@
 	</div>
 </Modal>
 
-<Modal bind:open={isShowingBanProject} title="Ban project">
+<Modal bind:open={isShowingBanProject} title="Remove project">
 	<div class="flex flex-col gap-4">
 		{#if project.status === 'banned'}
-			<h2 class="text-lg font-semibold">Unban Project</h2>
-			<p>This project is currently banned. Do you want to unban it?</p>
+			<h2 class="text-lg font-semibold">Restore Project</h2>
+			<p>This project is currently removed. Do you want to restore it?</p>
 			<form method="POST" action="?/unbanProject" class="flex flex-col gap-4">
 				<div class="flex justify-end gap-2">
 					<Button type="button" onclick={() => (isShowingBanProject = false)}>Cancel</Button>
@@ -475,8 +476,8 @@
 				</div>
 			</form>
 		{:else}
-			<h2 class="text-lg font-semibold">Ban this project?</h2>
-			<p>Are you sure you want to ban this project? This action can be undone.</p>
+			<h2 class="text-lg font-semibold">Remove this project?</h2>
+			<p>Are you sure you want to remove this project? This action can be undone.</p>
 			<form method="POST" action="?/banProject" class="flex flex-col gap-4">
 				<input
 					name="moderatorNote"
@@ -486,7 +487,9 @@
 				/>
 				<div class="flex justify-end gap-2">
 					<Button type="button" onclick={() => (isShowingBanProject = false)}>Cancel</Button>
-					<Button type="submit" class="bg-red-600 text-white hover:bg-red-700">Ban Project</Button>
+					<Button type="submit" class="bg-red-600 text-white hover:bg-red-700"
+						>Remove Project</Button
+					>
 				</div>
 			</form>
 		{/if}

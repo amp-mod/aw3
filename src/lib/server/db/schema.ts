@@ -54,7 +54,6 @@ export const user = pgTable(
 		usernameUpdatedAt: timestamp({ withTimezone: true, mode: 'date' })
 			.notNull()
 			.default(new Date(0)),
-		hasFeaturedProject: boolean().default(false),
 		inviteId: uuid().defaultRandom(),
 		inviter: integer().references(() => user.id, { onDelete: 'cascade' }),
 		email: text(),
@@ -94,7 +93,6 @@ export const project = pgTable(
 		moderatorNote: text('moderator_note'),
 		image: text(),
 		status: text('status').default('unshared'),
-		ccVersion: smallint('cc_version').default(4),
 		original: bigint('original', { mode: 'number' }).references(() => project.id, {
 			onDelete: 'set null',
 			onUpdate: 'cascade',

@@ -13,6 +13,7 @@ import {
 	clearScratchCookies,
 } from '$lib/server/signup-tools'
 import { isValidUsername } from '$lib/username'
+import { env } from '$env/dynamic/private'
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -72,7 +73,7 @@ export const actions: Actions = {
 			return fail(400, { message: 'No email' })
 		}
 
-		if (import.meta.env.TURNSTILE_SECRET_KEY) {
+		if (env.TURNSTILE_SECRET_KEY) {
 			const turnstileToken = formData.get('turnstileToken')
 			const verifyResponse = await fetch(
 				'https://challenges.cloudflare.com/turnstile/v0/siteverify',
@@ -80,7 +81,7 @@ export const actions: Actions = {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({
-						secret: import.meta.env.TURNSTILE_SECRET_KEY,
+						secret: env.TURNSTILE_SECRET_KEY,
 						response: turnstileToken,
 					}),
 				},
