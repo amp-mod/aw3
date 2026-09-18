@@ -7,7 +7,7 @@
 
 	// Step 1: Input email | Step 2: Verification email sent
 	let step = $state(data.hasEmail ? 2 : 1)
-	let currentUsername = $state(data.email ?? '')
+	let currentUsername = $state(data.username ?? '')
 
 	// Dynamic UI updates when form actions return
 	$effect(() => {

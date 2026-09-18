@@ -103,7 +103,6 @@ export const actions: Actions = {
 
 			return {
 				success: true,
-				email: userEmail,
 			}
 		} catch (e) {
 			console.error(e)
