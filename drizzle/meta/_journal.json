@@ -15,6 +15,13 @@
       "when": 1789769726182,
       "tag": "0001_lush_epoch",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789936145357,
+      "tag": "0002_eminent_eddie_brock",
+      "breakpoints": true
     }
   ]
 }

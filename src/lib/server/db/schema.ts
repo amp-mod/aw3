@@ -329,7 +329,7 @@ export const projectView = pgTable(
 export const comment = pgTable(
 	'comment',
 	{
-		id: uuid().notNull().defaultRandom(),
+		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
 		authorId: bigint('author_id', { mode: 'number' })
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
