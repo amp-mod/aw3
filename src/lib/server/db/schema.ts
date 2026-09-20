@@ -14,8 +14,9 @@ import {
 	bigint,
 	customType,
 	uuid,
+	uniqueIndex,
 } from 'drizzle-orm/pg-core'
-import { relations } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
 
 // --- CUSTOM TYPES ---
 
@@ -32,6 +33,7 @@ export const user = pgTable(
 	{
 		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
 		username: varchar('username', { length: 20 }).notNull().unique(),
+		displayName: varchar({ length: 30 }).default(''),
 		passwordHash: text('password_hash').notNull(),
 		termsRevision: integer('tos_revision').default(0),
 		privacyRevision: integer('pp_revision').default(0),
@@ -49,16 +51,16 @@ export const user = pgTable(
 		bannedExpiry: timestamp('banned_expiry', { withTimezone: true, mode: 'date' }),
 		banReason: text('ban_reason'),
 		scratchUsername: varchar('scratch_username', { length: 64 }).default(''),
-		verified: boolean('verified').default(false),
 		frame: varchar({ length: 32 }),
 		usernameUpdatedAt: timestamp({ withTimezone: true, mode: 'date' })
 			.notNull()
 			.default(new Date(0)),
 		inviteId: uuid().defaultRandom(),
-		inviter: integer().references(() => user.id, { onDelete: 'cascade' }),
+		inviter: integer().references(() => user.id, { onDelete: 'set null' }),
 		email: text(),
 		isEmailVerified: boolean().notNull().default(false),
 		verifyID: uuid().defaultRandom(),
+		accentColour: text().default('#4fa55c'),
 	},
 	(table) => [index('username_idx').on(table.username)],
 )
@@ -138,6 +140,7 @@ export const studioCurators = pgTable(
 		userId: bigint('user_id', { mode: 'number' })
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
+		isManager: boolean().notNull().default(false),
 	},
 	(t) => [
 		primaryKey({ columns: [t.studioId, t.userId] }),
@@ -204,7 +207,7 @@ export const featuredStudio = pgTable(
 
 export const config = pgTable('config', {
 	key: text().primaryKey(),
-	value: text(),
+	value: jsonb('config_value'),
 })
 
 export const authenticator = pgTable(
@@ -278,6 +281,7 @@ export const report = pgTable('report', {
 	creator: bigint('user_id', { mode: 'number' })
 		.notNull()
 		.references(() => user.id, { onDelete: 'cascade' }),
+	isResolved: boolean().notNull().default(false),
 })
 
 export const projectLike = pgTable(
@@ -325,7 +329,7 @@ export const projectView = pgTable(
 export const comment = pgTable(
 	'comment',
 	{
-		id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+		id: uuid().notNull().defaultRandom(),
 		authorId: bigint('author_id', { mode: 'number' })
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
@@ -433,8 +437,8 @@ export type Authenticator = typeof authenticator.$inferSelect
 export type User = typeof user.$inferSelect
 export type Session = typeof session.$inferSelect
 export type Project = typeof project.$inferSelect
-export type studio = typeof studio.$inferSelect
-export type studioCurator = typeof studioCurators.$inferSelect
+export type Studio = typeof studio.$inferSelect
+export type StudioCurator = typeof studioCurators.$inferSelect
 export type ProjectToStudio = typeof projectsToStudios.$inferSelect
 export type AuditLog = typeof auditLog.$inferSelect
 export type FeaturedProject = typeof featuredProject.$inferSelect

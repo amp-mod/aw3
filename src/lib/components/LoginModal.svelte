@@ -4,8 +4,11 @@
 	import { afterNavigate, invalidateAll } from '$app/navigation'
 	import { browser } from '$app/environment'
 	import Button from './Button.svelte'
+	import { ParaglideMessage } from '@inlang/paraglide-js-svelte'
+	import { m } from '$lib/paraglide/messages'
 
-	let { open = $bindable(false), required = false }: { open: boolean; required: boolean } = $props()
+	let { open = $bindable(false), required = false }: { open: boolean; required?: boolean } =
+		$props()
 	let errorMessage = $state('')
 
 	afterNavigate(() => {
@@ -20,7 +23,7 @@
 	}
 </script>
 
-<Modal bind:open title="Login" canClose={!required} forceMount={required}>
+<Modal bind:open title={m.logIn()} canClose={!required} forceMount={required}>
 	<form
 		method="post"
 		action="/auth/login"
@@ -49,25 +52,31 @@
 		{/if}
 
 		<label class="flex flex-col gap-1">
-			<span class="text-sm font-medium">Username</span>
+			<span class="text-sm font-medium">{m.username()}</span>
 			<input name="username" class="input" required />
 		</label>
 
 		<label class="flex flex-col gap-1">
-			<span class="text-sm font-medium">Password</span>
+			<span class="text-sm font-medium">{m.password()}</span>
 			<input type="password" name="password" class="input" required />
 		</label>
 
-		<p><a class="link" href="/auth/send-reset-email">Forgot password?</a></p>
+		<p><a class="link" href="/auth/send-reset-email">{m.forgotPassword()}</a></p>
 		<p>
-			Don't have an account? <a class="link" href="/auth/register">Join today!</a>
+			<ParaglideMessage message={m.joinToday} inputs={{}}>
+				{#snippet join({ children, options })}
+					<a class="link" href="/auth/register">
+						{@render children?.()}
+					</a>
+				{/snippet}
+			</ParaglideMessage>
 		</p>
 
 		<div class="mt-4 flex flex-col gap-2">
-			<Button type="submit">Login</Button>
+			<Button type="submit">{m.logIn()}</Button>
 
 			{#if required}
-				<Button type="button" onclick={goBack}>Back</Button>
+				<Button type="button" onclick={goBack}>{m.back()}</Button>
 			{/if}
 		</div>
 	</form>

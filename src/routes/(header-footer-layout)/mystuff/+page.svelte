@@ -35,7 +35,15 @@
 		{ label: 'Import from Scratch', href: '/settings/link-scratch', icon: Cat },
 	]
 
-	const studioActions = [{ label: 'New studio', href: '/studios/new', icon: SquareStack }]
+	const studioActions = [
+		{
+			label: 'New studio',
+			href: '/studios/new',
+			action: '/studios/create',
+			icon: SquareStack,
+			method: 'POST',
+		},
+	]
 
 	const validViews = ['all', 'shared', 'unshared', 'studios']
 
@@ -111,23 +119,35 @@
 				</div>
 
 				{#if singleAction}
-					<!-- Single Action: Render directly as a link -->
-					<a
-						href={singleAction.href}
-						target={singleAction.external ? '_blank' : undefined}
-						class="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-secondary focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
-					>
-						<Plus size={16} />
-						<span>{singleAction.label}</span>
-						{#if singleAction.external}
-							<ExternalLink size={14} class="opacity-70" />
-						{/if}
-					</a>
+					<!-- Single Action: Render as a form or standard link based on configuration -->
+					{#if singleAction.method === 'POST'}
+						<form method="POST" action={singleAction.action}>
+							<button
+								type="submit"
+								class="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-secondary focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 cursor-pointer"
+							>
+								<Plus size={16} />
+								<span>{singleAction.label}</span>
+							</button>
+						</form>
+					{:else}
+						<a
+							href={singleAction.href}
+							target={singleAction.external ? '_blank' : undefined}
+							class="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-secondary focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+						>
+							<Plus size={16} />
+							<span>{singleAction.label}</span>
+							{#if singleAction.external}
+								<ExternalLink size={14} class="opacity-70" />
+							{/if}
+						</a>
+					{/if}
 				{:else}
 					<!-- Multiple Actions: Render Dropdown Menu -->
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger
-							class="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-secondary focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+							class="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-secondary focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 cursor-pointer"
 						>
 							<Plus size={16} />
 							<span>New project</span>
@@ -143,17 +163,29 @@
 								<DropdownMenu.Item
 									class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm outline-none select-none hover:bg-black/5 focus:bg-black/5 dark:hover:bg-white/5 dark:focus:bg-white/5"
 								>
-									<a
-										href={action.href}
-										target={action.external ? '_blank' : undefined}
-										class="flex w-full items-center gap-3"
-									>
-										<action.icon size={18} class="text-neutral-500" />
-										<span class="flex-1">{action.label}</span>
-										{#if action.external}
-											<ExternalLink size={14} class="opacity-40" />
-										{/if}
-									</a>
+									{#if action.method === 'POST'}
+										<form method="POST" action={action.action} class="flex w-full">
+											<button
+												type="submit"
+												class="flex w-full items-center gap-3 cursor-pointer text-left"
+											>
+												<action.icon size={18} class="text-neutral-500" />
+												<span class="flex-1">{action.label}</span>
+											</button>
+										</form>
+									{:else}
+										<a
+											href={action.href}
+											target={action.external ? '_blank' : undefined}
+											class="flex w-full items-center gap-3"
+										>
+											<action.icon size={18} class="text-neutral-500" />
+											<span class="flex-1">{action.label}</span>
+											{#if action.external}
+												<ExternalLink size={14} class="opacity-40" />
+											{/if}
+										</a>
+									{/if}
 								</DropdownMenu.Item>
 							{/each}
 						</DropdownMenu.Content>

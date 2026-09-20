@@ -205,7 +205,7 @@
 							type="text"
 							bind:value={titleValue}
 							oninput={handleTitleInput}
-							placeholder="Project Title"
+							placeholder="Title"
 							class="{styles.inputBase} h-12 w-full rounded p-2 text-2xl"
 						/>
 					</div>
@@ -331,7 +331,7 @@
 					</form>
 				{:else}
 					<div
-						class="prose flex-1 overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert prose-a:font-bold prose-a:text-accent prose-a:no-underline prose-a:hover:underline dark:prose-a:text-accent-light"
+						class="prose grow overflow-auto text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 dark:prose-invert prose-a:font-bold prose-a:text-accent prose-a:no-underline prose-a:hover:underline dark:prose-a:text-accent-light"
 					>
 						{#if project.notes}
 							{@html DOMPurify.sanitize(md.render(project.notes))}

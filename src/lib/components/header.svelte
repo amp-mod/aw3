@@ -12,6 +12,7 @@
 		Settings,
 		ChevronLeft,
 		Wrench,
+		Shield,
 	} from '@lucide/svelte'
 	import { m } from '$lib/paraglide/messages'
 	import { invalidateAll } from '$app/navigation'
@@ -106,6 +107,26 @@
 				<NavigationMenu.Root class="relative z-10">
 					<NavigationMenu.List class="flex items-center gap-2">
 						<Tooltip.Provider delayDuration={650} disableHoverableContent>
+							{#if data.user.rank >= 2}
+								<NavigationMenu.Item class="hidden md:block" aria-label={m.moderation()}>
+									<Tooltip.Root>
+										<Tooltip.Trigger>
+											<NavigationMenu.Link href="/moderate">
+												{#snippet child({ props })}
+													<a {...props} class="header-link"><Shield class="h-5 w-5" /></a>
+												{/snippet}
+											</NavigationMenu.Link>
+										</Tooltip.Trigger>
+										<Tooltip.Content
+											sideOffset={8}
+											class="z-50 rounded-lg border border-accent-secondary bg-accent px-4 py-1.5 text-sm font-bold text-white"
+										>
+											{m.moderation()}
+											<Tooltip.Arrow class="text-accent-secondary" />
+										</Tooltip.Content>
+									</Tooltip.Root>
+								</NavigationMenu.Item>
+							{/if}
 							<NavigationMenu.Item class="hidden md:block" aria-label={m.messages()}>
 								<Tooltip.Root>
 									<Tooltip.Trigger>
@@ -155,27 +176,6 @@
 									</Tooltip.Content>
 								</Tooltip.Root>
 							</NavigationMenu.Item>
-
-							{#if data.user.rank === 3}
-								<NavigationMenu.Item class="hidden md:block" aria-label="Admin Panel">
-									<Tooltip.Root>
-										<Tooltip.Trigger>
-											<NavigationMenu.Link href="/admin">
-												{#snippet child({ props })}
-													<a {...props} class="header-link"><Wrench class="h-5 w-5" /></a>
-												{/snippet}
-											</NavigationMenu.Link>
-										</Tooltip.Trigger>
-										<Tooltip.Content
-											sideOffset={8}
-											class="z-50 rounded-lg border border-accent-secondary bg-accent px-4 py-1.5 text-sm font-bold text-white"
-										>
-											Admin Panel
-											<Tooltip.Arrow class="text-accent-secondary" />
-										</Tooltip.Content>
-									</Tooltip.Root>
-								</NavigationMenu.Item>
-							{/if}
 						</Tooltip.Provider>
 
 						<NavigationMenu.Item value="profile" openOnHover={false}>
@@ -186,6 +186,9 @@
 										<div class="hidden max-w-30 overflow-hidden text-ellipsis sm:block">
 											{data.user.username}
 										</div>
+										{#if data.canRankUp}<span
+												class="bg-red-500 border border-red-700 w-3 h-3 rounded-full inline-block"
+											></span>{/if}
 										<ChevronDown
 											class="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180"
 										/>
@@ -200,7 +203,10 @@
 									<li>
 										<NavigationMenu.Link href={`/users/${data.user.username}`}>
 											{#snippet child({ props })}<a {...props} class="submenu-item"
-													>{m.myProfile()}</a
+													>{m.myProfile()}
+													{#if data.canRankUp}<span
+															class="bg-red-500 border border-red-700 w-3 h-3 rounded-full inline-block"
+														></span>{/if}</a
 												>{/snippet}
 										</NavigationMenu.Link>
 									</li>
@@ -211,6 +217,15 @@
 												>{/snippet}
 										</NavigationMenu.Link>
 									</li>
+									{#if data.user.rank >= 3}
+										<li>
+											<NavigationMenu.Link href="/admin">
+												{#snippet child({ props })}<a {...props} class="submenu-item"
+														>{m.adminPanel()}</a
+													>{/snippet}
+											</NavigationMenu.Link>
+										</li>
+									{/if}
 									<li>
 										<button onclick={logout} class="submenu-item w-full text-left"
 											>{m.logOut()}</button
@@ -285,7 +300,7 @@
 	}
 
 	.submenu-item {
-		@apply block cursor-pointer px-3 py-1.5 text-sm font-semibold outline-none;
+		@apply flex cursor-pointer items-center justify-between gap-2 px-3 py-1.5 text-sm font-semibold outline-none;
 		@apply hover:bg-neutral-100 focus-visible:bg-neutral-100 data-[highlighted]:bg-neutral-100;
 		@apply dark:hover:bg-white/10 dark:focus-visible:bg-white/10 dark:data-[highlighted]:bg-white/10;
 	}

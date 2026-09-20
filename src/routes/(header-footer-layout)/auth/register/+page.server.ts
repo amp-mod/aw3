@@ -58,7 +58,7 @@ export const actions: Actions = {
 	register: async (event) => {
 		const formData = await event.request.formData()
 		// Normalize to lowercase immediately
-		const username = (formData.get('username') as string)?.toLowerCase().trim() ?? ''
+		const username = (formData.get('username') as string)?.trim() ?? ''
 		const password = formData.get('password')
 		const email = formData.get('email') as string
 		const inviteCode = (formData.get('inviteCode') as string)?.trim() ?? ''
@@ -225,16 +225,15 @@ export const actions: Actions = {
 		const formData = await request.formData()
 		const username = (formData.get('username') as string)?.toLowerCase().trim() ?? ''
 
+		if (!username) {
+			return { available: false, message: 'Username is required.' }
+		}
+
 		if (isProfane(username, true)) {
 			return { available: false, message: 'Username is possibly profane.' }
 		}
-		if (!isValidUsername(username)) {
-			return {
-				available: false,
-				message: 'Usernames must be 3-20 characters (lowercase, numbers, underscores, dashes).',
-			}
-		}
 
+		// Indexed lookup on table.user.username
 		const existingUser = await db
 			.select({ id: table.user.id })
 			.from(table.user)
@@ -242,7 +241,7 @@ export const actions: Actions = {
 			.limit(1)
 
 		if (existingUser.length > 0) {
-			return { available: false, message: 'Username taken.' }
+			return { available: false, message: 'This username already exists.' }
 		}
 
 		const activeRedirect = await db

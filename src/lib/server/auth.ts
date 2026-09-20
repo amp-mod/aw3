@@ -69,6 +69,7 @@ export async function getUserProfile(userId: number) {
 			featuredProjectTitleIndex: table.user.featuredProjectTitleIndex,
 			email: table.user.email,
 			isEmailVerified: table.user.isEmailVerified,
+			accentColour: table.user.accentColour,
 		})
 		.from(table.user)
 		.where(eq(table.user.id, userId))
@@ -102,6 +103,7 @@ export async function regenerateUserProfileCache(userId: number) {
 			featuredProjectTitleIndex: table.user.featuredProjectTitleIndex,
 			email: table.user.email,
 			isEmailVerified: table.user.isEmailVerified,
+			accentColour: table.user.accentColour,
 		})
 		.from(table.user)
 		.where(eq(table.user.id, userId))
@@ -111,7 +113,7 @@ export async function regenerateUserProfileCache(userId: number) {
 		return null
 	}
 
-	await valkey.set(profileKey, JSON.stringify(user), 'EX', 300)
+	await valkey.set(profileKey, JSON.stringify(user), 'EX', 600)
 	return user
 }
 

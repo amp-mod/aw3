@@ -80,5 +80,20 @@
 	"under13Guidance": "If you are under 13, please ask a parent or guardian to help you with this step.",
 	"resendEmail": "Resend Email",
 	"wrongEmail": "This is the wrong email",
-	"emailSent": "We've sent a verification link to {currentEmail}. If there is no email, check your spam folder."
+	"emailSent": "We've sent a verification link to {currentEmail}. If there is no email, check your spam folder.",
+	"submitReport": "Submit Report",
+	"reportAdditionalDetails": "Additional details",
+	"reportProvideContext": "Please provide context for the moderators...",
+	"sending": "Sending...",
+	"back": "Back",
+	"username": "Username",
+	"password": "Password",
+	"forgotPassword": "Forgot password?",
+	"tagline1": "Block-based programming.",
+	"tagline2": "Amplified.",
+	"createAProject": "Create a project",
+	"joinToday": "Don't have an account? {#join}Join today!{/join}",
+	"featureComingSoon": "This feature is coming soon. Please stay tuned!",
+	"moderation": "Moderation",
+	"adminPanel": "Admin Panel"
 }

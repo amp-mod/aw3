@@ -39,18 +39,17 @@
 				{ href: 'https://extensions.ampmod.org', label: 'Extension gallery', external: true },
 				{ href: 'https://ampblog.flarum.cloud', label: m.footerBlog(), external: true },
 				{ href: '/source-code', label: m.sourceCode() },
-				{ href: '/help', label: 'Help Center' },
 				{ href: 'https://codeberg.org/ampmod/-/projects/30002', label: 'Roadmap', external: true },
 			],
 		},
 		{
 			title: m.footerPolicy(),
 			links: [
-				{ href: '/guidelines', label: m.guidelines() },
 				{ href: '/terms', label: m.termsOfService() },
 				{ href: '/privacy', label: m.privacyPolicy() },
 				//{ href: '/cookies', label: 'Cookie Notice' },
-				//{ href: '/dmca', label: 'DMCA' },
+				{ href: '/guidelines', label: m.guidelines() },
+				{ href: '/dmca', label: 'Copyright' },
 			],
 		},
 	]

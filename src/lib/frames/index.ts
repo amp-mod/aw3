@@ -6,28 +6,53 @@ import glassy from './glassy.svg'
 import TV from './TV.svg'
 import wood from './wood.svg'
 
-export const frames: Record<string, string> = {
+export interface Frame {
+	name: string
+	src: string
+}
+
+export const frames: Record<string, Frame> = {
 	// Based on Apple Cat, the mascot of AmpMod.
-	applecat,
+	applecat: {
+		name: 'Apple Cat',
+		src: applecat,
+	},
 
 	// Based on dangos, which are associated with TurboWarp.
-	dango,
+	dango: {
+		name: 'Dango',
+		src: dango,
+	},
 
 	// Mimicks Scratch's cat frame (previously exclusive to Scratch Membership before it
 	// was shut down). Not the exact same. Intended for those who use it on Scratch.
-	kitten,
+	kitten: {
+		name: 'Kitten',
+		src: kitten,
+	},
 
 	// A glassy theme.
 	// Scrapped.
-	// glassy,
+	// glassy: {
+	//     name: 'Glassy',
+	//     src: glassy,
+	// },
 
 	// A television.
-	TV,
+	TV: {
+		name: 'TV',
+		src: TV,
+	},
 
 	// A wooden frame.
-	// Scrapped.
-	// wood,
+	wood: {
+		name: 'Wood',
+		src: wood,
+	},
 
 	// Based on AmpElectrecuted's 2026 profile picture.
-	ampelectrecuted,
+	ampelectrecuted: {
+		name: 'AmpElectrecuted',
+		src: ampelectrecuted,
+	},
 }

@@ -27,7 +27,7 @@
 
 	const styles = {
 		button_normal:
-			'inline-flex rounded-xl px-5 py-2 items-center gap-2 text-2xl font-semibold bg-green-100 text-accent',
+			'inline-flex rounded-xl px-5 py-2 items-center gap-2 text-xl font-semibold bg-white text-accent',
 		button_small:
 			'inline-flex rounded-full bg-accent px-4 py-2 min-w-32 sm:min-w-48 items-center justify-center gap-2 font-bold text-white transition-all',
 		tab: 'cursor-pointer rounded-t-lg border border-neutral-300 bg-neutral-100 px-3 h-8 text-neutral-600 outline-none border-b-0 flex items-center gap-3 data-[state=active]:border-b-transparent data-[state=active]:bg-white data-[state=active]:text-accent-secondary data-[state=active]:h-10 dark:border-neutral-500 dark:bg-neutral-800 dark:text-neutral-300 dark:data-[state=active]:bg-neutral-700 dark:data-[state=active]:text-white',
@@ -51,12 +51,6 @@
 	We're running a survey to help AmpMod be better for everyone! Your feedback will be used to
 	improve AmpMod.
 </Alert>
-{#if !!data.user}
-	<Alert id="oops" background="#555" icon={TriangleAlert}>
-		Unfortunately, all content and accounts created after the 23rd of August have been removed from
-		the site due to a recent incident. We are very sorry for this.
-	</Alert>
-{/if}
 {#if data.user && !data.user.scratchUsername}
 	<Alert
 		id="linkScratch"
@@ -79,13 +73,18 @@
 					Block-based programming.<br />Amplified.
 				</h1>
 				<div class="mt-4 flex gap-6">
-					<a href="/projects/editor" class={styles.button_normal}><Clapperboard /> Make a project</a
+					<a href="/projects/editor" class={styles.button_normal}
+						><Clapperboard /> {m.createAProject()}</a
 					>
-					<a href="/auth/register" class={styles.button_normal}><Sparkles /> Join</a>
+					<a href="/auth/register" class={styles.button_normal}><Sparkles /> {m.join()}</a>
 				</div>
 			</div>
 			<div class="hidden items-center justify-center lg:flex">
-				<img src={HeroImg} alt="Mascot" class="h-38 w-full object-fill" />
+				<img
+					src={HeroImg}
+					alt="The mascot of AmpMod (an apple with cat-like ears and eyes), inserting an array block into a variable block."
+					class="h-38 w-full object-fill"
+				/>
 			</div>
 		</div>
 	</div>

@@ -125,7 +125,7 @@
 			cooldown.
 		</p>
 	{:else if !data.availableSettings.includes('username')}
-		<p>Rank up to rename your account</p>
+		<p>Become an AmpModder to rename your account</p>
 	{/if}
 	<h3 class="text-2xl font-semibold">Link to your Scratch profile</h3>
 	<p>When you link your AmpMod account to Scratch, a link to your Scratch profile will be added.</p>

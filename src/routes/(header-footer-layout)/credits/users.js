@@ -1,4 +1,4 @@
-import defaultPfp from '$lib/assets/default-pfp.png'
+import defaultPfp from '$lib/assets/default-pfp.svg'
 
 const shuffle = (list) => {
 	for (let i = list.length - 1; i > 0; i--) {
@@ -32,7 +32,7 @@ const fromHardcoded = ({ userID = '0', username, img = defaultPfp, href = null, 
 const contributors = [
 	{
 		username: 'amp',
-		href: '/@amp',
+		href: '/users/amp',
 		img: 'https://ampmod.org/uploads/aw3-avatars/3_64.webp',
 	},
 	{
@@ -40,29 +40,29 @@ const contributors = [
 	},
 	{
 		username: 'cat',
-		href: '/@cat',
+		href: '/users/cat',
 		img: 'https://ampmod.org/uploads/aw3-avatars/2_64.webp',
 	},
 	{
 		username: 'unconstructable13',
-		href: '/@unconstructable13',
+		href: '/users/unconstructable13',
 		img: 'https://ampmod.org/uploads/aw3-avatars/25_64.webp',
 	},
 	{
 		username: 'gvyoutube',
-		href: '/@gvyoutube',
+		href: '/users/gvyoutube',
 	},
 ].map(fromHardcoded)
 
 const serverAdmins = [
 	{
 		username: 'amp',
-		href: '/@amp',
+		href: '/users/amp',
 		img: 'https://ampmod.org/uploads/aw3-avatars/3_64.webp',
 	},
 	{
 		username: 'oisthebestletter',
-		href: '/@oisthebestletter',
+		href: '/users/oisthebestletter',
 		img: 'https://ampmod.org/uploads/aw3-avatars/4_64.webp',
 	},
 ].map(fromHardcoded)

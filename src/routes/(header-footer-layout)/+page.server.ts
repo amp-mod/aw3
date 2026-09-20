@@ -8,9 +8,9 @@ import { valkey } from '$lib/server/valkey'
 export const load: PageServerLoad = async (event) => {
 	const userId = event.locals.user?.id
 
-	// 1. Pick the primary random category key
 	const keys = Object.keys(CATEGORIES) as Array<keyof typeof CATEGORIES>
-	const randomTitle = keys[Math.floor(Math.random() * keys.length)]
+	const randomCategoryKey = keys[Math.floor(Math.random() * keys.length)]
+	const selectedCategory = CATEGORIES[randomCategoryKey]
 
 	const projectSelection = {
 		id: table.project.id,
@@ -36,16 +36,16 @@ export const load: PageServerLoad = async (event) => {
 			.orderBy(desc(table.project.createdAt))
 			.limit(15)
 
-		await valkey.set(key, JSON.stringify(res), 'EX', 60)
+		await valkey.set(key, JSON.stringify(res), 'EX', 120)
 		return res
 	}
 
 	const fetchCategory = async () => {
-		const key = `projects:category:${randomTitle}`
+		const key = `projects:category:${randomCategoryKey}`
 		const cached = await valkey.get(key)
 		if (cached) return JSON.parse(cached)
 
-		// Query the search index using websearch_to_tsquery for the category title/tag
+		// Query the search index using websearch_to_tsquery for the category tag
 		const res = await db
 			.select(projectSelection)
 			.from(table.project)
@@ -53,7 +53,7 @@ export const load: PageServerLoad = async (event) => {
 			.where(
 				and(
 					eq(table.project.status, 'shared'),
-					sql`${table.project.searchIndex} @@ websearch_to_tsquery('english', ${randomTitle})`,
+					sql`${table.project.searchIndex} @@ websearch_to_tsquery('english', ${selectedCategory.tag})`,
 				),
 			)
 			.orderBy(sql`RANDOM()`)
@@ -77,7 +77,7 @@ export const load: PageServerLoad = async (event) => {
 			.orderBy(desc(table.project.createdAt))
 			.limit(15)
 
-		await valkey.set(key, JSON.stringify(res), 'EX', 300)
+		await valkey.set(key, JSON.stringify(res), 'EX', 600)
 		return res
 	}
 
@@ -96,7 +96,7 @@ export const load: PageServerLoad = async (event) => {
 			.orderBy(desc(table.project.createdAt))
 			.limit(15)
 
-		await valkey.set(key, JSON.stringify(res), 'EX', 60)
+		await valkey.set(key, JSON.stringify(res), 'EX', 120)
 		return res
 	}
 
@@ -112,7 +112,8 @@ export const load: PageServerLoad = async (event) => {
 		featuredProjects,
 		followedProjects: followedProjects.length > 0 ? followedProjects : null,
 		categorySection: {
-			title: randomTitle,
+			title: selectedCategory.name,
+			tag: selectedCategory.tag,
 			projects: categoryProjects,
 		},
 		user: event.locals.user,

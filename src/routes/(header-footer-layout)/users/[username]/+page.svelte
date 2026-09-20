@@ -246,7 +246,7 @@
 					<span>{rankMap[userProfile.rank ?? 0]}</span>
 					{#if data.canRankUp}
 						<button onclick={() => (isRankUpModalOpen = true)} class="link cursor-pointer">
-							(Rank up)
+							(Become an AmpModder!)
 						</button>
 					{/if}
 					<span>•</span>
@@ -403,7 +403,7 @@
 	</div>
 {/if}
 
-<Modal bind:open={isRankUpModalOpen} title="Rank Up!">
+<Modal bind:open={isRankUpModalOpen} title="Become an AmpModder!">
 	<div class="flex flex-col gap-4">
 		<h2 class="text-xl font-bold">Ready to become an AmpModder?</h2>
 		<p>Gain access to:</p>
@@ -413,7 +413,6 @@
 			<li>Creating studios</li>
 			<li>Uploading larger and more complex projects</li>
 		</ul>
-		<p>Your New AmpModder rank will be revoked permanently.</p>
 
 		<form
 			method="POST"
@@ -428,7 +427,7 @@
 			}}
 			class="mt-2 flex flex-col gap-2"
 		>
-			<Button type="submit" class="py-2 text-lg">Rank Up Now</Button>
+			<Button type="submit" class="py-2 text-lg">Become an AmpModder</Button>
 			<button
 				type="button"
 				onclick={() => (isRankUpModalOpen = false)}

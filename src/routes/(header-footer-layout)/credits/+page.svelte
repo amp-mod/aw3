@@ -1,7 +1,7 @@
 <script>
 	const { data } = $props()
 	const { UserData } = data
-	import defaultPFP from '$lib/assets/default-pfp.png'
+	import defaultPFP from '$lib/assets/default-pfp.svg'
 </script>
 
 {#snippet UserCard({ image, text, href = null })}

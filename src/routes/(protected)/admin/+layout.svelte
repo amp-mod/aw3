@@ -7,11 +7,9 @@
 
 	const navItems = [
 		{ label: 'Dashboard', href: '/admin' },
-		{ label: 'Reports', href: '/admin/reports' },
 		{ label: 'Users', href: '/admin/users' },
 		{ label: 'Projects', href: '/admin/projects' },
 		{ label: 'Studios', href: '/admin/studios' },
-		{ label: 'Front page management', href: '/admin/frontpage' },
 	]
 </script>
 
@@ -20,14 +18,10 @@
 </svelte:head>
 
 <div class="flex h-screen flex-col bg-white dark:bg-neutral-900">
-	<!-- Header always on top -->
 	<Header admin={true} {data} />
 
-	<!-- Wrap sidebar + main in a horizontal flex container -->
 	<div class="flex flex-1 overflow-hidden">
-		<!-- Sidebar -->
 		<aside class="flex w-72 flex-col bg-neutral-200 p-4 dark:bg-neutral-800">
-			<!-- Navigation -->
 			<nav class="flex flex-1 flex-col">
 				{#each navItems as item}
 					<a
@@ -42,7 +36,6 @@
 				{/each}
 			</nav>
 
-			<!-- Account dropdown -->
 			<div class="p-2">
 				{#if accountOpen}
 					<div
@@ -57,7 +50,6 @@
 			</div>
 		</aside>
 
-		<!-- Main content area -->
 		<main class="flex-1 overflow-y-auto p-4">
 			{@render children?.()}
 		</main>

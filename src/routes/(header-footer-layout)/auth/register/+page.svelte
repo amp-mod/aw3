@@ -19,6 +19,7 @@
 	import { onDestroy } from 'svelte'
 	import MigrateScratchBanner from './migrate-scratch-banner.svg'
 	import { env } from '$env/dynamic/public'
+	import { checkUsername } from '$lib/username'
 
 	let { form = $bindable(), data }: { form: ActionData; data: PageData } = $props()
 
@@ -50,6 +51,7 @@
 	})
 
 	$effect(() => {
+		let usernameCheck
 		if (currentView == 'email' && env.PUBLIC_TURNSTILE_SITE_KEY) {
 			window.onloadTurnstileCallback = () => {
 				if (window.turnstile) {
@@ -67,27 +69,37 @@
 			}
 		}
 
-		if (username.length < 3) {
+		checkingUsername = false
+		unavailableMessage = ''
+		usernameCheck = null
+		if (!username) {
 			usernameAvailable = null
 			return
 		}
-		checkingUsername = true
-		const timer = setTimeout(async () => {
-			const formData = new FormData()
-			formData.append('username', username.toLowerCase().trim())
-			const response = await fetch('?/checkUsername', {
-				method: 'POST',
-				body: formData,
-				headers: { 'x-sveltekit-action': 'true' },
-			})
-			const result = deserialize(await response.text())
-			if (result.type === 'success') {
-				usernameAvailable = result.data?.available ?? false
-				unavailableMessage = result.data?.message
-			}
-			checkingUsername = false
-		}, 400)
-		return () => clearTimeout(timer)
+		usernameCheck = checkUsername(username.toLowerCase())
+		if (!usernameCheck.available) {
+			usernameAvailable = false
+			unavailableMessage = usernameCheck.reason
+			return
+		} else {
+			checkingUsername = true
+			const timer = setTimeout(async () => {
+				const formData = new FormData()
+				formData.append('username', username.toLowerCase().trim())
+				const response = await fetch('?/checkUsername', {
+					method: 'POST',
+					body: formData,
+					headers: { 'x-sveltekit-action': 'true' },
+				})
+				const result = deserialize(await response.text())
+				if (result.type === 'success') {
+					checkingUsername = false
+					usernameAvailable = (result.data?.available as boolean) ?? false
+					unavailableMessage = result.data?.message as string
+				}
+			}, 400)
+			return () => clearTimeout(timer)
+		}
 	})
 
 	const handleEnhance = () => {
@@ -203,7 +215,7 @@
 				<div in:fly={{ x: 20, duration: 250 }} class="space-y-6">
 					<div>
 						<h1 class="text-2xl font-bold">
-							{regMode === 'scratch' ? 'Scratch username' : 'Create your login'}
+							{regMode === 'scratch' ? 'Scratch username' : 'Username and password'}
 						</h1>
 						<p class="mt-1 text-sm text-neutral-500">
 							{regMode === 'scratch'
@@ -269,6 +281,9 @@
 							class="w-full py-4 text-lg"
 							disabled={!isStep2Valid || !isStep1Valid}>Next</Button
 						>
+					{/if}
+					{#if unavailableMessage}
+						<p>{unavailableMessage}</p>
 					{/if}
 				</div>
 			{:else if currentView === 'email'}

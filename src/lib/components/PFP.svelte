@@ -16,7 +16,7 @@
 	let avatarSrc = $derived(getPfpPath(user)[effectiveSize])
 
 	let activeFrameKey = $derived(user.frame && frames[user.frame] ? user.frame : null)
-	let activeFrameSrc = $derived(activeFrameKey ? frames[activeFrameKey] : null)
+	let activeFrameSrc = $derived(activeFrameKey ? frames[activeFrameKey].src : null)
 </script>
 
 {#if activeFrameSrc}
@@ -29,7 +29,7 @@
 	>
 		<img
 			src={avatarSrc}
-			alt={user.username}
+			alt={user.username ?? 'Deleted user'}
 			class="h-full w-full rounded-[10.15%] object-cover"
 			loading="lazy"
 		/>

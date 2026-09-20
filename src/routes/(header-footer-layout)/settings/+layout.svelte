@@ -13,6 +13,7 @@
 		ScanSquare,
 		Share,
 		Share2,
+		TriangleAlert,
 	} from '@lucide/svelte'
 	import { page } from '$app/state'
 	import LoginModal from '$lib/components/LoginModal.svelte'
@@ -59,13 +60,7 @@
 			restricted: true,
 			icon: Share2,
 		},
-		{
-			id: 'frames',
-			label: 'Frames',
-			href: '/settings/frames',
-			restricted: true,
-			icon: ScanSquare,
-		},
+		{ id: 'appearance', label: 'Appearance', href: '/settings/appearance', icon: Paintbrush },
 		{
 			id: 'email',
 			label: 'Email',
@@ -87,8 +82,15 @@
 			restricted: true,
 			icon: LogIn,
 		},
+		{
+			id: 'danger',
+			label: 'Delete account',
+			href: '/settings/danger',
+			restricted: true,
+			icon: TriangleAlert,
+		},
 		{ label: 'AmpMod editor' },
-		{ id: 'theme', label: 'Theme', href: '/settings/theme', icon: Paintbrush },
+		{ id: 'theme', label: 'Editor theme', href: '/settings/theme', icon: Paintbrush },
 		{
 			id: 'addons',
 			label: 'Addons',

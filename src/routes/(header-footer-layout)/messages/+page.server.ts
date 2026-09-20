@@ -18,7 +18,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		limit: limit + 1,
 		with: {
 			issuer: {
-				columns: { id: true, username: true, hasPFP: true },
+				columns: { id: true, username: true, hasPFP: true, frame: true },
 			},
 		},
 	})

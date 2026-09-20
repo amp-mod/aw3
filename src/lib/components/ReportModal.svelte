@@ -4,6 +4,7 @@
 	import { reportState } from '$lib/report.svelte'
 	import { enhance } from '$app/forms'
 	import { reportReasons } from '$lib/report-reasons'
+	import { m } from '$lib/paraglide/messages'
 
 	let reason = $state('')
 	let category = $state('')
@@ -48,12 +49,6 @@
 		}}
 		class="flex flex-col gap-4"
 	>
-		<div class="flex items-center gap-2">
-			<span class="text-sm font-medium"
-				>You are reporting <strong>{reportState.targetName}</strong></span
-			>
-		</div>
-
 		<fieldset class={styles.radioContainer}>
 			<legend class={styles.label}>What is the issue with this {reportState.targetType}?</legend>
 			{#each Object.entries(activeCategories) as [id, label]}
@@ -72,13 +67,13 @@
 		</fieldset>
 
 		<div>
-			<label class={styles.label} for="reason">Additional details</label>
+			<label class={styles.label} for="reason">{m.reportAdditionalDetails()}</label>
 			<textarea
 				id="reason"
 				name="reason"
 				bind:value={reason}
 				required
-				placeholder="Please provide context for the moderators..."
+				placeholder={m.reportProvideContext()}
 				class={styles.textarea}></textarea>
 		</div>
 
@@ -92,7 +87,7 @@
 				disabled={isSubmitting || !reason || !category}
 				class="border-none bg-red-600 text-white hover:bg-red-700"
 			>
-				{isSubmitting ? 'Sending...' : 'Submit Report'}
+				{isSubmitting ? m.sending() : m.submitReport()}
 			</Button>
 		</div>
 	</form>

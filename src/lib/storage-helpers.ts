@@ -1,5 +1,5 @@
 import type { User } from './server/db/schema'
-import DefaultPFP from '$lib/assets/default-pfp.png'
+import DefaultPFP from '$lib/assets/default-pfp.svg'
 
 export const publicUrlRoot = import.meta.env.PUBLIC_AW3_UPLOADS_BASE ?? '/uploads/'
 export const getPublicUrl = (path: string) => {
@@ -12,7 +12,7 @@ export const getPublicUrl = (path: string) => {
  */
 export const getPfpPath = (user: User) => {
 	const sizes = ['16', '24', '32', '64', 'full'] as const
-	if (!user.hasPFP) {
+	if (!user || !user.hasPFP) {
 		return Object.fromEntries(sizes.map((s) => [s, DefaultPFP]))
 	}
 	const base = `aw3-avatars/${user.id}`

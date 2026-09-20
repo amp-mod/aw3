@@ -2,7 +2,7 @@ import { NEW_AMPMODDER, AMPMODDER, MODERATOR, ADMINISTRATOR } from '$lib/ranks'
 import { fail } from '@sveltejs/kit'
 import type { User } from './db/schema'
 
-const rankPerms = Object.freeze({
+export const rankPerms = Object.freeze({
 	// main features that everyone can use
 	createProject: NEW_AMPMODDER,
 	createStudio: NEW_AMPMODDER,
@@ -29,7 +29,8 @@ const rankPerms = Object.freeze({
 	// moderation
 	report: NEW_AMPMODDER,
 	reportStaff: AMPMODDER,
-	accessAdminPanel: MODERATOR,
+	accessAdminPanel: ADMINISTRATOR,
+	accessModPanel: MODERATOR,
 	banProject: MODERATOR,
 	banUser: MODERATOR,
 	editOtherUsersProfile: MODERATOR,

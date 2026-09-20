@@ -1,0 +1,28 @@
+---
+title: Copyright
+---
+AmpMod respects the intellectual property of other people. If you believe your copyright has been
+infringed on AmpMod, please contact ampelc@proton.me.
+
+We will promptly investigate your notice and take appropriate action under the DMCA and other
+laws. If compliant, we will act to remove the content from the site. Repeat infringers may be
+banned from AmpMod.
+
+AmpMod may choose to publicly release your copyright notice to our website, with personal information
+removed.
+
+## Counter-notification
+
+<!--
+This is currently not legally binding:
+If your content has been removed due to a takedown notice, and you believe you have a legal right to
+use the material, please contact ampelc@proton.me with:
+
+* Your full name
+* Your address
+* Your phone number
+* Your email address
+* Your AmpMod username
+* Links to your projects that were taken down
+-->
+If you think your project was removed by mistake, please email ampelc@proton.me.

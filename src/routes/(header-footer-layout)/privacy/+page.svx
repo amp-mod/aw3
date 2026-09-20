@@ -72,8 +72,7 @@ You can disable this in Settings > Desktop Settings.
 
 ## Data deletion and export
 
-You are currently unable to delete your account from the site. If you want to delete your account or export
-data, see below. We will accept all requests until these features are added to the site.
+To delete your account, go to your settings and click "Delete account". If you want to export data, see below.
 
 ## Contact
 

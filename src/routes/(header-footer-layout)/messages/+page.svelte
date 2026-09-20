@@ -18,6 +18,7 @@
 	} from '@lucide/svelte'
 	import { getPfpPath } from '$lib/storage-helpers'
 	import { getLocale } from '$lib/paraglide/runtime.js'
+	import PFP from '$lib/components/PFP.svelte'
 
 	let { data } = $props()
 
@@ -110,11 +111,7 @@
 			<div class="{styles.card} {!note.isRead ? styles.unreadBorder : ''}">
 				{#if note.issuer}
 					<a href="/users/{note.issuer.username}" class="shrink-0">
-						<img
-							src={getPfpPath(note.issuer)['64']}
-							class="h-10 w-10 rounded border border-black/10 dark:border-white/20"
-							alt={note.issuer.username}
-						/>
+						<PFP user={note.issuer} size={40} />
 					</a>
 				{:else}
 					<div class="{styles.iconContainer} {iconData.color}">

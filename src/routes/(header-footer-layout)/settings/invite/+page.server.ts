@@ -17,5 +17,5 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.where(eq(table.user.id, userId))
 		.limit(1)
 
-	return { canInvite: false, inviteId: user.inviteId }
+	return { canInvite: true, inviteId: user.inviteId }
 }
