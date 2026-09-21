@@ -1,5 +1,5 @@
 import { error, redirect } from '@sveltejs/kit'
-import { eq, and, gt } from 'drizzle-orm'
+import { eq, and, gt, sql } from 'drizzle-orm'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import type { PageServerLoad } from './$types'
@@ -11,10 +11,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.select({
 			id: table.user.id,
 			username: table.user.username,
-			hasPFP: table.user.hasPFP,
 		})
 		.from(table.user)
-		.where(eq(table.user.username, username))
+		.where(sql`LOWER(${table.user.username}) = LOWER(${username})`)
 		.limit(1)
 
 	if (!userProfile) {
@@ -22,7 +21,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	}
 
 	if (locals.user?.id && userProfile.id === locals.user.id) {
-		return redirect(302, '/mystuff')
+		throw redirect(302, '/mystuff')
 	}
 
 	return {

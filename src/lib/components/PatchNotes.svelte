@@ -8,21 +8,11 @@
 
 <Modal bind:open title="The AmpMod website has been updated!">
 	<div class="prose dark:prose-invert prose-a:text-accent prose-a:underline">
+		<p>This update mainly fixes bugs (mostly with non-lowercase usernames), but also adds:</p>
 		<h2>New Features</h2>
 		<ul>
-			<!--<li>
-				Studios (previously announced as "galleries") have been added! You can now invite users and
-				add projects to studios.
-			</li>-->
-			<li>You can now change the green used on the site to another colour in settings.</li>
-			<li>You can now view all projects made by other users.</li>
-			<li>The default profile picture has been slightly changed.</li>
-			<li>A new "Copyright" page has been added.</li>
-		</ul>
-		<h2>Miscellaneous Changes</h2>
-		<ul>
-			<li>The pirate language has been removed.</li>
-			<li>More parts of the site are ready to translate.</li>
+			<li>Some pages have been redesigned.</li>
+			<li>Search now displays users.</li>
 		</ul>
 		<h2>Our temporary versioning system</h2>
 		<p>

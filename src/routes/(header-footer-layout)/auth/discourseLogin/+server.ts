@@ -19,8 +19,10 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	const expectedSig = crypto.createHmac('sha256', secret).update(sso).digest('hex')
 	const sigBuffer = Buffer.from(sig, 'hex')
 	const expectedSigBuffer = Buffer.from(expectedSig, 'hex')
+
 	if (
-		sigBuffer.length !== expectedSigBuffer.length ||
+		sigBuffer.length !== 32 ||
+		expectedSigBuffer.length !== 32 ||
 		!crypto.timingSafeEqual(sigBuffer, expectedSigBuffer)
 	) {
 		throw error(403, 'Invalid signature')
@@ -62,6 +64,8 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		username: user.username,
 		admin: isAdmin ? 'true' : 'false',
 		moderator: isModerator ? 'true' : 'false',
+		website: `${url.origin}/users/${user.username}`,
+		location: '',
 		...(user.hasPFP
 			? {
 					avatar_url: `https://ampmod.org/uploads/aw3-avatars/${user.id}_full.webp`,
@@ -77,5 +81,5 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	redirectTarget.searchParams.set('sso', base64Response)
 	redirectTarget.searchParams.set('sig', responseSig)
 
-	throw redirect(302, redirectTarget.toString())
+	return redirect(302, redirectTarget.toString())
 }

@@ -30,7 +30,7 @@ export const load: PageServerLoad = async () => {
 export const actions: Actions = {
 	sendResetEmail: async ({ request }) => {
 		const formData = await request.formData()
-		const username = (formData?.get('username') as string).toLowerCase()
+		const username = formData?.get('username') as string
 
 		if (!username) {
 			return fail(400, { message: 'Username is required.' })

@@ -8,10 +8,6 @@ import { frames } from '$lib/frames'
 import { regenerateUserProfileCache } from '$lib/server/auth'
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) {
-		throw redirect(302, '/auth/login')
-	}
-
 	const canUseFrames = canPerformAction(locals.user, 'setFrame')
 
 	return {

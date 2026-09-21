@@ -39,13 +39,6 @@
 			restricted: true,
 			icon: IdCard,
 		},
-		/* Coming soon! {
-			id: 'invite',
-			label: 'Invite users',
-			href: '/settings/invite',
-			restricted: true,
-			icon: Mail,
-		},*/
 		{
 			id: 'link-scratch',
 			label: 'Scratch account',
@@ -60,7 +53,13 @@
 			restricted: true,
 			icon: Share2,
 		},
-		{ id: 'appearance', label: 'Appearance', href: '/settings/appearance', icon: Paintbrush },
+		{
+			id: 'appearance',
+			label: 'Appearance',
+			href: '/settings/appearance',
+			restricted: true,
+			icon: Paintbrush,
+		},
 		{
 			id: 'email',
 			label: 'Email',
@@ -89,7 +88,7 @@
 			restricted: true,
 			icon: TriangleAlert,
 		},
-		{ label: 'AmpMod editor' },
+		{ label: 'AmpMod editor', restricted: true },
 		{ id: 'theme', label: 'Editor theme', href: '/settings/theme', icon: Paintbrush },
 		{
 			id: 'addons',
@@ -99,6 +98,12 @@
 			icon: Puzzle,
 		},
 	]
+
+	const styles = {
+		tab: 'rounded-l-xl border-r-0 cursor-pointer border border-neutral-300 bg-neutral-100 px-5 text-neutral-600 outline-none flex items-center gap-3 h-10 dark:border-neutral-500 dark:bg-neutral-800 dark:text-neutral-300 transition-all text-sm font-normal',
+		activeTab: 'bg-white text-accent-secondary dark:bg-neutral-700 dark:text-white font-medium',
+		header: 'pt-3 pb-1 px-2 text-xs font-bold text-neutral-500 dark:text-neutral-400',
+	}
 
 	const activeTab = $derived(tabs.find((t) => t.href === page.url.pathname))
 	const activeTabLabel = $derived(activeTab?.label ?? 'Settings')
@@ -113,48 +118,49 @@
 	<title>Settings: {activeTabLabel} - AmpMod</title>
 </svelte:head>
 
-<div class="mx-auto my-12 mb-24 flex min-h-120 max-w-5xl gap-3 overflow-hidden">
-	<nav class="flex w-64 flex-col gap-1">
-		<h1 class="mb-4 text-2xl font-bold text-black dark:text-white">{m.settings()}</h1>
+<div class="bg-accent-secondary p-8 text-center text-white">
+	<h1 class="text-3xl font-bold">{m.settings()}</h1>
+</div>
 
-		{#each tabs as tab}
-			{#if !tab.id && (data.user || !tab.restricted)}
-				<div
-					class="flex w-full items-center border-b border-neutral-500/30 pt-3 pb-1 text-sm font-bold opacity-80"
-				>
-					{tab.label}
-				</div>
-			{:else if data.user || !tab.restricted}
-				<a
-					id={tab.id}
-					class="group flex items-center justify-between rounded-md border-l-3 border-transparent px-3 py-2 text-sm text-black hover:bg-black/5 dark:text-white dark:hover:bg-white/5
-               {page.url.pathname === tab.href
-						? 'border-accent bg-black/10 font-semibold dark:border-accent-light dark:bg-white/10'
-						: ''}"
-					href={tab.href}
-					target={tab.externalIcon ? '_blank' : undefined}
-					aria-current={page.url.pathname === tab.href ? 'page' : undefined}
-				>
-					<div class="flex items-center gap-3">
-						{#if tab.icon}
-							<tab.icon size={18} strokeWidth={page.url.pathname === tab.href ? 2.5 : 2} />
-						{/if}
-						<span>{tab.label}</span>
+<div class="mx-auto my-12 mb-24 flex max-w-6xl flex-col gap-8 px-4">
+	<div class="flex min-h-120 items-stretch">
+		<nav class="flex w-64 flex-col gap-2 py-3">
+			{#each tabs as tab}
+				{#if !tab.id && (data.user || !tab.restricted)}
+					<div class={styles.header}>
+						{tab.label}
 					</div>
+				{:else if data.user || !tab.restricted}
+					<a
+						id={tab.id}
+						href={tab.href}
+						target={tab.externalIcon ? '_blank' : undefined}
+						aria-current={page.url.pathname === tab.href ? 'page' : undefined}
+						class="{styles.tab} justify-between {page.url.pathname === tab.href
+							? styles.activeTab
+							: ''}"
+					>
+						<div class="flex items-center gap-3">
+							{#if tab.icon}
+								<tab.icon size={18} />
+							{/if}
+							<span>{tab.label}</span>
+						</div>
 
-					{#if tab.externalIcon}
-						<ExternalLink size={18} />
-					{/if}
-				</a>
-			{/if}
-		{/each}
-	</nav>
+						{#if tab.externalIcon}
+							<ExternalLink size={14} class="opacity-70" />
+						{/if}
+					</a>
+				{/if}
+			{/each}
+		</nav>
 
-	<div class="border-r border-r-neutral-500/10"></div>
-
-	{#if data.user || !isRestrictedPath}
-		<div class="flex-1 px-4">
-			{@render children()}
-		</div>
-	{/if}
+		{#if data.user || !isRestrictedPath}
+			<main
+				class="flex-1 rounded-lg border border-neutral-300 bg-white p-6 dark:border-neutral-500 dark:bg-neutral-800"
+			>
+				{@render children()}
+			</main>
+		{/if}
+	</div>
 </div>

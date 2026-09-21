@@ -62,7 +62,10 @@ export const user = pgTable(
 		verifyID: uuid().defaultRandom(),
 		accentColour: text().default('#4fa55c'),
 	},
-	(table) => [index('username_idx').on(table.username)],
+	(table) => [
+		uniqueIndex('user_lower_username_idx').on(sql`LOWER(${table.username})`),
+		index('username_idx').on(table.username),
+	],
 )
 
 export const session = pgTable(

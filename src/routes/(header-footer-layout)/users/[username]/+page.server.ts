@@ -16,7 +16,7 @@ import { valkey } from '$lib/server/valkey'
 const PROFILE_CACHE_TTL = 300 // Cache for 5 minutes (in seconds)
 
 async function invalidateProfileCache(username: string) {
-	await valkey.del(`user:profile:${username.toLowerCase()}`)
+	await valkey.del(`user:profile:${username}`)
 }
 
 export const load: PageServerLoad = async ({ params, locals }) => {
@@ -25,7 +25,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const viewer = locals.user
 	const viewerRank = viewer?.rank ?? 0
 	const isStaffMember = viewerRank >= 2
-	const cacheKey = `user:profile:${username.toLowerCase()}`
+	const cacheKey = `user:profile:${username}`
 
 	let userProfile: any = null
 
@@ -59,7 +59,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				banReason: table.user.banReason,
 			})
 			.from(table.user)
-			.where(eq(table.user.username, username))
+			.where(sql`LOWER(${table.user.username}) = LOWER(${username})`)
 			.limit(1)
 
 		if (dbProfile) {
@@ -77,7 +77,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			.from(table.userRedirects)
 			.where(
 				and(
-					eq(table.userRedirects.fromUsername, username.toLowerCase()),
+					eq(table.userRedirects.fromUsername, username),
 					gt(table.userRedirects.expiresAt, new Date()),
 				),
 			)
@@ -354,6 +354,7 @@ export const actions: Actions = {
 			return fail(400, { message: 'Profanity detected' })
 
 		await db.update(table.user).set({ bio: newBio }).where(eq(table.user.id, targetUserId))
+		invalidateProfileCache(targetUser.username)
 		return { success: true }
 	},
 

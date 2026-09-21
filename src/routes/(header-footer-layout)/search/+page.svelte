@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition'
 	import { page } from '$app/state'
 	import { search } from './search.remote'
 	import ProjectGrid from '$lib/components/ProjectGrid.svelte'
@@ -7,12 +6,14 @@
 	import { untrack } from 'svelte'
 	import { searchState } from '$lib/search.svelte'
 	import { addToast } from '$lib/toast.svelte'
+	import PFP from '$lib/components/PFP.svelte'
 
 	let pageNum = $state(1)
 	let projects = $state([])
+	let user = $state(null)
 	let exhausted = $state(false)
 
-	// 1. SYNC URL TO STATE (This fixes the "re-nav" issue)
+	// 1. SYNC URL TO STATE
 	$effect(() => {
 		const urlQuery = page.url.searchParams.get('q') || ''
 		if (searchState.query !== urlQuery) {
@@ -21,8 +22,6 @@
 	})
 
 	// 2. TRIGGER FETCH
-	// Using a simple $derived ensures that whenever pageNum or searchState.query
-	// changes, search() is called immediately.
 	let query = $derived(
 		search({
 			page: pageNum,
@@ -36,9 +35,9 @@
 		const body = document.body
 
 		untrack(() => {
-			// Reset state for new search
 			pageNum = 1
 			projects = []
+			user = null
 			exhausted = false
 
 			body.classList.remove('barrel-roll', 'retro-1920', 'pisa', 'amp-mirror')
@@ -67,13 +66,6 @@
 				})
 			}
 			if (term === 'zero wing') alert('ALL YOUR BASE ARE BELONG TO US')
-			if (term === 'age verification') {
-				for (let i = 0; i < 3; i++) {
-					alert(
-						"We have partnered with George's Verification Company to verify your age. Please confirm you are over the age of 67:",
-					)
-				}
-			}
 		})
 	})
 
@@ -81,17 +73,19 @@
 	$effect(() => {
 		if (query.error || !query.current || query.loading) return
 
-		const newItems = query.current
+		const newProjects = query.current.projects ?? []
+		const currentUser = query.current.user ?? null
 
 		untrack(() => {
 			if (pageNum === 1) {
-				projects = newItems
+				projects = newProjects
+				user = currentUser
 			} else {
-				const existingIds = new Set(projects.map((p) => p.id))
-				const uniqueItems = newItems.filter((p) => !existingIds.has(p.id))
-				projects = [...projects, ...uniqueItems]
+				const existingProjectIds = new Set(projects.map((p) => p.id))
+				const uniqueProjects = newProjects.filter((p) => !existingProjectIds.has(p.id))
+				projects = [...projects, ...uniqueProjects]
 			}
-			exhausted = newItems.length < 12
+			exhausted = newProjects.length < 12
 		})
 	})
 
@@ -100,14 +94,37 @@
 	}
 </script>
 
-<div class="m-auto max-w-5xl py-8" in:fade>
-	<h1 class="mb-8 text-3xl font-bold">Search</h1>
+<div class="bg-accent-secondary p-8 text-center text-white">
+	<h1 class="text-3xl font-bold">Search</h1>
+</div>
 
-	{#if projects.length !== 0}
-		<ProjectGrid {projects} />
-	{:else if !query.loading && !query.error && searchState.query}
+<div class="m-auto flex max-w-5xl flex-col gap-8 py-8">
+	{#if user}
+		<section class="flex flex-col gap-3">
+			<a
+				href="/users/{user.username}"
+				class="flex flex-col sm:flex-row items-center gap-6 rounded-2xl border border-neutral-300 bg-neutral-50 p-6 shadow-sm transition hover:border-neutral-400 hover:shadow-md dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600"
+			>
+				<PFP {user} size={72} />
+				<div class="flex flex-1 flex-col text-center sm:text-left">
+					<h3 class="text-2xl font-bold text-neutral-900 dark:text-white">
+						{user.username}
+					</h3>
+					<p class="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+						{user.bio}
+					</p>
+				</div>
+			</a>
+		</section>
+	{/if}
+
+	{#if projects.length > 0}
+		<section class="flex flex-col gap-3">
+			<ProjectGrid {projects} />
+		</section>
+	{:else if !query.loading && !query.error && searchState.query && !user}
 		<div class="py-20 text-center text-neutral-500">
-			<p>No projects found</p>
+			<p>No results found</p>
 		</div>
 	{/if}
 

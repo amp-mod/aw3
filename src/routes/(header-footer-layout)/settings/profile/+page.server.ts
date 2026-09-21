@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '$lib/server/db'
 import * as table from '$lib/server/db/schema'
 import type { PageServerLoad } from './$types'
-import { validateUsername } from '$lib/server/signup-tools'
+import { isValidUsername } from '$lib/username'
 import { failIfCannotPerformAction, canPerformAction } from '$lib/server/permissions'
 import { isProfane } from '$lib/server/bad-word-checker'
 import { regenerateUserProfileCache } from '$lib/server/auth'
@@ -77,13 +77,13 @@ export const actions: Actions = {
 		failIfCannotPerformAction(locals.user, 'renameAccount')
 
 		const formData = await request.formData()
-		const newUsername = formData.get('username')?.toString().toLowerCase()
+		const newUsername = formData.get('username')?.toString()
 
-		if (!newUsername || !validateUsername(newUsername) || isProfane(newUsername, true)) {
+		if (!newUsername || !isValidUsername(newUsername) || isProfane(newUsername, true)) {
 			return fail(400, { message: 'Your new username is invalid' })
 		}
 
-		const oldUsername = locals.user.username.toLowerCase()
+		const oldUsername = locals.user.username
 		if (oldUsername === newUsername) {
 			return fail(400, { message: 'New username must be different from current username' })
 		}

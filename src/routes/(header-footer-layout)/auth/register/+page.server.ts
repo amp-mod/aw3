@@ -136,7 +136,7 @@ export const actions: Actions = {
 	registerScratch: async ({ request, cookies }) => {
 		const formData = await request.formData()
 		// Normalize to lowercase immediately
-		const username = formData.get('username')?.toString().toLowerCase().trim() ?? ''
+		const username = formData.get('username')?.toString().trim() ?? ''
 		const password = formData.get('password')?.toString() ?? ''
 		const inviteCode = formData.get('inviteCode')?.toString().trim() ?? ''
 
@@ -223,7 +223,7 @@ export const actions: Actions = {
 
 	checkUsername: async ({ request }) => {
 		const formData = await request.formData()
-		const username = (formData.get('username') as string)?.toLowerCase().trim() ?? ''
+		const username = (formData.get('username') as string)?.trim() ?? ''
 
 		if (!username) {
 			return { available: false, message: 'Username is required.' }
@@ -237,7 +237,7 @@ export const actions: Actions = {
 		const existingUser = await db
 			.select({ id: table.user.id })
 			.from(table.user)
-			.where(eq(table.user.username, username))
+			.where(eq(sql`lower(${table.user.username})`, username.toLowerCase()))
 			.limit(1)
 
 		if (existingUser.length > 0) {

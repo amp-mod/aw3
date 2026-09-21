@@ -36,9 +36,20 @@
 	}
 </script>
 
-<div class="m-auto max-w-5xl py-8">
-	<h1 class="mb-8 text-3xl font-bold">Featured Projects</h1>
+<div class="bg-accent-secondary p-6 text-center text-white">
+	<h1 class="text-4xl font-bold">Featured Projects</h1>
+</div>
+<div class="bg-accent-tertiary p-4 text-lg text-white">
+	<div class="m-auto max-w-5xl flex flex-col gap-4">
+		<p>
+			Featured projects are projects that are featured on the AmpMod homepage. We feature projects
+			when they use AmpMod's advanced features or are just good projects.
+		</p>
+		<p>Check out some featured projects on this page:</p>
+	</div>
+</div>
 
+<div class="m-auto max-w-5xl py-8">
 	{#if projects.length !== 0}
 		<ProjectGrid {projects} />
 	{/if}

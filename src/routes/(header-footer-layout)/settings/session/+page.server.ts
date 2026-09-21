@@ -91,7 +91,7 @@ export const actions: Actions = {
 
 		if (sessionToRevoke.id === currentSession.id) {
 			deleteSessionTokenCookie(event)
-			throw redirect(302, '/auth/login')
+			throw redirect(302, '/auth/login-modal')
 		}
 
 		return { success: true }
@@ -106,6 +106,6 @@ export const actions: Actions = {
 		await db.delete(table.session).where(eq(table.session.userId, user.id))
 
 		deleteSessionTokenCookie(event)
-		throw redirect(302, '/auth/login')
+		throw redirect(302, '/auth/login-modal')
 	},
 }

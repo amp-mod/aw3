@@ -95,11 +95,6 @@ export function clearScratchCookies(cookies: any) {
 	cookies.delete('s_reg_pw', opts)
 }
 
-export function validateUsername(username: string): boolean {
-	// Only lowercase allowed post-normalization
-	return username.length >= 3 && username.length <= 20 && /^[a-z0-9_-]+$/.test(username)
-}
-
 export function validatePassword(password: unknown): password is string {
 	return typeof password === 'string' && password.length >= 6 && password.length <= 255
 }

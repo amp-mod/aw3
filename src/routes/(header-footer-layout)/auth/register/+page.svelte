@@ -76,7 +76,7 @@
 			usernameAvailable = null
 			return
 		}
-		usernameCheck = checkUsername(username.toLowerCase())
+		usernameCheck = checkUsername(username)
 		if (!usernameCheck.available) {
 			usernameAvailable = false
 			unavailableMessage = usernameCheck.reason
@@ -85,7 +85,7 @@
 			checkingUsername = true
 			const timer = setTimeout(async () => {
 				const formData = new FormData()
-				formData.append('username', username.toLowerCase().trim())
+				formData.append('username', username.trim())
 				const response = await fetch('?/checkUsername', {
 					method: 'POST',
 					body: formData,
