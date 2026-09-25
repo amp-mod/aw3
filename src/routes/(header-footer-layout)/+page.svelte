@@ -39,18 +39,6 @@
 	<title>AmpMod - Block-based programming, amplified</title>
 </svelte:head>
 
-<Alert
-	id="aw3-survey"
-	background="#49b049"
-	button={{
-		url: 'https://forms.gle/XsUkmbUUF71SQpKq9',
-		text: 'Take the survey',
-	}}
-	icon={Globe}
->
-	We're running a survey to help AmpMod be better for everyone! Your feedback will be used to
-	improve AmpMod.
-</Alert>
 {#if data.user && !data.user.scratchUsername}
 	<Alert
 		id="linkScratch"
