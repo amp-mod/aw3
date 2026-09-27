@@ -37,7 +37,7 @@
 	}
 </script>
 
-<div class="m-auto max-w-5xl py-8 flex flex-col gap-4">
+<div class="m-auto max-w-7xl py-8 flex flex-col gap-4">
 	<div class="flex gap-4 justify-start">
 		<Button href="/users/{data.userProfile.username}"><ArrowLeft /></Button>
 		<h1 class="text-3xl font-bold">Projects by {data.userProfile.username}</h1>

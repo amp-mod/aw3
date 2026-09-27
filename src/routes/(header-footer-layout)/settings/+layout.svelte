@@ -122,7 +122,7 @@
 	<h1 class="text-3xl font-bold">{m.settings()}</h1>
 </div>
 
-<div class="mx-auto my-12 mb-24 flex max-w-6xl flex-col gap-8 px-4">
+<div class="mx-auto my-12 mb-24 flex max-w-7xl flex-col gap-8 px-4">
 	<div class="flex min-h-120 items-stretch">
 		<nav class="flex w-64 flex-col gap-2 py-3">
 			{#each tabs as tab}

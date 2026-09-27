@@ -4,18 +4,19 @@ import { eq } from 'drizzle-orm'
 import { getRequestEvent, query } from '$app/server'
 import * as v from 'valibot'
 
-export const getProjectJson = query(v.number(), async (projectId) => {
+export const getProject = query(v.number(), async (projectId: number) => {
 	const result = await db.query.project.findFirst({
 		where: eq(table.project.id, projectId),
 		columns: {
 			json: true,
 			status: true,
 			userId: true,
+			title: true,
 		},
 	})
 
 	if (!result) {
-		return null
+		return { error: 'Project not found' }
 	}
 
 	const locals = getRequestEvent().locals
@@ -24,8 +25,8 @@ export const getProjectJson = query(v.number(), async (projectId) => {
 		result.userId !== locals.user?.id &&
 		(locals.user?.rank ?? 0) < 2
 	) {
-		return null
+		return { error: 'Project not found' }
 	}
 
-	return result?.json ?? null
+	return result ?? null
 })

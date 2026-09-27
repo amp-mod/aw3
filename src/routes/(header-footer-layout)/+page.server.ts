@@ -23,6 +23,7 @@ export const load: PageServerLoad = async (event) => {
 		},
 	}
 
+	// 1. Fetch Latest & Featured concurrently with their respective cache lookups
 	const fetchLatest = async () => {
 		const key = 'projects:latest'
 		const cached = await valkey.get(key)
@@ -37,29 +38,6 @@ export const load: PageServerLoad = async (event) => {
 			.limit(15)
 
 		await valkey.set(key, JSON.stringify(res), 'EX', 120)
-		return res
-	}
-
-	const fetchCategory = async () => {
-		const key = `projects:category:${randomCategoryKey}`
-		const cached = await valkey.get(key)
-		if (cached) return JSON.parse(cached)
-
-		// Query the search index using websearch_to_tsquery for the category tag
-		const res = await db
-			.select(projectSelection)
-			.from(table.project)
-			.leftJoin(table.user, eq(table.project.userId, table.user.id))
-			.where(
-				and(
-					eq(table.project.status, 'shared'),
-					sql`${table.project.searchIndex} @@ websearch_to_tsquery('english', ${selectedCategory.tag})`,
-				),
-			)
-			.orderBy(sql`RANDOM()`)
-			.limit(15)
-
-		await valkey.set(key, JSON.stringify(res), 'EX', 300)
 		return res
 	}
 
@@ -81,11 +59,40 @@ export const load: PageServerLoad = async (event) => {
 		return res
 	}
 
-	const fetchFollowing = async () => {
-		if (!userId) return []
-		const key = `user:following_feed:${userId}`
+	// 2. Optimized Category Fetch (Avoids slow ORDER BY RANDOM())
+	const fetchCategory = async () => {
+		const key = `projects:category:${randomCategoryKey}`
 		const cached = await valkey.get(key)
 		if (cached) return JSON.parse(cached)
+
+		const res = await db
+			.select(projectSelection)
+			.from(table.project)
+			.leftJoin(table.user, eq(table.project.userId, table.user.id))
+			.where(
+				and(
+					eq(table.project.status, 'shared'),
+					sql`${table.project.searchIndex} @@ websearch_to_tsquery('english', ${selectedCategory.tag})`,
+				),
+			)
+			// Avoid ORDER BY RANDOM() on large tables; order by recency or pre-computed randomness instead
+			.orderBy(desc(table.project.createdAt))
+			.limit(15)
+
+		await valkey.set(key, JSON.stringify(res), 'EX', 300)
+		return res
+	}
+
+	// 3. Optimized Following Feed (Combines User check and Query execution cleanly)
+	const fetchFollowing = async () => {
+		if (!userId) return null
+
+		const key = `user:following_feed:${userId}`
+		const cached = await valkey.get(key)
+		if (cached) {
+			const parsed = JSON.parse(cached)
+			return parsed.length > 0 ? parsed : null
+		}
 
 		const res = await db
 			.select(projectSelection)
@@ -97,9 +104,10 @@ export const load: PageServerLoad = async (event) => {
 			.limit(15)
 
 		await valkey.set(key, JSON.stringify(res), 'EX', 120)
-		return res
+		return res.length > 0 ? res : null
 	}
 
+	// Execute all queries concurrently
 	const [latestProjects, categoryProjects, featuredProjects, followedProjects] = await Promise.all([
 		fetchLatest(),
 		fetchCategory(),
@@ -110,7 +118,7 @@ export const load: PageServerLoad = async (event) => {
 	return {
 		latestProjects,
 		featuredProjects,
-		followedProjects: followedProjects.length > 0 ? followedProjects : null,
+		followedProjects,
 		categorySection: {
 			title: selectedCategory.name,
 			tag: selectedCategory.tag,

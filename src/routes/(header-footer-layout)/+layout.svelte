@@ -46,18 +46,6 @@
 						projects. If you're afraid of remote scripts, download AmpMod on your computer.
 					</div>
 				</noscript>
-				<Alert
-					id="moderator-2026"
-					background="#7400d9"
-					button={{
-						url: 'https://forums.ampmod.org/t/moderator-election-2026/219',
-						text: 'Vote!',
-					}}
-					icon={Vote}
-				>
-					We are currently holding a moderator election. Read the speeches and choose who you want
-					to become moderator!
-				</Alert>
 				{@render children?.()}
 			</div>
 		</main>

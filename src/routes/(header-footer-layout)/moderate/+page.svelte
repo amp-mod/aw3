@@ -4,7 +4,7 @@
 	let { data } = $props()
 </script>
 
-<div class="max-w-6xl my-12 mx-auto flex flex-col gap-4">
+<div class="max-w-7xl my-12 mx-auto flex flex-col gap-4">
 	<h2 class="text-2xl font-bold">Moderator Panel</h2>
 	<form method="GET" action="/moderate" class="m-auto flex items-center w-full">
 		<input name="report" type="number" class="input" placeholder="Go to report ID..." />

@@ -56,7 +56,7 @@
 </script>
 
 <footer class="w-full border-t border-neutral-300 p-4 dark:border-neutral-700">
-	<div class="mx-auto max-w-5xl">
+	<div class="mx-auto max-w-7xl">
 		<nav class="mb-12 grid grid-cols-2 gap-8 text-sm md:grid-cols-4" aria-label="Footer Navigation">
 			{#each footerSections as section}
 				<div class="flex flex-col space-y-2">
@@ -81,19 +81,17 @@
 			{/each}
 		</nav>
 
-		<div class="flex flex-col items-center gap-4">
-			{#if !noJS}<LangSwitcher />{/if}
-			<div class="flex max-w-5xl flex-col gap-2 text-center text-xs">
+		<div class="flex justify-between gap-4">
+			<div class="flex max-w-7xl flex-col gap-2 text-xs">
 				<p>
-					Copyright &copy; 2024-{new Date().getFullYear()} AmpMod. AmpMod is not affiliated with Scratch,
-					the Scratch Team, the Scratch Foundation, TurboWarp, or GarboMuffin. Scratch and the Scratch
-					logo are trademarks of the Scratch Foundation in the United States. For more information on
-					user content licencing, see the <a href="/terms" class="link">Terms of Service</a>.
+					&copy; 2024-{new Date().getFullYear()} AmpMod. AmpMod is <strong>not</strong> affiliated with
+					TurboWarp, Scratch, the Scratch Team, or the Scratch Foundation.
 				</p>
 				<p>
-					aw3 version {import.meta.env.VITE_NPM_PACKAGE_VERSION}
+					v{import.meta.env.VITE_NPM_PACKAGE_VERSION}
 				</p>
 			</div>
+			{#if !noJS}<LangSwitcher />{/if}
 		</div>
 	</div>
 </footer>

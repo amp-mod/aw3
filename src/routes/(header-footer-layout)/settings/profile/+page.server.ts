@@ -88,15 +88,20 @@ export const actions: Actions = {
 			return fail(400, { message: 'New username must be different from current username' })
 		}
 
+		const isCaseOnlyChange = oldUsername.toLowerCase() === newUsername.toLowerCase()
+
 		const expiresAt = new Date()
 		expiresAt.setDate(expiresAt.getDate() + 14)
 
 		try {
 			await db.transaction(async (tx) => {
-				// Update user table
+				// Update user table - only set usernameUpdatedAt if changing to a completely new name
 				await tx
 					.update(table.user)
-					.set({ username: newUsername, usernameUpdatedAt: new Date() })
+					.set({
+						username: newUsername,
+						...(isCaseOnlyChange ? {} : { usernameUpdatedAt: new Date() }),
+					})
 					.where(eq(table.user.id, locals.user.id))
 
 				await tx.insert(table.userRedirects).values({

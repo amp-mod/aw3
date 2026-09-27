@@ -64,7 +64,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 		if (dbProfile) {
 			userProfile = dbProfile
-			// Save full profile in Valkey with TTL
 			await valkey.set(cacheKey, JSON.stringify(dbProfile), 'EX', PROFILE_CACHE_TTL)
 		}
 	}
@@ -115,35 +114,92 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		return { private: true, userProfile: { username: userProfile.username }, projects: [] }
 	}
 
-	let featuredProject = null
-	if (userProfile.featuredProjectId) {
-		const [fp] = await db
-			.select({
-				id: table.project.id,
-				title: table.project.title,
-			})
-			.from(table.project)
-			.where(eq(table.project.id, userProfile.featuredProjectId))
-			.limit(1)
-		featuredProject = fp
-	}
+	// 3. Execute all independent queries in parallel using Promise.all
+	const [
+		featuredProject,
+		projects,
+		projectCountResult,
+		[followingStatus],
+		[counts],
+		followers,
+		following,
+	] = await Promise.all([
+		// Featured Project
+		userProfile.featuredProjectId
+			? db
+					.select({ id: table.project.id, title: table.project.title })
+					.from(table.project)
+					.where(eq(table.project.id, userProfile.featuredProjectId))
+					.limit(1)
+					.then((res) => res[0] ?? null)
+			: Promise.resolve(null),
 
-	const projects = await db
-		.select({
-			id: table.project.id,
-			title: table.project.title,
-		})
-		.from(table.project)
-		.where(and(eq(table.project.userId, userProfile.id), eq(table.project.status, 'shared')))
-		.orderBy(desc(table.project.createdAt))
-		.limit(10)
+		// Projects
+		db
+			.select({ id: table.project.id, title: table.project.title })
+			.from(table.project)
+			.where(and(eq(table.project.userId, userProfile.id), eq(table.project.status, 'shared')))
+			.orderBy(desc(table.project.createdAt))
+			.limit(10),
+
+		// Project Count for Rank Up (conditionally queried)
+		isOwnProfile && (userProfile.rank ?? 0) === 0 && canPerformAction(viewerRank, 'rankUp')
+			? db
+					.select({ count: sql<number>`count(*)` })
+					.from(table.project)
+					.where(and(eq(table.project.userId, userProfile.id), eq(table.project.status, 'shared')))
+			: Promise.resolve([]),
+
+		// Following Status
+		viewer
+			? db
+					.select()
+					.from(table.follow)
+					.where(
+						and(
+							eq(table.follow.followerId, viewer.id),
+							eq(table.follow.followingId, userProfile.id),
+						),
+					)
+			: Promise.resolve([]),
+
+		// Follow Counts
+		db
+			.select({
+				followers: sql<number>`count(*) filter (where ${table.follow.followingId} = ${userProfile.id})`,
+				following: sql<number>`count(*) filter (where ${table.follow.followerId} = ${userProfile.id})`,
+			})
+			.from(table.follow),
+
+		// Followers List
+		db
+			.select({
+				username: table.user.username,
+				id: table.user.id,
+				hasPFP: table.user.hasPFP,
+				frame: table.user.frame,
+			})
+			.from(table.follow)
+			.leftJoin(table.user, eq(table.follow.followerId, table.user.id))
+			.where(eq(table.follow.followingId, userProfile.id))
+			.limit(12),
+
+		// Following List
+		db
+			.select({
+				username: table.user.username,
+				id: table.user.id,
+				hasPFP: table.user.hasPFP,
+				frame: table.user.frame,
+			})
+			.from(table.follow)
+			.leftJoin(table.user, eq(table.follow.followingId, table.user.id))
+			.where(eq(table.follow.followerId, userProfile.id))
+			.limit(12),
+	])
 
 	let canRankUp = false
 	if (isOwnProfile && (userProfile.rank ?? 0) === 0 && canPerformAction(viewerRank, 'rankUp')) {
-		const projectCountResult = await db
-			.select({ count: sql<number>`count(*)` })
-			.from(table.project)
-			.where(and(eq(table.project.userId, userProfile.id), eq(table.project.status, 'shared')))
 		const projectCount = Number(projectCountResult[0]?.count ?? 0)
 		const accountAgeDays =
 			(Date.now() - new Date(userProfile.createdAt).getTime()) / (1000 * 60 * 60 * 24)
@@ -153,47 +209,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		}
 	}
 
-	const [followingStatus] = viewer
-		? await db
-				.select()
-				.from(table.follow)
-				.where(
-					and(eq(table.follow.followerId, viewer.id), eq(table.follow.followingId, userProfile.id)),
-				)
-		: []
-
-	const [counts] = await db
-		.select({
-			followers: sql<number>`count(*) filter (where ${table.follow.followingId} = ${userProfile.id})`,
-			following: sql<number>`count(*) filter (where ${table.follow.followerId} = ${userProfile.id})`,
-		})
-		.from(table.follow)
-
-	const followers = await db
-		.select({
-			username: table.user.username,
-			id: table.user.id,
-			hasPFP: table.user.hasPFP,
-			frame: table.user.frame,
-		})
-		.from(table.follow)
-		.leftJoin(table.user, eq(table.follow.followerId, table.user.id))
-		.where(eq(table.follow.followingId, userProfile.id))
-		.limit(12)
-
-	const following = await db
-		.select({
-			username: table.user.username,
-			id: table.user.id,
-			hasPFP: table.user.hasPFP,
-			frame: table.user.frame,
-		})
-		.from(table.follow)
-		.leftJoin(table.user, eq(table.follow.followingId, table.user.id))
-		.where(eq(table.follow.followerId, userProfile.id))
-		.limit(12)
-
-	// Don't say "isOnline" on Scratch or you'll get banned!!
 	const isOnline = activeUsers.some((i) => i.username === userProfile.username)
 
 	const availableActions = (

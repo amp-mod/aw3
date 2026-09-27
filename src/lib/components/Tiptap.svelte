@@ -17,7 +17,8 @@
 
 	import emojiDataRaw from 'unicode-emoji-json'
 	import emojiNames from 'unicode-emoji-json/data-by-emoji.json'
-	import { markPasteRule } from '@tiptap/core'
+	import { markPasteRule, Node, mergeAttributes } from '@tiptap/core'
+	import { EMOJI_MAP } from '$lib/emojis'
 
 	let { value = $bindable(''), class: className = '' } = $props()
 
@@ -46,13 +47,28 @@
 		'1f4a6',
 	])
 
-	const allEmojis = Object.keys(emojiDataRaw)
-		.map((char) => ({
-			char,
+	const HEART_EMOJI = '\u2764\uFE0F'
+
+	interface EmojiItem {
+		name: string
+		char?: string
+		src?: string
+	}
+
+	const unicodeEmojis: EmojiItem[] = Object.keys(emojiDataRaw).map((char) => {
+		const codePoint = char.codePointAt(0)?.toString(16).toLowerCase() || ''
+		return {
+			char: forbidden.has(codePoint) ? HEART_EMOJI : char,
 			name: (emojiNames[char]?.name || '').toLowerCase().replace(/\s+/g, '_'),
-			slug: char.codePointAt(0).toString(16).toLowerCase(),
-		}))
-		.filter((e) => !forbidden.has(e.slug))
+		}
+	})
+
+	const customEmojis: EmojiItem[] = Object.entries(EMOJI_MAP).map(([name, src]) => ({
+		name,
+		src,
+	}))
+
+	const allEmojis: EmojiItem[] = [...customEmojis, ...unicodeEmojis]
 
 	const filteredEmoji = $derived(
 		emojiSearch.trim() === ''
@@ -72,6 +88,38 @@
 		const { Plugin, PluginKey } = await import('@tiptap/pm/state')
 		const { Decoration, DecorationSet } = await import('@tiptap/pm/view')
 
+		// Custom TipTap Node to render inline custom emoji images
+		const CustomEmojiNode = Node.create({
+			name: 'customEmoji',
+			group: 'inline',
+			inline: true,
+			selectable: false,
+			draggable: false,
+
+			addAttributes() {
+				return {
+					name: { default: null },
+					src: { default: null },
+				}
+			},
+
+			parseHTML() {
+				return [{ tag: 'img[data-custom-emoji]' }]
+			},
+
+			renderHTML({ HTMLAttributes }) {
+				return [
+					'img',
+					mergeAttributes(HTMLAttributes, {
+						'data-custom-emoji': 'true',
+						class: 'inline-emoji',
+						style:
+							'height: 1.2em; width: 1.2em; vertical-align: -0.2em; display: inline-block; margin: 0 0.1em;',
+					}),
+				]
+			},
+		})
+
 		editor = new Editor({
 			element: editorElement!,
 			contentType: 'markdown',
@@ -79,6 +127,7 @@
 				StarterKit.configure({ heading: { levels: [2, 3] } }),
 				Markdown,
 				HardBreak,
+				CustomEmojiNode,
 				Link.configure({
 					openOnClick: false,
 					HTMLAttributes: { class: 'text-accent underline cursor-pointer' },
@@ -100,7 +149,19 @@
 									return text.length > 1
 								},
 								command: ({ editor, range, props }) => {
-									editor.chain().focus().deleteRange(range).insertContent(props.char).run()
+									if (props.src) {
+										editor
+											.chain()
+											.focus()
+											.deleteRange(range)
+											.insertContent({
+												type: 'customEmoji',
+												attrs: { name: props.name, src: props.src },
+											})
+											.run()
+									} else {
+										editor.chain().focus().deleteRange(range).insertContent(props.char).run()
+									}
 								},
 								render: () => {
 									let popup: any
@@ -140,7 +201,7 @@
 												showEmojiMenu &&
 												filteredEmoji.length > 0
 											) {
-												selectEmoji(filteredEmoji[0].char)
+												selectEmoji(filteredEmoji[0])
 												return true
 											}
 											if (props.event.key === 'Escape') {
@@ -234,7 +295,7 @@
 		isLoaded = true
 	})
 
-	const selectEmoji = (char: string) => {
+	const selectEmoji = (emoji: EmojiItem) => {
 		const { state } = editor
 		const { $from: fromPos } = state.selection
 		const textBefore = fromPos.parent.textBetween(
@@ -246,7 +307,24 @@
 		const match = textBefore.match(/:(\w*)$/)
 		if (match) {
 			const deleteRange = { from: fromPos.pos - match[0].length, to: fromPos.pos }
-			editor.chain().focus().deleteRange(deleteRange).insertContent(char).run()
+			if (emoji.src) {
+				editor
+					.chain()
+					.focus()
+					.deleteRange(deleteRange)
+					.insertContent({
+						type: 'customEmoji',
+						attrs: { name: emoji.name, src: emoji.src },
+					})
+					.run()
+			} else {
+				editor
+					.chain()
+					.focus()
+					.deleteRange(deleteRange)
+					.insertContent(emoji.char || '')
+					.run()
+			}
 		}
 		showEmojiMenu = false
 	}
@@ -396,6 +474,7 @@
 		</div>
 
 		<!-- Emoji Search Floating Popup -->
+		<!-- Emoji Search Floating Popup -->
 		<div
 			bind:this={emojiMenuElement}
 			class="z-50 flex max-h-48 w-56 [scrollbar-width:none] flex-col overflow-y-auto rounded-lg border border-neutral-300 bg-white p-1 shadow-2xl [-ms-overflow-style:none] dark:border-neutral-600 dark:bg-neutral-800 [&::-webkit-scrollbar]:hidden"
@@ -405,9 +484,13 @@
 				<button
 					type="button"
 					class="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700"
-					onclick={() => selectEmoji(emoji.char)}
+					onclick={() => selectEmoji(emoji)}
 				>
-					<span class="text-lg">{emoji.char}</span>
+					{#if emoji.src}
+						<img src={emoji.src} alt={emoji.name} class="h-5 w-5 object-contain" />
+					{:else}
+						<span class="text-lg">{emoji.char}</span>
+					{/if}
 					<span class="truncate text-neutral-600 dark:text-neutral-400">:{emoji.name}:</span>
 				</button>
 			{/each}

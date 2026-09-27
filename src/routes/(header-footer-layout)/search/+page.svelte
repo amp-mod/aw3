@@ -98,7 +98,7 @@
 	<h1 class="text-3xl font-bold">Search</h1>
 </div>
 
-<div class="m-auto flex max-w-5xl flex-col gap-8 py-8">
+<div class="m-auto flex max-w-7xl flex-col gap-8 py-8">
 	{#if user}
 		<section class="flex flex-col gap-3">
 			<a

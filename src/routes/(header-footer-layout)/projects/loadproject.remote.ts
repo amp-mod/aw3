@@ -4,13 +4,14 @@ import { eq } from 'drizzle-orm'
 import { getRequestEvent, query } from '$app/server'
 import * as v from 'valibot'
 
-export const getProjectJson = query(v.number(), async (projectId) => {
+export const getProject = query(v.number(), async (projectId: number) => {
 	const result = await db.query.project.findFirst({
 		where: eq(table.project.id, projectId),
 		columns: {
 			json: true,
 			status: true,
 			userId: true,
+			title: true,
 		},
 	})
 
@@ -27,5 +28,5 @@ export const getProjectJson = query(v.number(), async (projectId) => {
 		return null
 	}
 
-	return result?.json ?? null
+	return result ?? null
 })

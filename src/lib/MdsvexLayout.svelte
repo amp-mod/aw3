@@ -31,13 +31,13 @@
 </svelte:head>
 
 <div class="bg-accent-secondary p-6 text-white">
-	<h1 class="m-auto max-w-5xl text-3xl font-bold">{title}</h1>
+	<h1 class="m-auto max-w-7xl text-3xl font-bold">{title}</h1>
 </div>
 
-<div class="m-auto flex max-w-5xl flex-col gap-8 py-4 lg:flex-row">
+<div class="m-auto flex max-w-7xl flex-col gap-8 py-4 lg:flex-row">
 	<!-- Main Content -->
 	<div
-		class="prose-content text-text prose max-w-5xl flex-1 leading-6 text-black dark:text-white dark:prose-invert prose-a:text-accent dark:prose-a:text-accent-light"
+		class="prose-content text-text prose max-w-7xl flex-1 leading-6 text-black dark:text-white dark:prose-invert prose-a:text-accent dark:prose-a:text-accent-light"
 	>
 		{@render children()}
 	</div>

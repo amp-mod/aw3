@@ -45,7 +45,7 @@
 	<img
 		src={avatarSrc}
 		alt={user.username}
-		class="rounded-[10.15%] border border-black/20 object-cover dark:border-white/20 {className}"
+		class="rounded-[15%] border border-black/20 object-cover dark:border-white/20 {className}"
 		loading="lazy"
 		style="width: {typeof size === 'number' ? `${size}px` : '100%'}; height: {typeof size ===
 		'number'

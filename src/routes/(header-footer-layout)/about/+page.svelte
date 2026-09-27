@@ -134,7 +134,6 @@
 			desc: 'Allows lists to be stored inside variables or other lists.',
 			scratch: { icon: NO },
 			tw: { icon: NO },
-			pmod: { icon: PARTIAL, note: 'Via extension' },
 			ampmod: { icon: YES, note: 'Built-in' },
 		},
 		{
@@ -142,7 +141,6 @@
 			desc: 'Allows blocks to between uppercase and lowercase letters.',
 			scratch: { icon: NO },
 			tw: { icon: PARTIAL, note: 'Via extensions' },
-			pmod: { icon: PARTIAL, note: 'Via extensions' },
 			ampmod: { icon: YES, note: 'Via danger zone setting' },
 		},
 		{
@@ -150,7 +148,6 @@
 			desc: 'Converts projects to JavaScript for noticeable speed gains.',
 			scratch: { icon: NO },
 			tw: { icon: YES },
-			pmod: { icon: PARTIAL, note: 'Outdated version' },
 			ampmod: { icon: YES },
 		},
 		{
@@ -158,7 +155,6 @@
 			desc: 'Support for custom fonts.',
 			scratch: { icon: NO },
 			tw: { icon: YES },
-			pmod: { icon: YES },
 			ampmod: { icon: YES },
 		},
 		{
@@ -166,15 +162,13 @@
 			desc: 'Additional blocks from the gallery.',
 			scratch: { icon: PARTIAL, note: 'Official only' },
 			tw: { icon: YES },
-			pmod: { icon: YES },
 			ampmod: { icon: YES },
 		},
 		{
 			name: 'Project sharing',
 			desc: 'Share your projects with the world.',
 			scratch: { icon: YES },
-			tw: { icon: PARTIAL /* share.turbowarp.org */ },
-			pmod: { icon: YES },
+			tw: { icon: NO },
 			ampmod: { icon: YES },
 		},
 		{
@@ -182,7 +176,6 @@
 			desc: 'Organise projects in collections.',
 			scratch: { icon: YES, note: 'Studios' },
 			tw: { icon: NO },
-			pmod: { icon: NO },
 			ampmod: { icon: YES },
 		},
 		{
@@ -190,7 +183,6 @@
 			desc: 'Support from the community.',
 			scratch: { icon: YES },
 			tw: { icon: NO },
-			pmod: { icon: PARTIAL, note: 'Poorly moderated' },
 			ampmod: { icon: YES },
 		},
 		{
@@ -198,7 +190,6 @@
 			desc: 'A website documenting the history of the community and how to program.',
 			scratch: { icon: PARTIAL, note: 'Semi-official' },
 			tw: { icon: NO },
-			pmod: { icon: YES },
 			ampmod: { icon: YES },
 		},
 	]
@@ -285,10 +276,6 @@
 								>TurboWarp</th
 							>
 							<th
-								class="border-b border-neutral-200 p-4 text-center font-bold dark:border-neutral-800"
-								>[flightless bird] <!-- This is PenguinMod, but due to rules we can't mention the name on the site.--></th
-							>
-							<th
 								class="border-b border-neutral-200 p-4 text-center font-bold text-accent dark:border-neutral-800"
 								>AmpMod</th
 							>
@@ -302,7 +289,7 @@
 									<div class="mt-0.5 text-[10px] text-neutral-500 sm:text-xs">{item.desc}</div>
 								</td>
 
-								{#each ['scratch', 'tw', 'pmod', 'ampmod'] as platform}
+								{#each ['scratch', 'tw', 'ampmod'] as platform}
 									{@const Icon = item[platform].icon}
 									<td class="p-4 text-center align-top">
 										<div class="flex flex-col items-center gap-1">

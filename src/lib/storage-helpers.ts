@@ -1,7 +1,8 @@
 import type { User } from './server/db/schema'
 import DefaultPFP from '$lib/assets/default-pfp.svg'
+import { env } from '$env/dynamic/public'
 
-export const publicUrlRoot = import.meta.env.PUBLIC_AW3_UPLOADS_BASE ?? '/uploads/'
+export const publicUrlRoot = env.PUBLIC_AW3_UPLOADS_BASE ?? '/uploads/'
 export const getPublicUrl = (path: string) => {
 	return `${publicUrlRoot}${path}`
 }

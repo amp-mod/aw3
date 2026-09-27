@@ -15,10 +15,10 @@ import { eq } from 'drizzle-orm'
 import { valkey } from '$lib/server/valkey'
 import { env } from '$env/dynamic/private'
 
-import cookieError from './failedToMigrateCookie.html?raw'
 import tailscaleError from './connectToTailscale.html?raw'
 
-let activeUsers: any[] = []
+const isEmbedRoute = (pathname: string) =>
+	pathname.startsWith('/projects/') && pathname.includes('/embed')
 
 const AI_BOT_USER_AGENTS = [
 	'ClaudeBot',
@@ -118,30 +118,12 @@ const handleParaglide: Handle = async ({ event, resolve }) => {
 }
 
 const handleAuth: Handle = async ({ event, resolve }) => {
-	if (event.url.pathname.match(/^\/projects\/[^/]+\/embed/)) {
+	if (isEmbedRoute(event.url.pathname)) {
 		event.locals.user = null
 		event.locals.session = null
 		return resolve(event)
 	}
 
-	if (event.cookies.get('THIS_COOKIE_IS_COATED_WITH_BITTERANT')) {
-		try {
-			await auth.migrateOldCookieName(event)
-		} catch (e) {
-			console.error(e)
-			auth.invalidateSession(
-				event.cookies.get('THIS_COOKIE_IS_COATED_WITH_BITTERANT')?.split('..')[1] || '',
-			)
-			event.cookies.delete('THIS_COOKIE_IS_COATED_WITH_BITTERANT', { path: '/' })
-			return new Response(cookieError, {
-				status: 500,
-				headers: {
-					'Content-Type': 'text/html; charset=utf-8',
-					Refresh: `5; url=${event.url.pathname + event.url.search}`,
-				},
-			})
-		}
-	}
 	const sessionToken = event.cookies.get(auth.sessionCookieName)?.split('..')[1]
 
 	if (!sessionToken) {
@@ -254,12 +236,34 @@ const handleSetup: Handle = async ({ event, resolve }) => {
 	return resolve(event)
 }
 
+const handleHealth: Handle = async ({ event, resolve }) => {
+	if (event.url.pathname === '/health') {
+		try {
+			// Optional: Ping Valkey/Redis to verify infrastructure health
+			await valkey.ping()
+
+			return new Response(JSON.stringify({ status: 'ok', timestamp: Date.now() }), {
+				status: 200,
+				headers: { 'Content-Type': 'application/json' },
+			})
+		} catch (e) {
+			return new Response(JSON.stringify({ status: 'error', reason: 'Valkey ping failed' }), {
+				status: 503,
+				headers: { 'Content-Type': 'application/json' },
+			})
+		}
+	}
+
+	return resolve(event)
+}
+
 export const handle: Handle = sequence(
+	handleHealth,
 	handleAIBots,
 	handleLocalhostConnection,
+	handleParaglide,
 	handleSetup,
 	handleAuth,
 	handleBanned,
 	handleGuard,
-	handleParaglide,
 )

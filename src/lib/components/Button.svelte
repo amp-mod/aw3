@@ -3,7 +3,7 @@
 
 	let { children, class: className = '', ...props } = $props()
 	const classes = [
-		'rounded-lg bg-accent px-4 py-1.5 text-center text-lg font-bold text-white transition-colors',
+		'rounded-md bg-accent px-4 py-1 text-center text-lg font-medium text-white transition-colors',
 		'cursor-pointer disabled:cursor-not-allowed not-disabled:hover:bg-accent-secondary disabled:opacity-70',
 	]
 </script>

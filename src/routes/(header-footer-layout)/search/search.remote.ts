@@ -11,10 +11,8 @@ export const search = query(
 		search: v.string(),
 	}),
 	async ({ page, search: rawSearch }) => {
-		// 1. Sanitize and Validate
 		const trimmedSearch = rawSearch.trim()
 
-		// Return empty results if search is empty or lacks alphanumeric characters
 		if (trimmedSearch.length < 2 || !/[a-zA-Z0-9]/.test(trimmedSearch)) {
 			return { projects: [], user: null }
 		}
@@ -22,11 +20,9 @@ export const search = query(
 		const limit = 50
 		const offset = (page - 1) * limit
 
-		// 2. Define Visibility & Search Filters
 		const visibilityFilter = eq(table.project.status, 'shared')
 		const searchFilter = sql`${table.project.searchIndex} @@ websearch_to_tsquery('english', ${trimmedSearch})`
 
-		// 3. Conditionally Fetch User on Page 1
 		let matchingUser = null
 		if (page === 1) {
 			const [foundUser] = await db
@@ -34,6 +30,7 @@ export const search = query(
 					id: table.user.id,
 					username: table.user.username,
 					hasPFP: table.user.hasPFP,
+					frame: table.user.frame,
 					bio: table.user.bio,
 				})
 				.from(table.user)
@@ -42,13 +39,14 @@ export const search = query(
 
 			matchingUser = foundUser ?? null
 
-			matchingUser.bio = stripMarkdown(matchingUser.bio).replaceAll('\n', ' ')
-			if (matchingUser.bio.length > 100) {
-				matchingUser.bio = matchingUser.bio.substring(0, 100) + '...'
+			if (matchingUser?.bio) {
+				matchingUser.bio = stripMarkdown(matchingUser.bio).replaceAll('\n', ' ')
+				if (matchingUser.bio.length > 100) {
+					matchingUser.bio = matchingUser.bio.substring(0, 100) + '...'
+				}
 			}
 		}
 
-		// 4. Fetch Projects
 		const projects = await db
 			.select({
 				id: table.project.id,
@@ -56,11 +54,18 @@ export const search = query(
 				createdAt: table.project.createdAt,
 				status: table.project.status,
 				userId: table.project.userId,
+				author: {
+					id: table.user.id,
+					username: table.user.username,
+					hasPFP: table.user.hasPFP,
+					frame: table.user.frame,
+				},
 				rank: sql<number>`ts_rank(${table.project.searchIndex}, websearch_to_tsquery('english', ${trimmedSearch}))`.as(
 					'rank',
 				),
 			})
 			.from(table.project)
+			.leftJoin(table.user, eq(table.project.userId, table.user.id))
 			.where(and(visibilityFilter, searchFilter))
 			.orderBy(desc(sql`rank`))
 			.limit(limit)

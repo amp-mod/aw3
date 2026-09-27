@@ -15,7 +15,7 @@
 	import { getPfpPath } from '$lib/storage-helpers'
 	import { CATEGORIES } from '$lib/categories'
 	import { reportState } from '$lib/report.svelte'
-	import { getProjectJson } from '../loadproject.remote'
+	import { getProject } from '$lib/loadproject.remote'
 	import { untrack } from 'svelte'
 	import Modal from '$lib/components/Modal.svelte'
 	import { enhance } from '$app/forms'
@@ -138,7 +138,7 @@
 
 	const styles = {
 		sectionCard:
-			'border border-neutral-300 dark:border-neutral-700 rounded p-4 bg-white dark:bg-neutral-900',
+			'border border-neutral-300 dark:border-neutral-700 rounded-xl p-4 bg-white dark:bg-neutral-900',
 		label:
 			'text-sm font-bold text-accent-secondary dark:text-neutral-300 mb-2 block flex items-center gap-2',
 		inputBase:
@@ -146,7 +146,7 @@
 	}
 
 	// we have the awaits experimental feature on so this will work
-	const projectJson = await getProjectJson(project.id)
+	const projectJson = await getProject(project.id).json
 </script>
 
 <svelte:head>
@@ -158,7 +158,7 @@
 		class="bg-yellow-500/20 p-4 leading-tight font-bold text-accent dark:text-white"
 		transition:slide
 	>
-		<div class="m-auto max-w-6xl">
+		<div class="m-auto max-w-7xl">
 			{#if project.status === 'unshared'}
 				<div class="flex items-center justify-between">
 					<span>This project is unshared. Do you want to share it?</span>
@@ -181,7 +181,7 @@
 	</div>
 {/if}
 
-<div class="m-auto flex max-w-6xl flex-col gap-2 lg:p-8">
+<div class="m-auto flex max-w-7xl flex-col gap-2 lg:p-8">
 	{#if tagWarning}
 		<div
 			class="mt-2 rounded border border-amber-500/20 bg-amber-500/5 p-2 leading-tight font-medium text-amber-600 dark:text-amber-400"
@@ -251,7 +251,7 @@
 		</div>
 	</header>
 
-	<div class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_480px]">
+	<div class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_520px]">
 		<main class="relative flex flex-col gap-6">
 			{#key project.id}
 				<ProjectRunner

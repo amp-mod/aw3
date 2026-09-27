@@ -95,5 +95,6 @@
 	"joinToday": "Don't have an account? {#join}Join today!{/join}",
 	"featureComingSoon": "This feature is coming soon. Please stay tuned!",
 	"moderation": "Moderation",
-	"adminPanel": "Admin Panel"
+	"adminPanel": "Admin Panel",
+	"viewAll": "View All"
 }

@@ -25,7 +25,7 @@
 
 <Select.Root type="single" value={getLocale()} onValueChange={(v) => v && setLocale(v as any)}>
 	<Select.Trigger
-		class="flex h-10 min-w-96 cursor-pointer items-center justify-between gap-2 rounded-md border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-900 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+		class="flex h-10 min-w-76 cursor-pointer items-center justify-between gap-2 rounded-md border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-900 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
 	>
 		<div class="flex items-center gap-2">
 			<Globe />

@@ -8,11 +8,14 @@
 
 <Modal bind:open title="The AmpMod website has been updated!">
 	<div class="prose dark:prose-invert prose-a:text-accent prose-a:underline">
-		<p>This update mainly fixes bugs (mostly with non-lowercase usernames), but also adds:</p>
+		<p>This update is a complete UI refresh.</p>
 		<h2>New Features</h2>
 		<ul>
-			<li>Some pages have been redesigned.</li>
-			<li>Search now displays users.</li>
+			<li>
+				The navigation bar has been fully redesigned! This makes it easier to use on touchscreens
+				and look a bit more modern.
+			</li>
+			<li>All pages are now wider than previously.</li>
 		</ul>
 		<h2>Our temporary versioning system</h2>
 		<p>

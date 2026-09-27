@@ -141,7 +141,7 @@
 </svelte:head>
 
 {#if !data.private}
-	<div class="m-auto flex max-w-6xl flex-col gap-3 lg:p-8">
+	<div class="m-auto flex max-w-7xl flex-col gap-3 lg:p-8">
 		{#if data.isPrivate}
 			<div
 				class="flex items-center justify-between gap-2 rounded bg-amber-100/50 p-3 text-amber-900 dark:bg-amber-800/10 dark:text-amber-200/80"
@@ -158,11 +158,11 @@
 				{#if canEdit}
 					<button
 						onclick={() => pfpInput?.click()}
-						class="absolute inset-0 flex flex-col items-center justify-center rounded-md bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
+						class="absolute -right-1 cursor-pointer -bottom-1 rounded-full flex flex-col items-center justify-center bg-white text-neutral-800 p-1 border border-neutral-200 dark:bg-neutral-900 dark:border-neutral-800 transition-opacity"
 						disabled={isUploadingPfp}
 					>
-						{#if isUploadingPfp}<Loader class="animate-spin" size={24} />{:else}<Pencil
-								size={24}
+						{#if isUploadingPfp}<Loader class="animate-spin" size={18} />{:else}<Pencil
+								size={18}
 							/>{/if}
 					</button>
 					<form
@@ -197,8 +197,11 @@
 							<span class="h-4 w-4 rounded-full bg-green-500" title="Online"></span>
 						{/if}
 						<h1 class="text-3xl font-bold text-neutral-800 dark:text-white">
-							{userProfile.username}{#if userProfile.rank === 3}*{/if}
+							{userProfile.username}
 						</h1>
+						{#if userProfile.rank >= 2}
+							<div class="rounded-full bg-accent px-3 py-1 font-bold text-white">Staff</div>
+						{/if}
 
 						<div class="grow"></div>
 
@@ -396,7 +399,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="m-auto my-20 flex max-w-6xl flex-col items-center gap-4 text-center">
+	<div class="m-auto my-20 flex max-w-7xl flex-col items-center gap-4 text-center">
 		<Lock size={48} />
 		<p>The owner of this account has hidden their profile from public view.</p>
 		<Button href="/">Back to homepage</Button>

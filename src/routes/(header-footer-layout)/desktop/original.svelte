@@ -79,7 +79,7 @@
 </div>
 
 <!-- 3-Card Download Grid -->
-<div id="downloads" class="m-auto my-16 grid max-w-6xl grid-cols-1 gap-8 px-6 md:grid-cols-3">
+<div id="downloads" class="m-auto my-16 grid max-w-7xl grid-cols-1 gap-8 px-6 md:grid-cols-3">
 	<!-- Windows -->
 	<div class="flex flex-col border border-accent/20 p-6">
 		<div class="mb-6 flex items-center gap-3">
@@ -141,7 +141,7 @@
 
 <!-- Footer Info -->
 <div
-	class="m-auto mb-20 flex max-w-6xl flex-col gap-12 border-t border-accent/10 px-6 pt-12 md:flex-row"
+	class="m-auto mb-20 flex max-w-7xl flex-col gap-12 border-t border-accent/10 px-6 pt-12 md:flex-row"
 >
 	<div class="flex-1">
 		<h3 class="mb-4 text-lg font-bold text-accent">Requirements</h3>

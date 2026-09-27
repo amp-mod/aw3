@@ -1,4 +1,5 @@
 import MarkdownIt from 'markdown-it'
+import emojiRegex from 'emoji-regex'
 import { EMOJI_MAP } from './emojis'
 
 export const md = new MarkdownIt({
@@ -8,16 +9,31 @@ export const md = new MarkdownIt({
 	breaks: true,
 })
 
-// --- Shorthand Links (P@123 and G@123) ---
+const unicodeEmojiRegex = emojiRegex()
+
+const FORBIDDEN_EMOJIS = new Set([
+	'1f595',
+	'1f346',
+	'1f351',
+	'1f377',
+	'1f378',
+	'1f37a',
+	'1f37b',
+	'1f943',
+	'1f51e',
+	'1f3e9',
+	'1f4a6',
+])
+
+const HEART_EMOJI = '\u2764\uFE0F'
+
 md.inline.ruler.after('link', 'shorthand', (state, silent) => {
 	const pos = state.pos
 	const src = state.src
 
-	// 1. Check for P or G (case insensitive)
 	const char = src[pos].toUpperCase()
 	if (char !== 'P' && char !== 'G') return false
 
-	// 2. Check for @ (0x40) instead of #
 	if (src.charCodeAt(pos + 1) !== 0x40) return false
 
 	const tail = src.slice(pos + 2)
@@ -26,8 +42,6 @@ md.inline.ruler.after('link', 'shorthand', (state, silent) => {
 
 	const id = match[1]
 	const type = char === 'P' ? 'projects' : 'studios'
-
-	// 3. Update the label to reflect the @ symbol
 	const label = `${char}@${id}`
 
 	if (!silent) {
@@ -38,19 +52,16 @@ md.inline.ruler.after('link', 'shorthand', (state, silent) => {
 		state.push('link_close', 'a', -1)
 	}
 
-	// 4. Move position forward by id length + the 2 prefix chars (P@)
 	state.pos += id.length + 2
 	return true
 })
-// --- Custom Emoji Ruler (:emoji_name:) ---
-md.inline.ruler.after('link', 'custom_emoji', (state, silent) => {
+
+md.inline.ruler.after('shorthand', 'custom_emoji', (state, silent) => {
 	const pos = state.pos
 	const src = state.src
 
-	// 1. Must start with ':' (0x3A)
 	if (src.charCodeAt(pos) !== 0x3a) return false
 
-	// 2. Match pattern :emoji_name:
 	const tail = src.slice(pos + 1)
 	const match = tail.match(/^([a-zA-Z0-9_-]+):/)
 	if (!match) return false
@@ -58,24 +69,56 @@ md.inline.ruler.after('link', 'custom_emoji', (state, silent) => {
 	const emojiKey = match[1].toLowerCase()
 	const emojiSrc = EMOJI_MAP[emojiKey]
 
-	// If the emoji doesn't exist in our map, leave it as plain text
 	if (!emojiSrc) return false
 
 	if (!silent) {
-		// Push an HTML self-closing image token
-		const token = state.push('html_inline', '', 0)
-		token.content = `<img src="${emojiSrc}" alt=":${emojiKey}:" title=":${emojiKey}:" height="1em" />`
+		const token = state.push('image', 'img', 0)
+		token.attrs = [
+			['src', emojiSrc],
+			['alt', `:${emojiKey}:`],
+			['title', `:${emojiKey}:`],
+			['class', 'inline-emoji'],
+			[
+				'style',
+				'height: 1em; width: 1em; vertical-align: -0.1em; display: inline-block; margin: 0;',
+			],
+		]
+		token.children = []
 	}
 
-	// Move position forward by emoji length + 2 colons (:name:)
 	state.pos += emojiKey.length + 2
 	return true
 })
 
-// --- Mentions (@username) ---
-md.inline.ruler.after('shorthand', 'custom_emoji', (state, silent) => {
+md.inline.ruler.before('text', 'filter_forbidden_emojis', (state, silent) => {
 	const pos = state.pos
-	if (state.src.charCodeAt(pos) !== 0x40 /* @ */) return false
+	const tail = state.src.slice(pos)
+
+	unicodeEmojiRegex.lastIndex = 0
+	const match = unicodeEmojiRegex.exec(tail)
+
+	if (!match || match.index !== 0) return false
+
+	const emoji = match[0]
+	const codePointsHex = [...emoji]
+		.map((char) => char.codePointAt(0)!.toString(16))
+		.filter((c) => c !== 'fe0f')
+		.join('-')
+
+	if (!FORBIDDEN_EMOJIS.has(codePointsHex)) return false
+
+	if (!silent) {
+		const token = state.push('text', '', 0)
+		token.content = HEART_EMOJI
+	}
+
+	state.pos += emoji.length
+	return true
+})
+
+md.inline.ruler.after('custom_emoji', 'mention', (state, silent) => {
+	const pos = state.pos
+	if (state.src.charCodeAt(pos) !== 0x40) return false
 
 	if (pos > 0 && !/\s/.test(state.src[pos - 1])) {
 		return false
@@ -97,9 +140,6 @@ md.inline.ruler.after('shorthand', 'custom_emoji', (state, silent) => {
 	return true
 })
 
-/**
- * Removes markdown formatting to return raw text content.
- */
 export function stripMarkdown(text: string): string {
 	if (!text) return ''
 	const tokens = md.parse(text, {})

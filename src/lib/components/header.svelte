@@ -39,17 +39,13 @@
 </a>
 
 <header
-	class="flex h-12 w-full items-center border-b border-black/10 bg-white px-4 font-sans text-sm text-black md:px-6 dark:bg-accent dark:text-white"
+	class="flex h-14 w-full items-center border-b border-black/10 bg-white px-4 font-sans text-sm text-black md:px-6 dark:bg-accent dark:text-white shrink-0"
 >
-	<div class="m-auto flex w-full max-w-6xl items-center justify-between" class:max-w-full={admin}>
+	<div class="m-auto flex w-full items-center justify-between">
 		<div class="flex items-center gap-1">
 			{#if !admin}
-				<a
-					href="/"
-					aria-label="AmpMod homepage"
-					class="transform px-3 transition-transform hover:scale-110"
-				>
-					<img src={logo} alt="AmpMod" class="h-7" />
+				<a href="/" aria-label="AmpMod homepage" class="header-link">
+					<img src={logo} alt="AmpMod" class="h-8" />
 				</a>
 			{/if}
 
@@ -62,10 +58,7 @@
 						>{m.createProject()}</a
 					>
 					<a href="/explore/projects" class="header-link">{m.explore()}</a>
-					{#if !data.user}
-						<a href="/about" class="header-link">{m.aboutHeader()}</a>
-						<a href="https://ampmod.codeberg.page/manual" class="header-link">Manual</a>
-					{/if}
+					<a href="/about" class="header-link">{m.aboutHeader()}</a>
 				{/if}
 			</nav>
 		</div>
@@ -92,12 +85,12 @@
 				<input
 					type="search"
 					placeholder={m.searchPlaceholder()}
-					class="h-8 w-full rounded-lg border border-neutral-300 bg-transparent px-3 pr-12 text-sm outline-none focus:border-accent-secondary sm:w-44 md:w-64 dark:border-white/20 dark:focus:border-white"
+					class="h-10 w-full rounded-full border border-neutral-300 bg-transparent px-3 pr-12 text-sm outline-none focus:border-accent-secondary sm:w-44 md:w-64 dark:border-white/20 dark:focus:border-white"
 					name="q"
 				/>
 				<button
 					type="submit"
-					class="absolute top-1/2 right-1 flex -translate-y-1/2 items-center justify-center rounded bg-accent-secondary px-2.5 py-1 text-white hover:bg-accent-tertiary dark:bg-white/10 dark:hover:bg-white/20"
+					class="absolute top-1/2 right-1 flex -translate-y-1/2 items-center justify-center rounded-full bg-accent-secondary px-2.5 h-8 text-white hover:bg-accent-tertiary dark:bg-white/10 dark:hover:bg-white/20"
 				>
 					<Search class="h-4 w-4" />
 				</button>
@@ -181,29 +174,32 @@
 						<NavigationMenu.Item value="profile" openOnHover={false}>
 							<NavigationMenu.Trigger>
 								{#snippet child({ props })}
-									<button {...props} class="header-link flex items-center gap-2">
-										<PFP user={data.user} size={24} />
-										<div class="hidden max-w-30 overflow-hidden text-ellipsis sm:block">
-											{data.user.username}
-										</div>
-										{#if data.canRankUp}<span
-												class="bg-red-500 border border-red-700 w-3 h-3 rounded-full inline-block"
-											></span>{/if}
-										<ChevronDown
-											class="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180"
-										/>
+									<button {...props} class="header-link relative flex items-center">
+										<PFP user={data.user} size={28} />
+										{#if data.canRankUp}
+											<span
+												class=" flex items-center justify-center text-xs text-white absolute bottom-0 right-1 bg-red-500 border border-red-700 w-3 h-3 rounded-full"
+												>!</span
+											>
+										{/if}
 									</button>
 								{/snippet}
 							</NavigationMenu.Trigger>
 
 							<NavigationMenu.Content
-								class="absolute top-full right-0 z-50 mt-2 w-38 overflow-hidden rounded-md border border-neutral-300 bg-white dark:border-white/20 dark:bg-accent"
+								class="absolute top-full right-0 z-9999 mt-4 min-w-48 overflow-hidden rounded-md border border-neutral-300 bg-white dark:border-white/20 dark:bg-accent shadow-xl"
 							>
-								<ul class="flex flex-col py-1">
+								<ul class="flex flex-col p-1">
 									<li>
 										<NavigationMenu.Link href={`/users/${data.user.username}`}>
-											{#snippet child({ props })}<a {...props} class="submenu-item"
-													>{m.myProfile()}
+											{#snippet child({ props })}<a {...props} class="submenu-item">
+													<div class="flex gap-2 items-center">
+														<PFP size={32} user={data.user} />
+														<div class="flex flex-col gap-1">
+															<span class="text-lg font-bold">{data.user.username}</span>
+														</div>
+													</div>
+
 													{#if data.canRankUp}<span
 															class="bg-red-500 border border-red-700 w-3 h-3 rounded-full inline-block"
 														></span>{/if}</a
@@ -274,9 +270,9 @@
 									<a
 										{...props}
 										href="/auth/register"
-										class="header-link bg-accent text-white hover:bg-accent-secondary! dark:bg-white dark:text-accent hover:dark:bg-neutral-200!"
+										class="h-10 rounded-full px-5 font-bold flex items-center justify-center text-white bg-gradient-to-r from-accent to-accent-secondary hover:opacity-90 transition-opacity dark:from-white dark:to-neutral-100 dark:text-accent dark:hover:bg-neutral-200 text-xl shadow-tiny"
 									>
-										{m.join()}
+										{m.joinAmpMod()}
 									</a>
 								{/snippet}
 							</NavigationMenu.Item>
@@ -292,16 +288,15 @@
 	@reference '../../app.css';
 
 	.header-link {
-		@apply flex h-10 cursor-pointer items-center rounded-lg px-3 font-bold whitespace-nowrap outline-none;
+		@apply flex h-10 min-w-10 cursor-pointer items-center justify-center rounded-full px-3 font-bold whitespace-nowrap transition-colors outline-none;
 		@apply hover:bg-black/5 focus-visible:bg-black/5;
-		@apply dark:hover:bg-white/10 dark:focus-visible:bg-white/10;
-		@apply data-[state=open]:bg-accent-light/20 dark:data-[state=open]:bg-white/20;
+		@apply data-[state=open]:bg-accent-light/20 dark:data-[state=open]:bg-black/20;
 		@apply not-dark:data-[state=open]:text-accent-secondary;
 	}
 
 	.submenu-item {
-		@apply flex cursor-pointer items-center justify-between gap-2 px-3 py-1.5 text-sm font-semibold outline-none;
-		@apply hover:bg-neutral-100 focus-visible:bg-neutral-100 data-[highlighted]:bg-neutral-100;
+		@apply flex cursor-pointer items-center justify-between gap-2 rounded-lg px-3 py-1.5 font-medium outline-none;
+		@apply transition-colors hover:bg-neutral-100 focus-visible:bg-neutral-100 data-[highlighted]:bg-neutral-100;
 		@apply dark:hover:bg-white/10 dark:focus-visible:bg-white/10 dark:data-[highlighted]:bg-white/10;
 	}
 </style>

@@ -4,7 +4,7 @@
 </script>
 
 <div class="bg-blue-50 min-h-screen py-12">
-	<div class="max-w-6xl mx-auto flex flex-row gap-6">
+	<div class="max-w-7xl mx-auto flex flex-row gap-6">
 		<div class="w-72 flex flex-col gap-4">
 			<h2 class="text-3xl font-bold">New studio</h2>
 			<div

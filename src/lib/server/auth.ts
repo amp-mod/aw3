@@ -8,8 +8,30 @@ import { dev } from '$app/environment'
 import { valkey } from './valkey'
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24
+const PROFILE_TTL_SECONDS = 300
 
 export const sessionCookieName = 'aw3sessionid'
+
+const userProfileFields = {
+	id: table.user.id,
+	username: table.user.username,
+	rank: table.user.rank ?? 0,
+	status: table.user.status,
+	banReason: table.user.banReason,
+	bannedExpiry: table.user.bannedExpiry,
+	hasPFP: table.user.hasPFP,
+	frame: table.user.frame,
+	isPrivate: table.user.isPrivate,
+	scratchUsername: table.user.scratchUsername,
+	usernameUpdatedAt: table.user.usernameUpdatedAt,
+	termsRevision: table.user.termsRevision,
+	privacyRevision: table.user.privacyRevision,
+	featuredProjectId: table.user.featuredProjectId,
+	featuredProjectTitleIndex: table.user.featuredProjectTitleIndex,
+	email: table.user.email,
+	isEmailVerified: table.user.isEmailVerified,
+	accentColour: table.user.accentColour,
+}
 
 function parseDates(obj: any) {
 	if (!obj) return obj
@@ -21,13 +43,13 @@ function parseDates(obj: any) {
 
 export function generateSessionToken() {
 	const bytes = crypto.getRandomValues(new Uint8Array(18))
-	const token = encodeBase64url(bytes)
-	return token
+	return encodeBase64url(bytes)
 }
 
 export async function createSession(token: string, userId: number, ip: string, userAgent: string) {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
 	if (!userAgent) throw new Error('User-Agent missing')
+
 	const session: table.Session = {
 		id: sessionId,
 		userId,
@@ -35,12 +57,18 @@ export async function createSession(token: string, userId: number, ip: string, u
 		ip,
 		userAgent,
 	}
-	await db.insert(table.session).values(session)
+
+	// Save to DB and populate Valkey immediately so the next request is a cache hit
+	await Promise.all([
+		db.insert(table.session).values(session),
+		valkey.set(`session:${sessionId}`, JSON.stringify(session), 'EX', 30 * 24 * 60 * 60),
+	])
+
 	return session
 }
 
 /**
- * Fetches user profile from Valkey or falls back to DB.
+ * Fetches user profile from Valkey or falls back to DB and sets cache.
  */
 export async function getUserProfile(userId: number) {
 	const profileKey = `user:profile:${userId}`
@@ -51,60 +79,25 @@ export async function getUserProfile(userId: number) {
 	}
 
 	const [user] = await db
-		.select({
-			id: table.user.id,
-			username: table.user.username,
-			rank: table.user.rank ?? 0,
-			status: table.user.status,
-			banReason: table.user.banReason,
-			bannedExpiry: table.user.bannedExpiry,
-			hasPFP: table.user.hasPFP,
-			frame: table.user.frame,
-			isPrivate: table.user.isPrivate,
-			scratchUsername: table.user.scratchUsername,
-			usernameUpdatedAt: table.user.usernameUpdatedAt,
-			termsRevision: table.user.termsRevision,
-			privacyRevision: table.user.privacyRevision,
-			featuredProjectId: table.user.featuredProjectId,
-			featuredProjectTitleIndex: table.user.featuredProjectTitleIndex,
-			email: table.user.email,
-			isEmailVerified: table.user.isEmailVerified,
-			accentColour: table.user.accentColour,
-		})
+		.select(userProfileFields)
 		.from(table.user)
 		.where(eq(table.user.id, userId))
 
-	return user ?? null
+	if (!user) return null
+
+	// OPTIMIZATION: Write back to Valkey on cache miss
+	await valkey.set(profileKey, JSON.stringify(user), 'EX', PROFILE_TTL_SECONDS)
+	return user
 }
 
 /**
  * Forces a fresh database lookup and updates the user profile in Valkey.
- * Call this whenever a user updates their profile, frame, or settings.
  */
 export async function regenerateUserProfileCache(userId: number) {
 	const profileKey = `user:profile:${userId}`
 
 	const [user] = await db
-		.select({
-			id: table.user.id,
-			username: table.user.username,
-			rank: table.user.rank ?? 0,
-			status: table.user.status,
-			banReason: table.user.banReason,
-			bannedExpiry: table.user.bannedExpiry,
-			hasPFP: table.user.hasPFP,
-			frame: table.user.frame,
-			isPrivate: table.user.isPrivate,
-			scratchUsername: table.user.scratchUsername,
-			usernameUpdatedAt: table.user.usernameUpdatedAt,
-			termsRevision: table.user.termsRevision,
-			privacyRevision: table.user.privacyRevision,
-			featuredProjectId: table.user.featuredProjectId,
-			featuredProjectTitleIndex: table.user.featuredProjectTitleIndex,
-			email: table.user.email,
-			isEmailVerified: table.user.isEmailVerified,
-			accentColour: table.user.accentColour,
-		})
+		.select(userProfileFields)
 		.from(table.user)
 		.where(eq(table.user.id, userId))
 
@@ -113,7 +106,7 @@ export async function regenerateUserProfileCache(userId: number) {
 		return null
 	}
 
-	await valkey.set(profileKey, JSON.stringify(user), 'EX', 600)
+	await valkey.set(profileKey, JSON.stringify(user), 'EX', PROFILE_TTL_SECONDS)
 	return user
 }
 
@@ -121,14 +114,15 @@ export async function validateSessionToken(token: string) {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
 	const sessionCacheKey = `session:${sessionId}`
 
-	// 1. Try to fetch session metadata from Valkey
-	let session: table.Session | null = null
-	const cachedSession = await valkey.get(sessionCacheKey)
+	// 1. Check Valkey cache first
+	const cachedSessionStr = await valkey.get(sessionCacheKey)
 
-	if (cachedSession) {
-		session = parseDates(JSON.parse(cachedSession))
+	let session: table.Session | null = null
+
+	if (cachedSessionStr) {
+		session = parseDates(JSON.parse(cachedSessionStr))
 	} else {
-		// Fallback to DB if session isn't in Valkey
+		// Fallback to DB query
 		const [result] = await db.select().from(table.session).where(eq(table.session.id, sessionId))
 
 		if (!result) {
@@ -136,28 +130,27 @@ export async function validateSessionToken(token: string) {
 		}
 
 		session = result
+		const now = Date.now()
 
-		const sessionExpired = Date.now() >= session.expiresAt.getTime()
-		if (sessionExpired) {
+		if (now >= session.expiresAt.getTime()) {
 			await db.delete(table.session).where(eq(table.session.id, session.id))
 			return { session: null, user: null }
 		}
 
-		const renewSession = Date.now() >= session.expiresAt.getTime() - DAY_IN_MS * 15
-		if (renewSession) {
-			session.expiresAt = new Date(Date.now() + DAY_IN_MS * 30)
+		// Renew session if within 15 days of expiration
+		if (now >= session.expiresAt.getTime() - DAY_IN_MS * 15) {
+			session.expiresAt = new Date(now + DAY_IN_MS * 30)
 			await db
 				.update(table.session)
 				.set({ expiresAt: session.expiresAt })
 				.where(eq(table.session.id, session.id))
 		}
 
-		// Store session metadata in Valkey
-		const ttlSeconds = Math.max(1, Math.floor((session.expiresAt.getTime() - Date.now()) / 1000))
+		const ttlSeconds = Math.max(1, Math.floor((session.expiresAt.getTime() - now) / 1000))
 		await valkey.set(sessionCacheKey, JSON.stringify(session), 'EX', ttlSeconds)
 	}
 
-	// 2. Fetch profile from the dedicated profile cache or DB fallback
+	// 2. Fetch associated user profile
 	const user = await getUserProfile(session.userId)
 
 	if (!user) {
@@ -175,8 +168,10 @@ export async function purgeSessionCache(sessionId: string) {
 }
 
 export async function invalidateSession(sessionId: string) {
-	await purgeSessionCache(sessionId)
-	await db.delete(table.session).where(eq(table.session.id, sessionId))
+	await Promise.all([
+		purgeSessionCache(sessionId),
+		db.delete(table.session).where(eq(table.session.id, sessionId)),
+	])
 }
 
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date) {
@@ -189,52 +184,23 @@ export function setSessionTokenCookie(event: RequestEvent, token: string, expire
 	})
 }
 
-export async function migrateOldCookieName(event: RequestEvent) {
-	if (!event.cookies.get('THIS_COOKIE_IS_COATED_WITH_BITTERANT')) {
-		return
-	}
-	const [existingSession] = await db
-		.select({ expiresAt: table.session.expiresAt })
-		.from(table.session)
-		.innerJoin(table.user, eq(table.session.userId, table.user.id))
-		.where(
-			eq(
-				table.session.id,
-				encodeHexLowerCase(
-					sha256(
-						new TextEncoder().encode(
-							event.cookies.get('THIS_COOKIE_IS_COATED_WITH_BITTERANT')?.split('..')[1] as string,
-						),
-					),
-				),
-			),
-		)
-		.limit(1)
-	const expiresAt = existingSession?.expiresAt ?? new Date(Date.now() + DAY_IN_MS * 30)
-	setSessionTokenCookie(
-		event,
-		event.cookies.get('THIS_COOKIE_IS_COATED_WITH_BITTERANT')?.split('..')[1] as string,
-		expiresAt,
-	)
-	event.cookies.delete('THIS_COOKIE_IS_COATED_WITH_BITTERANT', { path: '/' })
-}
-
 export function deleteSessionTokenCookie(event: RequestEvent) {
-	event.cookies.delete(sessionCookieName, {
-		path: '/',
-	})
+	event.cookies.delete(sessionCookieName, { path: '/' })
 }
 
 export async function updateSessionDetails(
 	sessionId: string,
 	details: { ip: string; userAgent: string },
 ) {
-	await purgeSessionCache(sessionId)
-	await db
-		.update(table.session)
-		.set({
-			ip: details.ip,
-			userAgent: details.userAgent,
-		})
-		.where(eq(table.session.id, sessionId))
+	// Delete cache and update database concurrently
+	await Promise.all([
+		purgeSessionCache(sessionId),
+		db
+			.update(table.session)
+			.set({
+				ip: details.ip,
+				userAgent: details.userAgent,
+			})
+			.where(eq(table.session.id, sessionId)),
+	])
 }

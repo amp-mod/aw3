@@ -27,9 +27,9 @@
 
 	const styles = {
 		button_normal:
-			'inline-flex rounded-xl px-5 py-2 items-center gap-2 text-xl font-semibold bg-white text-accent',
+			'inline-flex rounded-full px-8 py-2 items-center gap-2 text-xl font-semibold bg-white text-accent',
 		button_small:
-			'inline-flex rounded-full bg-accent px-4 py-2 min-w-32 sm:min-w-48 items-center justify-center gap-2 font-bold text-white transition-all',
+			'inline-flex rounded-full bg-accent px-8 py-2 min-w-32 items-center justify-center gap-2 font-bold text-white transition-all',
 		tab: 'cursor-pointer rounded-t-lg border border-neutral-300 bg-neutral-100 px-3 h-8 text-neutral-600 outline-none border-b-0 flex items-center gap-3 data-[state=active]:border-b-transparent data-[state=active]:bg-white data-[state=active]:text-accent-secondary data-[state=active]:h-10 dark:border-neutral-500 dark:bg-neutral-800 dark:text-neutral-300 dark:data-[state=active]:bg-neutral-700 dark:data-[state=active]:text-white',
 		card: 'flex flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-accent h-50 justify-center',
 	}
@@ -55,10 +55,10 @@
 
 {#if !data.user}
 	<div class="relative bg-accent p-9 text-white">
-		<div class="m-auto flex max-w-6xl items-center justify-between">
+		<div class="m-auto flex max-w-7xl items-center justify-between">
 			<div class="flex grow flex-col justify-center text-left">
-				<h1 class="text-4xl leading-tight font-semibold">
-					Block-based programming.<br />Amplified.
+				<h1 class="leading-tight font-semibold text-3xl">
+					Block-based programming.<br /><span class="font-black text-4xl">Amplified.</span>
 				</h1>
 				<div class="mt-4 flex gap-6">
 					<a href="/projects/editor" class={styles.button_normal}
@@ -80,14 +80,14 @@
 		class="bg-accent-light/30 p-4 text-accent-secondary not-sm:pt-10 dark:bg-accent-tertiary/80 dark:text-white"
 	>
 		<div class="flex justify-center gap-4">
-			<a href="https://ampmod.codeberg.page/manual" class={styles.button_small}>Manual</a>
 			<a href="/about" class={styles.button_small}>About AmpMod</a>
 			<a href="/explore/projects" class={styles.button_small}>Explore Projects</a>
+			<a href="https://forums.ampmod.org" class={styles.button_small}>Forums</a>
 		</div>
 	</div>
 {/if}
 
-<div class="m-auto flex min-h-80 max-w-6xl gap-3 p-8">
+<div class="m-auto flex min-h-80 max-w-7xl gap-3 p-8">
 	{#if data.user}
 		<div class="flex grow basis-0 flex-col items-center justify-center gap-3 text-center">
 			<PFP user={data.user} size={72} />
@@ -176,7 +176,7 @@
 	</div>
 </div>
 
-<div class="m-auto flex max-w-6xl flex-col gap-8 p-8">
+<div class="m-auto flex max-w-7xl flex-col gap-8 p-8">
 	<Row title="Featured Projects" seeMore="/projects/featured">
 		<ProjectList projects={data.featuredProjects} />
 	</Row>

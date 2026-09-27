@@ -3,13 +3,12 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Failed to migrate session - AmpMod</title>
+		<title>Offline - AmpMod</title>
 		<style>
 			body {
 				font-family: sans-serif;
-				padding: 10px;
-				background: #4fa55c;
-				color: white;
+				padding: 20px;
+				background: #d8ffde;
 			}
 			h1 {
 				font-size: 2.5rem;
@@ -17,22 +16,26 @@
 			}
 			p {
 				font-size: 1.2rem;
-				color: white;
 			}
 			.container {
-				max-width: 900px;
+				max-width: 800px;
 				margin: 0 auto;
+				border-top: #4fa55c 10px solid;
+				background: white;
+				padding: 25px;
+				border-radius: 4px;
+				text-align: center;
 			}
 		</style>
 	</head>
 	<body>
 		<div class="container">
-			<h1>Failed to migrate session</h1>
-			<p>
-				We couldn't migrate your account session from the legacy format, so you have been logged
-				out. You can log in again.
-			</p>
-			<p>You will be returned to the page you were visiting shortly...</p>
+			<img
+				src="/apple-cat.svg"
+				alt="Apple Cat."
+				height="100"
+			/>
+			<h2>Oops! You're offline.</h2>
 		</div>
 	</body>
 </html>

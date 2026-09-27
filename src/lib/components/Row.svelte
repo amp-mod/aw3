@@ -1,16 +1,14 @@
 <script lang="ts">
-	import Button from './Button.svelte'
+	import { m } from '$lib/paraglide/messages'
 
 	let { title, seeMore = null, children, class: htmlClass = null, ...props } = $props()
 
 	const styles = {
-		wrapper:
-			'bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl h-full overflow-hidden',
-		header:
-			'flex items-center justify-between border-b border-neutral-300 py-1.5 px-4 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800',
-		label: 'font-bold dark:text-neutral-300 text-lg block',
+		wrapper: 'bg-neutral-100 dark:bg-neutral-800 rounded-xl h-full overflow-hidden shadow-md',
+		header: 'flex items-center justify-between py-1 px-6 bg-accent text-white',
+		label: 'font-bold text-lg block',
 		seeMore: 'flex items-center gap-1 text-xs',
-		button: 'bg-accent rounded-full py-1 px-2 text-xs font-bold text-white',
+		button: 'text-white font-bold hover:underline text-xs',
 	}
 </script>
 
@@ -19,7 +17,7 @@
 		<span class={styles.label}>{title}</span>
 
 		{#if seeMore}
-			<a href={seeMore} class={styles.button}>View All</a>
+			<a href={seeMore} class={styles.button}>{m.viewAll()}</a>
 		{/if}
 	</div>
 

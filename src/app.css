@@ -1,13 +1,14 @@
 @layer theme, base, components, utilities, aw3;
 
 @import 'tailwindcss';
-@import '@fontsource-variable/inter';
+@import '@fontsource-variable/geist';
+@import '@fontsource/noto-color-emoji';
 @plugin '@tailwindcss/typography';
 @import '@fontsource/pixelify-sans';
 
 @theme {
 	--font-pixelify: 'Pixelify Sans';
-	--font-sans: 'Inter Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	--font-sans: 'Geist Variable', 'Noto Color Emoji', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
 	--color-accent: #4fa55c;
 	--color-accent-secondary: #3e834a;
