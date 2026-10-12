@@ -1,5 +1,7 @@
 # aw3
 
+**Note: aw3 is currently being replaced with [ampmod-community](https://git.hermits.cc/ampmod/ampmod-community).**
+
 aw3 is the software behind (almost) everything on the main AmpMod website. We gave it that strange name
 because this is the 3rd attempt at making an AmpMod website. The first attempt was [this sloppily thrown
 together PHP server](https://codeberg.org/ampmod/UBWeb) and the second was ampmod-web, which went well until
